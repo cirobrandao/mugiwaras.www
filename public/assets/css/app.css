@@ -1,23 +1,47 @@
 body { background: #f8f9fa; }
 .reader-toolbar { position: sticky; top: 0; z-index: 5; background: #f8f9fa; padding: 6px 0; }
+.toolbar-row { display: flex; align-items: center; gap: 10px; max-width: 1200px; margin: 0 auto; padding: 0 0px; }
+.reader-toolbar-left, .reader-toolbar-right { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.reader-toolbar-center { flex: 1 1 auto; display: flex; justify-content: center; align-items: center; gap: 12px; }
+.reader-toolbar .btn { min-width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; padding: 0.12rem 0.45rem; font-size: 0.88rem; }
+.reader-toolbar .btn i { font-size: 0.95rem; }
+.reader-toolbar .input-group { margin: 0 8px; }
 .reader-progress { height: 4px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
 .reader-progress-bar { height: 4px; background: #4f46e5; transition: width .2s ease; }
 .reader-title { font-weight: 600; font-size: 1rem; color: #111827; }
 .reader-header { max-width: 1200px; margin: 0 auto 8px; position: relative; display: flex; align-items: center; justify-content: center; padding: 8px 0; }
 .reader-header .reader-back { position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
 .reader-header .reader-mobile-actions { display: none; position: absolute; right: 0; gap: 6px; align-items: center; }
-.reader-header .reader-title { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: 600; text-align: center; }
+.reader-header .reader-title { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: 600; text-align: center; padding: 0 10px; box-sizing: border-box; border: none; border-radius: 0; background: transparent; z-index: 2; max-width: none; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; height: 40px; line-height: 1; }
 .reader-header .reader-actions { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: inline-flex; gap: 8px; align-items: center; }
-.reader-frame { min-height: 70vh; border: 1px solid #e5e7eb; background: #111827; border-radius: 10px; display: flex; justify-content: center; align-items: flex-start; padding: 16px; overflow: auto; }
+
+/* Next chapter button in header (right corner) */
+.reader-header .reader-next { position: absolute; right: 0; top: 50%; transform: translateY(-50%); margin-right: 0; }
+/* ensure the next button doesn't touch other elements when container has inner padding */
+.reader-header .reader-next > i { margin-left: 6px; }
+
+/* Ensure dropdowns inside the reader header appear above reader controls */
+.reader-header { overflow: visible; }
+.reader-header .btn-group .dropdown-menu { z-index: 3050; }
+.reader-frame { min-height: 50vh; width: 100%; max-width: 1200px; margin: 0 auto; border: 1px solid #e5e7eb; background: #111827; border-radius: 10px; display: flex; justify-content: center; align-items: flex-start; padding: 10px; overflow: auto; }
 .reader-frame img { max-width: 100%; height: auto; box-shadow: 0 8px 30px rgba(0,0,0,0.35); border-radius: 8px; transition: transform .2s ease; }
 .reader-frame.scroll-mode { display: block; }
-.reader-frame.scroll-mode img { width: 100%; max-width: 900px; margin: 0 auto 16px; display: block; }
+.reader-frame.scroll-mode img { width: 100%; max-width: 900px; margin: 0 auto 20px; display: block; }
+
+/* center controls spacing refinement */
+.reader-center-controls { gap: 12px; }
+
+/* increase separation between toolbar and header/content */
+.reader-toolbar { padding-top: 8px; padding-bottom: 8px; }
 .reader-overlay { position: sticky; top: 45%; left: 0; right: 0; margin: 0 auto; max-width: 220px; text-align: center; background: rgba(17,24,39,0.85); color: #fff; padding: 8px 12px; border-radius: 999px; font-size: 0.85rem; z-index: 3; }
 .reader-toolbar .btn { padding: 2px 8px; font-size: 0.85rem; }
 .reader-toolbar select, .reader-toolbar input[type="range"] { font-size: 0.85rem; }
 .reader-toolbar #readerLights { border-color: #1f2937; color: #1f2937; }
+
+/* Center controls container in reader toolbar */
+.reader-center-controls { flex: 0 0 auto; }
 .reader-toolbar #readerLights:hover { background: #1f2937; color: #fff; }
-.reader-toolbar #pageNumber { width: 60px !important; }
+.reader-toolbar #pageNumber { width: 48px !important; }
 .reader-toolbar #pageTotal, .reader-toolbar .input-group-text { padding: 0.15rem 0.4rem; font-size: 0.8rem; }
 #readerWrap.lights-off, body.lights-off { background: #0b0f19; }
 body.lights-off .reader-toolbar { background: #0b0f19; }
@@ -26,6 +50,31 @@ body.lights-off .reader-frame { background: #000; border-color: #111827; }
 #readerWrap:fullscreen .reader-toolbar > .d-flex,
 #readerWrap:fullscreen .reader-toolbar .reader-progress { max-width: 1200px; margin: 0 auto; }
 #readerWrap:fullscreen .reader-frame { min-height: 88vh; }
+
+/* reader wrapper to anchor overlay footer */
+#readerWrap { position: relative; }
+
+/* footer containing the page guide — now an overlay positioned above the reader */
+.reader-footer { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; justify-content: center; align-items: center; padding: 6px; }
+.reader-footer .input-group { box-shadow: 0 6px 20px rgba(0,0,0,0.35); background: #ffffff; border-radius: 8px; padding: 6px; }
+.reader-footer .input-group .input-group-text { background: transparent; border: none; font-weight: 600; }
+.reader-footer .form-control { border: none; outline: none; box-shadow: none; font-size: 1rem; }
+.reader-footer #pageNumber { width: 90px; }
+.reader-footer #pageTotal { padding-left: 10px; padding-right: 10px; }
+
+@media (max-width: 768px) {
+	.reader-footer { bottom: 8px; padding: 4px; }
+	.reader-footer .input-group { padding: 4px; }
+	.reader-footer #pageNumber { width: 70px; }
+}
+
+/* scroll-to-top overlay button (visible in scroll mode) */
+.reader-scroll-top { position: absolute; right: 18px; bottom: 110px; z-index: 60; border-radius: 999px; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
+.reader-scroll-top i { font-size: 1rem; }
+
+@media (max-width: 768px) {
+	.reader-scroll-top { right: 12px; bottom: 90px; width: 40px; height: 40px; }
+}
 
 /* Library grid improvements */
 .library-card { color: inherit; }

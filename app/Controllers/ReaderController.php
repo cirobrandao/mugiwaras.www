@@ -78,6 +78,26 @@ final class ReaderController extends Controller
         Audit::log('read_open', (int)$user['id'], ['content_id' => (int)$content['id']]);
 
         [$pages, $pageError] = $this->listPagesWithError((string)$content['cbz_path']);
+        // determine previous and next chapter in the same series (by id)
+        $previousChapterUrl = '';
+        $nextChapterUrl = '';
+        if (!empty($content['series_id'])) {
+            $db = \App\Core\Database::connection();
+            // previous
+            $pstmt = $db->prepare('SELECT id FROM content_items WHERE series_id = :s AND id < :id ORDER BY id DESC LIMIT 1');
+            $pstmt->execute(['s' => (int)$content['series_id'], 'id' => (int)$content['id']]);
+            $prev = $pstmt->fetch();
+            if ($prev && !empty($prev['id'])) {
+                $previousChapterUrl = base_path('/reader/' . (int)$prev['id']);
+            }
+            // next
+            $nstmt = $db->prepare('SELECT id FROM content_items WHERE series_id = :s AND id > :id ORDER BY id ASC LIMIT 1');
+            $nstmt->execute(['s' => (int)$content['series_id'], 'id' => (int)$content['id']]);
+            $next = $nstmt->fetch();
+            if ($next && !empty($next['id'])) {
+                $nextChapterUrl = base_path('/reader/' . (int)$next['id']);
+            }
+        }
         $favIds = UserFavorite::getIdsForUser((int)$user['id'], [(int)$content['id']]);
         $progress = UserContentStatus::getProgressForUser((int)$user['id'], [(int)$content['id']]);
         $requestedPage = $request->get['page'] ?? null;
@@ -92,6 +112,8 @@ final class ReaderController extends Controller
             'downloadToken' => $this->downloadToken((int)$user['id'], (int)$content['id']),
             'isFavorite' => !empty($favIds),
             'lastPage' => $lastPage,
+            'nextChapterUrl' => $nextChapterUrl,
+            'previousChapterUrl' => $previousChapterUrl,
             'csrf' => Csrf::token(),
         ]);
     }

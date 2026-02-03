@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const next = document.getElementById('nextPage');
   const pageInput = document.getElementById('pageNumber');
   const pageTotal = document.getElementById('pageTotal');
+  const lastBtn = document.getElementById('readerLast');
   const status = document.getElementById('readerStatus');
   const fitMode = document.getElementById('readerFitMode');
   const zoomInput = document.getElementById('readerZoom');
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const wheelToggle = document.getElementById('readerWheel');
   const wheelWrap = wheelToggle ? wheelToggle.closest('.form-check') : null;
   const wrap = document.getElementById('readerWrap');
+  const scrollTopBtn = document.getElementById('scrollTopBtn');
   let scrollMode = modeSelect ? modeSelect.value === 'scroll' : (modeSelectMobile ? modeSelectMobile.value === 'scroll' : false);
   let wheelPaging = wheelToggle ? wheelToggle.checked : true;
   const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
@@ -35,6 +37,22 @@ document.addEventListener('DOMContentLoaded', () => {
       wheelToggle.disabled = false;
       if (wheelWrap) wheelWrap.classList.remove('d-none');
       wheelPaging = wheelToggle.checked;
+    }
+  };
+
+  const updateScrollTopVisibility = () => {
+    if (!scrollTopBtn || !readerEl) return;
+    if (!scrollMode) {
+      scrollTopBtn.classList.add('d-none');
+      return;
+    }
+    // show when the reader content is scrollable (height exceeds viewport) — or if user scrolled
+    const canScroll = readerEl.scrollHeight > (readerEl.clientHeight + 20);
+    const scrolled = readerEl.scrollTop > 80;
+    if (canScroll || scrolled) {
+      scrollTopBtn.classList.remove('d-none');
+    } else {
+      scrollTopBtn.classList.add('d-none');
     }
   };
   const syncPageGuide = () => {
@@ -106,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pageTotal) pageTotal.textContent = `/ ${total}`;
     if (prev) prev.disabled = page <= 0;
     if (next) next.disabled = page >= total - 1;
+    if (lastBtn) lastBtn.disabled = page >= total - 1;
     if (progress) progress.style.width = `${total > 0 ? Math.round(((page + 1) / total) * 100) : 0}%`;
     setStatus('Carregando...');
     applyFitMode();
@@ -145,6 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
       readerEl.appendChild(im);
     }
     setStatus('');
+    // compute visibility for scroll-top overlay after images render
+    setTimeout(() => { if (typeof updateScrollTopVisibility === 'function') updateScrollTopVisibility(); }, 80);
   };
 
   const applyMobileMode = () => {
@@ -310,6 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (modeSelectMobile) modeSelectMobile.value = modeSelect.value;
       syncWheelToggle();
       syncPageGuide();
+      if (scrollTopBtn) { if (scrollMode) setTimeout(() => { try { updateScrollTopVisibility(); } catch(e){} }, 80); else scrollTopBtn.classList.add('d-none'); }
       if (scrollMode) {
         renderScrollMode();
       } else {
@@ -319,12 +341,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+  // scroll-top button behavior (overlay)
+  if (scrollTopBtn) {
+    scrollTopBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (readerEl) readerEl.scrollTo({ top: 0, behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    setTimeout(() => { try { if (typeof updateScrollTopVisibility === 'function') updateScrollTopVisibility(); } catch (e) {} }, 120);
+  }
   if (modeSelectMobile) {
     modeSelectMobile.addEventListener('change', () => {
       scrollMode = modeSelectMobile.value === 'scroll';
       if (modeSelect) modeSelect.value = modeSelectMobile.value;
       syncWheelToggle();
       syncPageGuide();
+      if (scrollTopBtn) { if (scrollMode) setTimeout(() => { try { updateScrollTopVisibility(); } catch(e){} }, 80); else scrollTopBtn.classList.add('d-none'); }
       if (scrollMode) {
         renderScrollMode();
       } else {
@@ -348,6 +380,16 @@ document.addEventListener('DOMContentLoaded', () => {
       syncWheelToggle();
       syncPageGuide();
       if (readerEl) readerEl.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  if (lastBtn) {
+    lastBtn.addEventListener('click', () => {
+      page = Math.max(0, total - 1);
+      update();
+      syncWheelToggle();
+      syncPageGuide();
+      if (readerEl) readerEl.scrollTo({ top: readerEl.scrollHeight, behavior: 'smooth' });
     });
   }
 
@@ -375,6 +417,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pageTotal) pageTotal.textContent = `/ ${total}`;
         if (progress) progress.style.width = `${Math.round(((page + 1) / total) * 100)}%`;
       }
+      // update scroll-top overlay visibility while scrolling
+      try { updateScrollTopVisibility(); } catch (e) {}
+      
     });
   }
 
@@ -419,5 +464,51 @@ document.addEventListener('DOMContentLoaded', () => {
         // ignore errors — state will update on full reload
       });
     });
+
+      // Adjust reader title box so its border touches left/right buttons exactly
+      const adjustTitleBounds = () => {
+        const title = document.querySelector('.reader-title');
+        const backBtn = document.querySelector('.reader-back');
+        const nextBtn = document.querySelector('.reader-next');
+        if (!title) return;
+        // reset
+        title.style.left = '';
+        title.style.right = '';
+        title.style.maxWidth = '';
+        const header = document.querySelector('.reader-header');
+        if (!header) return;
+        const headerRect = header.getBoundingClientRect();
+        const gap = 6; // small gap so border doesn't overlap button edges
+        // prefer to center the title box; set its explicit width to span between buttons
+        if (backBtn && nextBtn) {
+          const backRect = backBtn.getBoundingClientRect();
+          const nextRect = nextBtn.getBoundingClientRect();
+          const available = Math.max(80, Math.floor(nextRect.left - backRect.right - gap * 2));
+          title.style.width = available + 'px';
+          title.style.left = '50%';
+          title.style.transform = 'translate(-50%, -50%)';
+        } else if (backBtn) {
+          const backRect = backBtn.getBoundingClientRect();
+          const available = Math.max(80, Math.floor(headerRect.right - backRect.right - 24));
+          title.style.width = available + 'px';
+          title.style.left = '50%';
+          title.style.transform = 'translate(-50%, -50%)';
+        } else if (nextBtn) {
+          const nextRect = nextBtn.getBoundingClientRect();
+          const available = Math.max(80, Math.floor(nextRect.left - headerRect.left - 24));
+          title.style.width = available + 'px';
+          title.style.left = '50%';
+          title.style.transform = 'translate(-50%, -50%)';
+        } else {
+          title.style.left = '50%';
+          title.style.transform = 'translate(-50%, -50%)';
+          title.style.width = '';
+        }
+      };
+      // run on load and resize
+      setTimeout(adjustTitleBounds, 60);
+      window.addEventListener('resize', () => {
+        setTimeout(adjustTitleBounds, 60);
+      });
   });
 });
