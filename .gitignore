@@ -21,6 +21,9 @@
 /logs/
 /ratelimit/
 
+# Temporary files
+/tmp/
+
 # Environment overrides
 .env.local
 .env.*.local
