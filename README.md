@@ -5,7 +5,7 @@ Plataforma web PHP 8.3 (MVC leve) com MySQL, preparada para rodar em Nginx + PHP
 ## Requisitos
 - PHP 8.3 com extensões: pdo_mysql, json, mbstring, openssl, zip
 - Composer
-- MySQL/MariaDB (host padrão: 10.7.0.235:3306)
+- MySQL/MariaDB
 - Nginx + PHP-FPM 8.3
 
 ## Instalação
