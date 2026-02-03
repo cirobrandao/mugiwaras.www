@@ -33,11 +33,35 @@ final class Validation
 
     public static function birthDate(string $value): bool
     {
-        $dt = DateTimeImmutable::createFromFormat('d-m-Y', $value);
-        if (!$dt) {
+        $value = trim($value);
+        if ($value === '') {
             return false;
         }
+        $formats = ['d-m-Y', 'd/m/Y', 'Y-m-d', 'Y/m/d'];
+        $dt = null;
+        foreach ($formats as $fmt) {
+            $tmp = DateTimeImmutable::createFromFormat($fmt, $value);
+            if ($tmp !== false) {
+                // ensure parsed parts match input to avoid partial parses
+                if ($tmp->format($fmt) === $value) {
+                    $dt = $tmp;
+                    break;
+                }
+            }
+        }
+        if (!$dt) {
+            // try generic parse as last resort
+            try {
+                $tmp = new DateTimeImmutable($value);
+                $dt = $tmp;
+            } catch (\Throwable $e) {
+                return false;
+            }
+        }
         $now = new DateTimeImmutable('now');
+        if ($dt > $now) {
+            return false;
+        }
         $age = $now->diff($dt)->y;
         return $age >= 13 && $age <= 90;
     }
