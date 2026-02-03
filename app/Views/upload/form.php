@@ -1,7 +1,7 @@
 <?php
 ob_start();
 ?>
-<h1 class="h4 mb-3">Upload</h1>
+<!--<h1 class="h4 mb-3">Upload</h1>-->
 <?php if (!empty($_GET['ok']) || !empty($_GET['queued']) || !empty($_GET['failed'])): ?>
     <div class="alert alert-info">
         Enviados: <?= (int)($_GET['ok'] ?? 0) ?>,

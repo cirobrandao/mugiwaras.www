@@ -11,16 +11,41 @@ ob_start();
 			<a class="btn btn-sm btn-outline-secondary reader-back" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>">&larr; Voltar aos capítulos</a>
 		<?php endif; ?>
 		<div class="reader-title"><?= View::e($content['title'] ?? 'Conteúdo') ?></div>
+		<div class="reader-actions">
+			<button class="btn btn-sm btn-outline-secondary" id="readerLights" type="button" title="Apagar as luzes"><i class="fa-solid fa-moon"></i></button>
+			<?php $favBtnClass = !empty($isFavorite) ? 'btn-warning' : 'btn-outline-warning'; ?>
+			<form method="post" action="<?= base_path('/libraries/favorite') ?>" class="m-0">
+				<input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+				<input type="hidden" name="id" value="<?= (int)($content['id'] ?? 0) ?>">
+				<input type="hidden" name="action" value="<?= !empty($isFavorite) ? 'remove' : 'add' ?>">
+				<button class="btn btn-sm <?= $favBtnClass ?>" type="submit" title="Favoritar" data-favorited="<?= !empty($isFavorite) ? '1' : '0' ?>">
+					<i class="fa-solid fa-star"></i>
+				</button>
+			</form>
+			<?php if (!empty($downloadToken)): ?>
+				<div class="btn-group">
+					<button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Download">
+						<i class="fa-solid fa-download"></i>
+					</button>
+					<ul class="dropdown-menu dropdown-menu-end">
+						<li><a class="dropdown-item" href="<?= base_path('/download/' . (int)$content['id'] . '?token=' . urlencode((string)$downloadToken)) ?>">Original (CBZ)</a></li>
+						<li><span class="dropdown-item disabled">PDF (em breve)</span></li>
+						<li><span class="dropdown-item disabled">JPEG (ZIP) (em breve)</span></li>
+					</ul>
+				</div>
+			<?php endif; ?>
+		</div>
 		<div class="reader-mobile-actions">
 			<select class="form-select form-select-sm w-auto" id="readerModeMobile">
 				<option value="page">Página</option>
 				<option value="scroll" selected>Scroll</option>
 			</select>
+			<?php $favBtnClassMobile = !empty($isFavorite) ? 'btn-warning' : 'btn-outline-warning'; ?>
 			<form method="post" action="<?= base_path('/libraries/favorite') ?>" class="m-0">
 				<input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
 				<input type="hidden" name="id" value="<?= (int)($content['id'] ?? 0) ?>">
 				<input type="hidden" name="action" value="<?= !empty($isFavorite) ? 'remove' : 'add' ?>">
-				<button class="btn btn-sm btn-outline-warning" type="submit" title="Favoritar"><i class="fa-solid fa-star"></i></button>
+				<button class="btn btn-sm <?= $favBtnClassMobile ?>" type="submit" title="Favoritar" data-favorited="<?= !empty($isFavorite) ? '1' : '0' ?>"><i class="fa-solid fa-star"></i></button>
 			</form>
 		</div>
 	</div>
@@ -56,27 +81,6 @@ ob_start();
 					<input class="form-check-input" type="checkbox" id="readerWheel" checked>
 					<label class="form-check-label small" for="readerWheel">Scroll do mouse</label>
 				</div>
-				<button class="btn btn-sm btn-outline-secondary" id="readerLights" type="button" title="Apagar as luzes"><i class="fa-solid fa-moon"></i></button>
-				<form method="post" action="<?= base_path('/libraries/favorite') ?>" class="m-0 reader-desktop-only">
-					<input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-					<input type="hidden" name="id" value="<?= (int)($content['id'] ?? 0) ?>">
-					<input type="hidden" name="action" value="<?= !empty($isFavorite) ? 'remove' : 'add' ?>">
-					<button class="btn btn-sm btn-outline-warning" type="submit" title="Favoritar">
-						<i class="fa-solid fa-star"></i>
-					</button>
-				</form>
-				<?php if (!empty($downloadToken)): ?>
-					<div class="btn-group">
-						<button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Download">
-							<i class="fa-solid fa-download"></i>
-						</button>
-						<ul class="dropdown-menu dropdown-menu-end">
-							<li><a class="dropdown-item" href="<?= base_path('/download/' . (int)$content['id'] . '?token=' . urlencode((string)$downloadToken)) ?>">Original (CBZ)</a></li>
-							<li><span class="dropdown-item disabled">PDF (em breve)</span></li>
-							<li><span class="dropdown-item disabled">JPEG (ZIP) (em breve)</span></li>
-						</ul>
-					</div>
-				<?php endif; ?>
 			</div>
 		</div>
 		<div class="reader-progress mt-2">

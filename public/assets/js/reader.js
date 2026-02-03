@@ -384,4 +384,40 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.classList.toggle('lights-off');
     });
   }
+
+  // Intercept favorite forms in the reader to toggle UI immediately without full reload
+  const favForms = Array.from(document.querySelectorAll('form[action$="/libraries/favorite"]'));
+  favForms.forEach((form) => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const btn = form.querySelector('button[type="submit"]');
+      const actionInput = form.querySelector('input[name="action"]');
+      const csrfInput = form.querySelector('input[name="_csrf"]');
+      if (!btn || !actionInput) return;
+      const formData = new FormData(form);
+      fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+      }).then(() => {
+        // toggle UI state regardless of server response (server will persist)
+        const isNowFavorited = actionInput.value === 'add';
+        if (isNowFavorited) {
+          // we just added -> switch to remove
+          actionInput.value = 'remove';
+          btn.classList.remove('btn-outline-warning');
+          btn.classList.add('btn-warning');
+          btn.dataset.favorited = '1';
+        } else {
+          // we just removed -> switch to add
+          actionInput.value = 'add';
+          btn.classList.remove('btn-warning');
+          btn.classList.add('btn-outline-warning');
+          btn.dataset.favorited = '0';
+        }
+      }).catch(() => {
+        // ignore errors — state will update on full reload
+      });
+    });
+  });
 });

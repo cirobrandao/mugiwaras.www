@@ -23,6 +23,7 @@
 
 # Temporary files
 /tmp/
+/srv/
 
 # Environment overrides
 .env.local
