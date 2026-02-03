@@ -1,0 +1,46 @@
+# Dependências
+/vendor/
+/node_modules/
+
+# Ambiente / segredos
+.env
+# Uploads / generated files
+/public/uploads/
+/uploads/
+/public/assets/category-tags.css
+
+# Storage/runtime
+/storage/
+
+# specific storage exclusions (redundant when /storage/ is present)
+#/storage/library/
+#/storage/uploads/
+#/storage/converted/
+
+# Logs / runtime
+/logs/
+/ratelimit/
+
+# Environment overrides
+.env.local
+.env.*.local
+
+# PHPUnit / test artifacts
+.phpunit.result.cache
+
+# IDE
+.idea/
+
+# Cache / runtime
+/storage/*.key
+/storage/logs/
+storage/cache/
+storage/sessions/
+storage/views/
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

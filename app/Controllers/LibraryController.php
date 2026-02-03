@@ -1,0 +1,391 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Core\Auth;
+use App\Core\Response;
+use App\Models\Category;
+use App\Models\Series;
+use App\Models\ContentItem;
+use App\Models\Upload;
+use App\Models\UserFavorite;
+use App\Models\UserContentStatus;
+use App\Models\UserSeriesFavorite;
+use App\Core\Csrf;
+use App\Core\Audit;
+use App\Models\SearchLog;
+use App\Models\SeriesSearchLog;
+
+final class LibraryController extends Controller
+{
+    public function index(\App\Core\Request $request): void
+    {
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/'));
+        }
+        if (!Category::isReady()) {
+            echo $this->view('libraries/index', ['error' => 'Biblioteca ainda não inicializada. Execute a migração 009_library_series.sql.']);
+            return;
+        }
+        $categories = Category::all();
+        $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && in_array($user['role'] ?? 'none', ['admin','superadmin','moderator'], true);
+
+        echo $this->view('libraries/index', [
+            'categories' => $categories,
+            'q' => '',
+            'iosTest' => $iosTest,
+        ]);
+    }
+
+    public function search(\App\Core\Request $request): void
+    {
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/'));
+        }
+        if (!Category::isReady()) {
+            echo $this->view('libraries/search', ['error' => 'Biblioteca ainda não inicializada.']);
+            return;
+        }
+        $q = $this->sanitizeSearchTerm((string)($request->get['q'] ?? ''));
+        $seriesResults = [];
+        if ($q !== '') {
+            $minChapters = in_array($user['role'], ['superadmin','admin','moderator'], true) ? 0 : 1;
+            $seriesResults = Series::searchByNameWithCounts($q, 60, $minChapters);
+            SearchLog::create([
+                'uid' => (int)$user['id'],
+                'term' => $q,
+                'cnt' => count($seriesResults),
+                'ip' => $request->ip(),
+            ]);
+            $seriesIds = array_map(fn ($s) => (int)($s['id'] ?? 0), array_slice($seriesResults, 0, 20));
+            SeriesSearchLog::createMany((int)$user['id'], $q, $seriesIds);
+        }
+
+        echo $this->view('libraries/search', [
+            'q' => $q,
+            'seriesResults' => $seriesResults,
+        ]);
+    }
+
+    private function sanitizeSearchTerm(string $term): string
+    {
+        $term = trim(strip_tags($term));
+        $term = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $term) ?? '';
+        $term = trim(preg_replace('/\s+/u', ' ', $term) ?? '');
+        if (mb_strlen($term) > 120) {
+            $term = mb_substr($term, 0, 120);
+        }
+        return $term;
+    }
+
+    public function category(\App\Core\Request $request, string $category): void
+    {
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/'));
+        }
+        $name = rawurldecode($category);
+        if (!Category::isReady()) {
+            http_response_code(500);
+            echo $this->view('libraries/category', ['error' => 'Biblioteca ainda não inicializada.']);
+            return;
+        }
+        $cat = Category::findByName($name);
+        if (!$cat) {
+            http_response_code(404);
+            echo $this->view('libraries/category', ['error' => 'Categoria não encontrada.']);
+            return;
+        }
+        $seriesAll = Series::byCategoryWithCountsAndTypes((int)$cat['id']);
+        if (!in_array($user['role'], ['superadmin','admin','moderator'], true)) {
+            $seriesAll = array_values(array_filter($seriesAll, fn ($s) => (int)($s['chapter_count'] ?? 0) > 0));
+        }
+        $seriesIds = array_map(fn ($s) => (int)$s['id'], $seriesAll);
+        $favoriteSeriesIds = UserSeriesFavorite::getIdsForUser((int)$user['id'], $seriesIds);
+        $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && in_array($user['role'] ?? 'none', ['admin','superadmin','moderator'], true);
+
+        echo $this->view('libraries/category', [
+            'category' => $cat,
+            'series' => $seriesAll,
+            'favoriteSeries' => $favoriteSeriesIds,
+            'csrf' => Csrf::token(),
+            'user' => $user,
+            'iosTest' => $iosTest,
+        ]);
+    }
+
+    public function series(\App\Core\Request $request, string $category, string $series): void
+    {
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/'));
+        }
+        $categoryName = rawurldecode($category);
+        $seriesName = rawurldecode($series);
+        if (!Category::isReady()) {
+            http_response_code(500);
+            echo $this->view('libraries/series', ['error' => 'Biblioteca ainda não inicializada.']);
+            return;
+        }
+        $cat = Category::findByName($categoryName);
+        if (!$cat) {
+            http_response_code(404);
+            echo $this->view('libraries/series', ['error' => 'Categoria não encontrada.']);
+            return;
+        }
+        $ser = Series::findByName((int)$cat['id'], $seriesName);
+        if (!$ser) {
+            http_response_code(404);
+            echo $this->view('libraries/series', ['error' => 'Série não encontrada.']);
+            return;
+        }
+
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $format = strtolower((string)($request->get['format'] ?? ''));
+        if (!in_array($format, ['pdf', 'cbz'], true)) {
+            $format = '';
+        }
+        $perPage = 40;
+        $total = $format !== '' ? ContentItem::countBySeriesAndFormat((int)$ser['id'], $format) : ContentItem::countBySeries((int)$ser['id']);
+        $offset = ($page - 1) * $perPage;
+        $items = $format !== '' ? ContentItem::bySeriesAndFormat((int)$ser['id'], $format, $perPage, $offset) : ContentItem::bySeries((int)$ser['id'], $perPage, $offset);
+        $pending = Upload::pendingBySeries((int)$ser['id']);
+
+        $contentIds = array_map(fn ($i) => (int)$i['id'], $items);
+        $favoriteIds = UserFavorite::getIdsForUser((int)$user['id'], $contentIds);
+        $readIds = UserContentStatus::getReadIdsForUser((int)$user['id'], $contentIds);
+        $progressMap = UserContentStatus::getProgressForUser((int)$user['id'], $contentIds);
+        $ua = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
+        $isIos = false;
+        $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && in_array($user['role'] ?? 'none', ['admin','superadmin','moderator'], true);
+        if ($iosTest) {
+            $isIos = true;
+        }
+        $downloadTokens = [];
+        foreach ($contentIds as $contentId) {
+            $downloadTokens[$contentId] = $this->downloadToken((int)$user['id'], (int)$contentId);
+        }
+
+        echo $this->view('libraries/series', [
+            'category' => $cat,
+            'series' => $ser,
+            'items' => $items,
+            'pending' => $pending,
+            'favorites' => $favoriteIds,
+            'read' => $readIds,
+            'progress' => $progressMap,
+            'csrf' => Csrf::token(),
+            'user' => $user,
+            'page' => $page,
+            'pages' => (int)ceil($total / $perPage),
+            'isIos' => $isIos,
+            'downloadTokens' => $downloadTokens,
+            'iosTest' => $iosTest,
+            'format' => $format,
+        ]);
+    }
+
+    private function downloadToken(int $userId, int $contentId): string
+    {
+        $secret = (string)config('security.download_secret', '');
+        if ($secret === '') {
+            return '';
+        }
+        $ts = (string)time();
+        $sig = hash_hmac('sha256', $userId . ':' . $contentId . ':' . $ts, $secret);
+        return $ts . '.' . $sig;
+    }
+
+    public function updateContent(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user || !in_array($user['role'], ['superadmin','admin','moderator'], true)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        $title = trim((string)($request->post['title'] ?? ''));
+        if ($id <= 0 || $title === '') {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        ContentItem::updateTitle($id, $title);
+        Audit::log('content_rename', (int)$user['id'], ['content_id' => $id]);
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
+    public function deleteContent(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user || !in_array($user['role'], ['superadmin','admin','moderator'], true)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        $item = ContentItem::find($id);
+        if (!$item) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        $abs = $this->resolveLibraryPath((string)$item['cbz_path']);
+        if ($abs && file_exists($abs)) {
+            @unlink($abs);
+        }
+        ContentItem::delete($id);
+        Audit::log('content_delete', (int)$user['id'], ['content_id' => $id]);
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
+    public function toggleFavorite(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        $action = (string)($request->post['action'] ?? 'add');
+        if ($id > 0) {
+            if ($action === 'remove') {
+                UserFavorite::remove((int)$user['id'], $id);
+            } else {
+                UserFavorite::add((int)$user['id'], $id);
+            }
+        }
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
+    public function toggleRead(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        $read = (string)($request->post['read'] ?? '1') === '1';
+        if ($id > 0) {
+            UserContentStatus::setRead((int)$user['id'], $id, $read);
+        }
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
+    public function updateProgress(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::json(['error' => 'csrf'], 422);
+        }
+        $user = Auth::user();
+        if (!$user) {
+            Response::json(['error' => 'auth'], 401);
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        $page = (int)($request->post['page'] ?? 0);
+        if ($id > 0) {
+            UserContentStatus::setLastPage((int)$user['id'], $id, $page);
+        }
+        Response::json(['ok' => true]);
+    }
+
+    public function toggleSeriesFavorite(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        $action = (string)($request->post['action'] ?? 'add');
+        if ($id > 0) {
+            if ($action === 'remove') {
+                UserSeriesFavorite::remove((int)$user['id'], $id);
+            } else {
+                UserSeriesFavorite::add((int)$user['id'], $id);
+            }
+        }
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
+    public function updateSeries(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user || !in_array($user['role'], ['superadmin','admin','moderator'], true)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        $name = trim((string)($request->post['name'] ?? ''));
+        if ($id <= 0 || $name === '') {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        Series::rename($id, $name);
+        Audit::log('series_rename', (int)$user['id'], ['series_id' => $id]);
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
+    public function deleteSeries(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user || !in_array($user['role'], ['superadmin','admin','moderator'], true)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        if ($id <= 0) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        $this->deleteSeriesCascade($id);
+        Audit::log('series_delete', (int)$user['id'], ['series_id' => $id]);
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
+    private function resolveLibraryPath(string $relative): ?string
+    {
+        $root = dirname(__DIR__, 2) . '/' . trim((string)config('library.path', 'storage/library'), '/');
+        $clean = str_replace(['..', '\\'], ['', '/'], $relative);
+        $full = rtrim($root, '/') . '/' . ltrim($clean, '/');
+        $real = realpath($full);
+        if (!$real) {
+            return null;
+        }
+        $rootReal = realpath($root);
+        if ($rootReal && str_starts_with($real, $rootReal)) {
+            return $real;
+        }
+        return null;
+    }
+
+    private function deleteSeriesCascade(int $seriesId): void
+    {
+        $db = \App\Core\Database::connection();
+        $items = $db->prepare('SELECT id, cbz_path FROM content_items WHERE series_id = :s');
+        $items->execute(['s' => $seriesId]);
+        $rows = $items->fetchAll();
+        foreach ($rows as $row) {
+            $abs = $this->resolveLibraryPath((string)$row['cbz_path']);
+            if ($abs && file_exists($abs)) {
+                @unlink($abs);
+            }
+            ContentItem::delete((int)$row['id']);
+        }
+        $db->prepare('DELETE FROM uploads WHERE series_id = :s')->execute(['s' => $seriesId]);
+        $db->prepare('DELETE FROM series WHERE id = :s')->execute(['s' => $seriesId]);
+    }
+}
