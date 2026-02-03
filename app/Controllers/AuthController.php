@@ -81,13 +81,23 @@ final class AuthController extends Controller
             Response::redirect(base_path('/register'));
         }
 
+        $birthDate = trim((string)($request->post['birth_date'] ?? ''));
+        if ($birthDate === '') {
+            $day = (int)($request->post['birth_day'] ?? 0);
+            $month = (int)($request->post['birth_month'] ?? 0);
+            $year = (int)($request->post['birth_year'] ?? 0);
+            if ($day > 0 && $month > 0 && $year > 0) {
+                $birthDate = sprintf('%02d-%02d-%04d', $day, $month, $year);
+            }
+        }
+
         $data = [
             'username' => trim((string)($request->post['username'] ?? '')),
             'email' => trim((string)($request->post['email'] ?? '')),
             'phone' => trim((string)($request->post['phone'] ?? '')),
             'phone_country' => trim((string)($request->post['phone_country'] ?? '')),
             'phone_has_whatsapp' => isset($request->post['no_whatsapp']) ? 0 : 1,
-            'birth_date' => trim((string)($request->post['birth_date'] ?? '')),
+            'birth_date' => $birthDate,
             'password' => (string)($request->post['password'] ?? ''),
             'password_confirm' => (string)($request->post['password_confirm'] ?? ''),
             'referral' => trim((string)($request->post['referral'] ?? '')),
