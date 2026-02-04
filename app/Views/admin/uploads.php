@@ -3,7 +3,15 @@ use App\Core\View;
 // Controle: arquivo revisado para envio via Git em 2026-02-04
 ob_start();
 ?>
-<h1 class="h4 mb-3">Gerenciador de Arquivos enviados</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Gerenciador de Arquivos enviados</h1>
+    <?php if (!empty($total)): ?>
+        <div class="ms-3 small text-muted text-end">
+            <span>Total uploads: <?= (int)$total ?></span><br>
+            <span>Total enviado: <?= isset($totalSize) ? number_format($totalSize / (1024*1024*1024), 2, ',', '.') : '0' ?> GB</span>
+        </div>
+    <?php endif; ?>
+</div>
 <div class="table-responsive">
     <table class="table table-sm">
         <thead>
@@ -57,16 +65,13 @@ ob_start();
 </div>
 <?php if (!empty($total)): ?>
     <?php $pages = (int)ceil($total / ($perPage ?? 20)); ?>
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="small text-muted">Total uploads: <?= (int)$total ?></div>
-        <nav aria-label="pag" class="mb-3">
-            <ul class="pagination pagination-sm mb-0">
-                <?php for ($p = 1; $p <= $pages; $p++): ?>
-                    <li class="page-item <?= ($p === ($page ?? 1)) ? 'active' : '' ?>"><a class="page-link" href="<?= base_path('/admin/uploads?page=' . $p) ?>"><?= $p ?></a></li>
-                <?php endfor; ?>
-            </ul>
-        </nav>
-    </div>
+    <nav aria-label="pag" class="mb-3">
+        <ul class="pagination pagination-sm mb-0">
+            <?php for ($p = 1; $p <= $pages; $p++): ?>
+                <li class="page-item <?= ($p === ($page ?? 1)) ? 'active' : '' ?>"><a class="page-link" href="<?= base_path('/admin/uploads?page=' . $p) ?>"><?= $p ?></a></li>
+            <?php endfor; ?>
+        </ul>
+    </nav>
 <?php endif; ?>
 <?php
 $content = ob_get_clean();
