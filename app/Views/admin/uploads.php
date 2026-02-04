@@ -1,5 +1,6 @@
 <?php
 use App\Core\View;
+// Controle: arquivo revisado para envio via Git em 2026-02-04
 ob_start();
 ?>
 <h1 class="h4 mb-3">Gerenciador de Arquivos enviados</h1>

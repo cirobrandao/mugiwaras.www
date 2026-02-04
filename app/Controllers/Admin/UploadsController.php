@@ -13,6 +13,7 @@ use App\Models\ContentItem;
 
 final class UploadsController extends Controller
 {
+    // Controle: arquivo revisado para envio via Git em 2026-02-04
     public function index(): void
     {
         $page = (int)($_GET['page'] ?? 1);
