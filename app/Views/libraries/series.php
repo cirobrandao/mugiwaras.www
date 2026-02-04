@@ -60,7 +60,7 @@ $baseQueryString = empty($baseQuery) ? '' : '?' . implode('&', $baseQuery);
                         </form>
                         <div>
                             <a href="<?= $isPdf ? ($iosOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : base_path('/reader/' . (int)$item['id']) ?>" <?= $isPdf && !$iosOnlyDownload ? 'data-open-pdf' : '' ?> <?= $isPdf && !$iosOnlyDownload ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
-                                <?= View::e((string)$item['title']) ?>
+                                <?= View::e(str_replace('_', ' ', (string)$item['title'])) ?>
                             </a>
                             <?php if ($isPdf): ?>
                                 <span class="badge bg-warning text-dark ms-2">PDF</span>

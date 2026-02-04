@@ -15,10 +15,36 @@ final class UploadsController extends Controller
 {
     public function index(): void
     {
-        $uploads = Upload::all();
+        $page = (int)($_GET['page'] ?? 1);
+        if ($page < 1) $page = 1;
+        $perPage = 20;
+        $offset = ($page - 1) * $perPage;
+
+        $total = Upload::countAll();
+        $uploads = Upload::paged($perPage, $offset);
+
+        // attach username for display (keep simple - 20 lookups max per page)
+        $users = [];
+        foreach ($uploads as &$u) {
+            $uid = (int)($u['user_id'] ?? 0);
+            if ($uid > 0) {
+                if (!isset($users[$uid])) {
+                    $usr = \App\Models\User::findById($uid);
+                    $users[$uid] = $usr ? ($usr['username'] ?? ('#' . $uid)) : ('#' . $uid);
+                }
+                $u['username_display'] = $users[$uid];
+            } else {
+                $u['username_display'] = '(system)';
+            }
+        }
+        unset($u);
+
         echo $this->view('admin/uploads', [
             'uploads' => $uploads,
             'csrf' => Csrf::token(),
+            'total' => $total,
+            'page' => $page,
+            'perPage' => $perPage,
         ]);
     }
 

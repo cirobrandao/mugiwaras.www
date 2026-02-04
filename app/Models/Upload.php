@@ -68,6 +68,22 @@ final class Upload
         return $stmt->fetchAll();
     }
 
+    public static function paged(int $limit, int $offset): array
+    {
+        $stmt = Database::connection()->prepare('SELECT * FROM uploads ORDER BY id DESC LIMIT :l OFFSET :o');
+        $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue('o', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public static function countAll(): int
+    {
+        $stmt = Database::connection()->query('SELECT COUNT(*) AS c FROM uploads');
+        $row = $stmt->fetch();
+        return (int)($row['c'] ?? 0);
+    }
+
     public static function pendingBySeries(int $seriesId, int $limit = 100): array
     {
         $stmt = Database::connection()->prepare('SELECT * FROM uploads WHERE series_id = :s AND status = :st ORDER BY id DESC LIMIT :l');
