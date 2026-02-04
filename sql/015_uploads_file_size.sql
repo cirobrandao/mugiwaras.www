@@ -1,2 +1,0 @@
-ALTER TABLE uploads
-    ADD COLUMN file_size BIGINT NOT NULL DEFAULT 0 AFTER job_id;
