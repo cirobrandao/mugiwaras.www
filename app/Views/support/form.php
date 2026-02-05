@@ -15,20 +15,20 @@ ob_start();
 <form method="post" action="<?= base_path('/support') ?>" enctype="multipart/form-data">
     <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
     <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input type="email" name="email" class="form-control" required>
+        <label class="form-label" for="support-email">Email</label>
+        <input id="support-email" type="email" name="email" class="form-control" required>
     </div>
     <div class="mb-3">
-        <label class="form-label">Assunto</label>
-        <input type="text" name="subject" class="form-control" required maxlength="120">
+        <label class="form-label" for="support-subject">Assunto</label>
+        <input id="support-subject" type="text" name="subject" class="form-control" required maxlength="120">
     </div>
     <div class="mb-3">
-        <label class="form-label">Mensagem</label>
-        <textarea name="message" class="form-control" rows="5" required></textarea>
+        <label class="form-label" for="support-message">Mensagem</label>
+        <textarea id="support-message" name="message" class="form-control" rows="5" required></textarea>
     </div>
     <div class="mb-3">
-        <label class="form-label">Anexo (jpg, png, webp ou pdf)</label>
-        <input type="file" name="attachment" class="form-control" accept="image/*,application/pdf">
+        <label class="form-label" for="support-attachment">Anexo (jpg, png, webp ou pdf)</label>
+        <input id="support-attachment" type="file" name="attachment" class="form-control" accept="image/*,application/pdf">
     </div>
     <button class="btn btn-primary" type="submit">Enviar</button>
 </form>

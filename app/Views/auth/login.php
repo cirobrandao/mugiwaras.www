@@ -27,12 +27,12 @@ ob_start();
         <form method="post" action="<?= base_path('/login') ?>">
             <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
             <div class="mb-3">
-                <label class="form-label">Usuário</label>
-                <input type="text" name="username" class="form-control" required>
+                <label class="form-label" for="login-username">Usuário</label>
+                <input id="login-username" type="text" name="username" class="form-control" required>
             </div>
             <div class="mb-3">
-                <label class="form-label">Senha</label>
-                <input type="password" name="password" class="form-control" required>
+                <label class="form-label" for="login-password">Senha</label>
+                <input id="login-password" type="password" name="password" class="form-control" required>
             </div>
             <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" name="remember" id="remember">

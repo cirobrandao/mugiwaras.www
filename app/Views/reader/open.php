@@ -55,7 +55,7 @@ ob_start();
 							<option value="page" <?= (($cbzMode ?? 'page') === 'page') ? 'selected' : '' ?>>Página</option>
 							<option value="scroll" <?= (($cbzMode ?? '') === 'scroll') ? 'selected' : '' ?>>Scroll</option>
 						</select>
-						<div class="d-flex align-items-center gap-2">
+						<div class="d-none d-md-flex align-items-center gap-2">
 							<label class="small text-muted mb-0">Zoom</label>
 							<input type="range" id="readerZoom" min="60" max="160" step="5" value="100">
 						</div>

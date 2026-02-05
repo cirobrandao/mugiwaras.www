@@ -217,4 +217,21 @@ final class SupportMessage
         $stmt = Database::connection()->prepare('UPDATE support_messages SET admin_note = :n, updated_at = NOW() WHERE id = :id');
         $stmt->execute(['n' => $note, 'id' => $id]);
     }
+
+    public static function countOpenForStaff(): int
+    {
+        $sql = "SELECT COUNT(*) AS c
+                FROM support_messages sm
+                LEFT JOIN support_replies sr ON sr.id = (
+                    SELECT sr2.id FROM support_replies sr2 WHERE sr2.support_id = sm.id ORDER BY sr2.id DESC LIMIT 1
+                )
+                WHERE sm.status <> 'closed' AND (sr.id IS NULL OR sr.user_id IS NOT NULL)";
+        try {
+            $stmt = Database::connection()->query($sql);
+            $row = $stmt->fetch();
+            return (int)($row['c'] ?? 0);
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
 }

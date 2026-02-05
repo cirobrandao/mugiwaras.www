@@ -41,21 +41,21 @@ ob_start();
                 <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
                 <input type="hidden" name="accept_terms" value="1">
                 <div class="mb-3">
-                    <label class="form-label">Usuário</label>
-                    <input type="text" name="username" class="form-control" required>
+                    <label class="form-label" for="register-username">Usuário</label>
+                    <input id="register-username" type="text" name="username" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" required>
+                    <label class="form-label" for="register-email">Email</label>
+                    <input id="register-email" type="email" name="email" class="form-control" required>
                 </div>
                 <div class="row">
                     <div class="col-4 mb-3">
-                        <label class="form-label">DDI</label>
-                        <input type="text" name="phone_country" class="form-control" placeholder="+55" value="+55" required>
+                        <label class="form-label" for="register-phone-country">DDI</label>
+                        <input id="register-phone-country" type="text" name="phone_country" class="form-control" placeholder="+55" value="+55" required>
                     </div>
                     <div class="col-8 mb-3">
-                        <label class="form-label">Telefone</label>
-                        <input type="text" name="phone" class="form-control" placeholder="00 0 0000-0000" required data-mask="phone">
+                        <label class="form-label" for="register-phone">Telefone</label>
+                        <input id="register-phone" type="text" name="phone" class="form-control" placeholder="00 0 0000-0000" required data-mask="phone">
                     </div>
                 </div>
                 <div class="form-check mb-3">
@@ -63,10 +63,10 @@ ob_start();
                     <label class="form-check-label" for="no_whatsapp">Não tenho WhatsApp</label>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Data de nascimento</label>
+                    <label class="form-label" for="birth-day">Data de nascimento</label>
                     <div class="row g-2 align-items-center">
                         <div class="col-4">
-                            <select class="form-select" name="birth_day" required data-birth-select="day">
+                            <select id="birth-day" class="form-select" name="birth_day" required data-birth-select="day">
                                 <option value="">Dia</option>
                                 <?php for ($d = 1; $d <= 31; $d++): ?>
                                     <option value="<?= $d ?>"><?= $d ?></option>
@@ -74,7 +74,7 @@ ob_start();
                             </select>
                         </div>
                         <div class="col-4">
-                            <select class="form-select" name="birth_month" required data-birth-select="month">
+                            <select id="birth-month" class="form-select" name="birth_month" required data-birth-select="month">
                                 <option value="">Mês</option>
                                 <?php for ($m = 1; $m <= 12; $m++): ?>
                                     <option value="<?= $m ?>"><?= $m ?></option>
@@ -82,7 +82,7 @@ ob_start();
                             </select>
                         </div>
                         <div class="col-4">
-                            <select class="form-select" name="birth_year" required data-birth-select="year">
+                            <select id="birth-year" class="form-select" name="birth_year" required data-birth-select="year">
                                 <option value="">Ano</option>
                                 <?php $currentYear = (int)date('Y'); ?>
                                 <?php for ($y = $currentYear; $y >= $currentYear - 90; $y--): ?>
@@ -95,16 +95,16 @@ ob_start();
                     <input type="hidden" name="birth_date" data-birth-target="1">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Senha</label>
-                    <input type="password" name="password" class="form-control" required>
+                    <label class="form-label" for="register-password">Senha</label>
+                    <input id="register-password" type="password" name="password" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Confirmar senha</label>
-                    <input type="password" name="password_confirm" class="form-control" required>
+                    <label class="form-label" for="register-password-confirm">Confirmar senha</label>
+                    <input id="register-password-confirm" type="password" name="password_confirm" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Código de indicação (opcional)</label>
-                    <input type="text" name="referral" class="form-control">
+                    <label class="form-label" for="register-referral">Código de indicação (opcional)</label>
+                    <input id="register-referral" type="text" name="referral" class="form-control">
                 </div>
                 <button class="btn btn-primary w-100" type="submit">Criar conta</button>
             </form>

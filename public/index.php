@@ -154,4 +154,8 @@ $router->post('/admin/categories/delete', [new App\Controllers\Admin\CategoriesC
 $router->get('/reset', [new App\Controllers\AuthController(), 'resetForm']);
 $router->post('/reset', [new App\Controllers\AuthController(), 'resetSubmit']);
 
+$router->get('/perfil', [new App\Controllers\ProfileController(), 'show'], [App\Core\Middleware::requireAuth()]);
+$router->get('/perfil/editar', [new App\Controllers\ProfileController(), 'editForm'], [App\Core\Middleware::requireAuth()]);
+$router->get('/perfil/senha', [new App\Controllers\ProfileController(), 'passwordForm'], [App\Core\Middleware::requireAuth()]);
+
 $router->dispatch($request);

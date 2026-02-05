@@ -25,7 +25,7 @@ ob_start();
                 <div class="card h-100 library-card">
                     <div class="card-img-wrap">
                         <?php if ($banner): ?>
-                            <a href="<?= $banner ?>" target="_blank" rel="noopener noreferrer">
+                            <a href="<?= base_path('/libraries/' . rawurlencode((string)$cat['name']) . (!empty($iosTest) ? '?ios_test=1' : '')) ?>">
                                 <img src="<?= $banner ?>" alt="<?= View::e((string)$cat['name']) ?>">
                             </a>
                         <?php endif; ?>

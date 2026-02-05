@@ -296,9 +296,9 @@ final class LibraryController extends Controller
         if ($format === '' && !$allowCbz && $allowPdf) {
             $format = 'pdf';
         }
-        $order = strtolower((string)($request->get['order'] ?? 'asc'));
+        $order = strtolower((string)($request->get['order'] ?? 'desc'));
         if (!in_array($order, ['asc', 'desc'], true)) {
-            $order = 'asc';
+            $order = 'desc';
         }
         $perPage = 40;
         if (!$allowCbz && !$allowPdf) {
