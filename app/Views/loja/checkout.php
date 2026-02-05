@@ -4,7 +4,7 @@ ob_start();
 ?>
 <div class="d-flex align-items-center justify-content-between mb-3">
     <h1 class="h4 mb-0">Confirmar compra</h1>
-    <span class="badge bg-light text-dark">Checkout</span>
+    <span class="badge bg-light text-dark">Pagamento</span>
 </div>
 
 <div class="row g-3 mb-3">

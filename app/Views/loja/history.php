@@ -2,7 +2,7 @@
 use App\Core\View;
 ob_start();
 ?>
-<h1 class="h4 mb-3">Meus pagamentos</h1>
+<h1 class="h4 mb-3">Histórico de compras</h1>
 <?php if (!empty($_GET['uploaded'])): ?>
     <div class="alert alert-success">Comprovante enviado.</div>
 <?php endif; ?>

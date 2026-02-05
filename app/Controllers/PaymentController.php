@@ -30,7 +30,7 @@ final class PaymentController extends Controller
         $categories = Category::all();
         $packageIds = array_map(static fn ($p) => (int)($p['id'] ?? 0), $packages);
         $packageCategories = Package::categoriesMap($packageIds);
-        echo $this->view('payments/packages', [
+        echo $this->view('loja/packages', [
             'packages' => $packages,
             'categories' => $categories,
             'packageCategories' => $packageCategories,
@@ -85,7 +85,7 @@ final class PaymentController extends Controller
         }
         $pixKey = Setting::get('pix_key', '');
         $pixName = Setting::get('pix_receiver', '');
-        echo $this->view('payments/checkout', [
+        echo $this->view('loja/checkout', [
             'package' => $package,
             'months' => $months,
             'baseTotal' => $baseTotal,
@@ -231,7 +231,7 @@ final class PaymentController extends Controller
             Response::redirect(base_path('/'));
         }
         $payments = Payment::byUser((int)$user['id']);
-        echo $this->view('payments/history', ['payments' => $payments, 'csrf' => Csrf::token()]);
+        echo $this->view('loja/history', ['payments' => $payments, 'csrf' => Csrf::token()]);
     }
 
     public function uploadProof(Request $request): void
