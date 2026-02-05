@@ -18,6 +18,24 @@ foreach (($categories ?? []) as $c) {
         </div>
     <?php endif; ?>
 </div>
+<style>
+    .uploads-action-btn {
+        width: 32px;
+        height: 30px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .uploads-truncate {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: inline-block;
+        vertical-align: bottom;
+    }
+</style>
 <form method="get" action="<?= base_path('/admin/uploads') ?>" class="row g-2 align-items-end mb-3">
     <div class="col-sm-4 col-md-3">
         <label class="form-label">Usuário (ID ou nome)</label>
@@ -96,7 +114,6 @@ foreach (($categories ?? []) as $c) {
             <th style="width: 200px;">Série</th>
             <th style="width: 150px;">Data</th>
             <th style="width: 140px;">Usuário</th>
-            <th style="width: 220px;">Falha</th>
             <th class="text-end" style="width: 140px;">Ações</th>
         </tr>
         </thead>
@@ -133,7 +150,7 @@ foreach (($categories ?? []) as $c) {
                     $catId = (int)($u['category_id'] ?? 0);
                     $catLabel = $catName !== '' ? $catName : ($catId > 0 ? ('#' . $catId) : '—');
                     ?>
-                    <?= View::e($catLabel) ?>
+                    <span class="uploads-truncate" title="<?= View::e($catLabel) ?>"><?= View::e($catLabel) ?></span>
                 </td>
                 <td>
                     <?php
@@ -141,16 +158,12 @@ foreach (($categories ?? []) as $c) {
                     $seriesId = (int)($u['series_id'] ?? 0);
                     $seriesLabel = $seriesName !== '' ? $seriesName : ($seriesId > 0 ? ('#' . $seriesId) : '—');
                     ?>
-                    <?= View::e($seriesLabel) ?>
+                    <span class="uploads-truncate" title="<?= View::e($seriesLabel) ?>"><?= View::e($seriesLabel) ?></span>
                 </td>
                 <td><?= View::e((string)$u['created_at']) ?></td>
-                <td><?= View::e($u['username_display'] ?? ('#' . (int)$u['user_id'])) ?></td>
-                <td class="text-truncate" style="max-width: 220px;">
-                    <?php if ($st === 'failed'): ?>
-                        <?= View::e((string)($u['job_error'] ?? 'Falha sem detalhe.')) ?>
-                    <?php else: ?>
-                        <span class="text-muted">—</span>
-                    <?php endif; ?>
+                <td>
+                    <?php $userLabel = $u['username_display'] ?? ('#' . (int)$u['user_id']); ?>
+                    <span class="uploads-truncate" title="<?= View::e((string)$userLabel) ?>"><?= View::e((string)$userLabel) ?></span>
                 </td>
                 <td class="text-end">
                     <?php if (($u['status'] ?? '') === 'pending'): ?>
@@ -163,17 +176,17 @@ foreach (($categories ?? []) as $c) {
                             <input type="hidden" name="category" value="<?= (int)($filterCategory ?? 0) ?>">
                             <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
                             <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
-                            <button class="btn btn-sm btn-outline-success me-1" type="submit" title="Aprovar">
+                            <button class="btn btn-sm btn-outline-success me-1 uploads-action-btn" type="submit" title="Aprovar">
                                 <i class="fa-solid fa-check"></i>
                                 <span class="visually-hidden">Aprovar</span>
                             </button>
                         </form>
                     <?php endif; ?>
-                    <button class="btn btn-sm btn-outline-secondary me-1" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#editUploadModal<?= (int)$u['id'] ?>">
+                    <button class="btn btn-sm btn-outline-secondary me-1 uploads-action-btn" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#editUploadModal<?= (int)$u['id'] ?>">
                         <i class="fa-solid fa-pen-to-square"></i>
                         <span class="visually-hidden">Editar</span>
                     </button>
-                    <button class="btn btn-sm btn-outline-danger" type="button" title="Excluir" data-bs-toggle="modal" data-bs-target="#deleteUploadModal<?= (int)$u['id'] ?>">
+                    <button class="btn btn-sm btn-outline-danger uploads-action-btn" type="button" title="Excluir" data-bs-toggle="modal" data-bs-target="#deleteUploadModal<?= (int)$u['id'] ?>">
                         <i class="fa-solid fa-trash"></i>
                         <span class="visually-hidden">Excluir</span>
                     </button>
