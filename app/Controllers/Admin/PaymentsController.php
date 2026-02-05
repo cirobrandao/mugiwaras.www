@@ -36,12 +36,23 @@ final class PaymentsController extends Controller
         }
 
         $package = Package::find((int)$payment['package_id']);
+        $targetUser = User::findById((int)$payment['user_id']);
+        if ($targetUser && ($targetUser['access_tier'] ?? '') === 'restrito') {
+            User::setAccessTier((int)$payment['user_id'], 'user');
+        }
         if ($package) {
             if ((int)$package['bonus_credits'] > 0) {
                 User::addCredits((int)$payment['user_id'], (int)$package['bonus_credits']);
             }
             if ((int)$package['subscription_days'] > 0) {
-                User::extendSubscription((int)$payment['user_id'], (int)$package['subscription_days']);
+                $months = (int)($payment['months'] ?? 1);
+                if ($months < 1) {
+                    $months = 1;
+                } elseif ($months > 12) {
+                    $months = 12;
+                }
+                $days = (int)$package['subscription_days'] * $months;
+                User::extendSubscription((int)$payment['user_id'], $days);
             }
         }
 

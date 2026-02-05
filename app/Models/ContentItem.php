@@ -11,7 +11,7 @@ final class ContentItem
     public static function create(array $data): int
     {
         $stmt = Database::connection()->prepare(
-            'INSERT INTO content_items (library_id, category_id, series_id, title, cbz_path, file_hash, file_size, original_name, view_count, download_count, created_at) VALUES (:l,:c,:s,:t,:p,:h,:sz,:o,0,0,NOW())'
+            'INSERT INTO content_items (library_id, category_id, series_id, title, cbz_path, file_hash, file_size, original_name, content_order, view_count, download_count, created_at) VALUES (:l,:c,:s,:t,:p,:h,:sz,:o,0,0,0,NOW())'
         );
         $stmt->execute($data);
         return (int)Database::connection()->lastInsertId();
@@ -47,6 +47,29 @@ final class ContentItem
         $stmt->execute(['t' => $title, 'id' => $id]);
     }
 
+    public static function updateOrder(int $id, int $order): void
+    {
+        $stmt = Database::connection()->prepare('UPDATE content_items SET content_order = :o WHERE id = :id');
+        $stmt->execute(['o' => $order, 'id' => $id]);
+    }
+
+    public static function updateCategorySeries(int $id, ?int $categoryId, ?int $seriesId): void
+    {
+        $stmt = Database::connection()->prepare('UPDATE content_items SET category_id = :c, series_id = :s WHERE id = :id');
+        $stmt->bindValue('id', $id, \PDO::PARAM_INT);
+        if ($categoryId === null || $categoryId <= 0) {
+            $stmt->bindValue('c', null, \PDO::PARAM_NULL);
+        } else {
+            $stmt->bindValue('c', $categoryId, \PDO::PARAM_INT);
+        }
+        if ($seriesId === null || $seriesId <= 0) {
+            $stmt->bindValue('s', null, \PDO::PARAM_NULL);
+        } else {
+            $stmt->bindValue('s', $seriesId, \PDO::PARAM_INT);
+        }
+        $stmt->execute();
+    }
+
     public static function delete(int $id): void
     {
         $stmt = Database::connection()->prepare('DELETE FROM content_items WHERE id = :id');
@@ -55,7 +78,7 @@ final class ContentItem
 
     public static function bySeries(int $seriesId, int $limit = 100, int $offset = 0): array
     {
-        $stmt = Database::connection()->prepare('SELECT * FROM content_items WHERE series_id = :s ORDER BY id DESC LIMIT :l OFFSET :o');
+        $stmt = Database::connection()->prepare('SELECT * FROM content_items WHERE series_id = :s ORDER BY content_order ASC, title ASC, id ASC LIMIT :l OFFSET :o');
         $stmt->bindValue('s', $seriesId, \PDO::PARAM_INT);
         $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
         $stmt->bindValue('o', $offset, \PDO::PARAM_INT);
@@ -68,8 +91,8 @@ final class ContentItem
         $format = strtolower($format);
         $isPdf = $format === 'pdf';
         $sql = $isPdf
-            ? "SELECT * FROM content_items WHERE series_id = :s AND LOWER(cbz_path) LIKE '%.pdf' ORDER BY id DESC LIMIT :l OFFSET :o"
-            : "SELECT * FROM content_items WHERE series_id = :s AND (cbz_path IS NULL OR LOWER(cbz_path) NOT LIKE '%.pdf') ORDER BY id DESC LIMIT :l OFFSET :o";
+            ? "SELECT * FROM content_items WHERE series_id = :s AND LOWER(cbz_path) LIKE '%.pdf' ORDER BY content_order ASC, title ASC, id ASC LIMIT :l OFFSET :o"
+            : "SELECT * FROM content_items WHERE series_id = :s AND (cbz_path IS NULL OR LOWER(cbz_path) NOT LIKE '%.pdf') ORDER BY content_order ASC, title ASC, id ASC LIMIT :l OFFSET :o";
         $stmt = Database::connection()->prepare($sql);
         $stmt->bindValue('s', $seriesId, \PDO::PARAM_INT);
         $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
@@ -124,5 +147,22 @@ final class ContentItem
     {
         $stmt = Database::connection()->prepare('UPDATE content_items SET download_count = download_count + 1 WHERE id = :id');
         $stmt->execute(['id' => $id]);
+    }
+
+    public static function latestSeriesWithContent(int $limit = 8): array
+    {
+        $sql = 'SELECT s.id AS series_id, s.name AS series_name,
+                       c.id AS category_id, c.name AS category_name, c.tag_color AS category_tag_color,
+                       MAX(ci.created_at) AS created_at, COUNT(ci.id) AS chapter_count
+                FROM content_items ci
+                INNER JOIN series s ON s.id = ci.series_id
+                INNER JOIN categories c ON c.id = ci.category_id
+                GROUP BY s.id, s.name, c.id, c.name, c.tag_color
+                ORDER BY created_at DESC
+                LIMIT :l';
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 }

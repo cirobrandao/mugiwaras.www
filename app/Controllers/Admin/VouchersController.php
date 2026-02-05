@@ -8,18 +8,18 @@ use App\Core\Controller;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Csrf;
-use App\Models\Setting;
+use App\Models\Voucher;
+use App\Models\Package;
 
 final class VouchersController extends Controller
 {
     public function index(): void
     {
-        $settings = array_values(array_filter(Setting::all(), function ($s): bool {
-            $key = (string)($s['key'] ?? '');
-            return !str_starts_with($key, 'system_');
-        }));
+        $vouchers = Voucher::all();
+        $packages = Package::all();
         echo $this->view('admin/vouchers', [
-            'settings' => $settings,
+            'vouchers' => $vouchers,
+            'packages' => $packages,
             'csrf' => Csrf::token(),
         ]);
     }
@@ -29,12 +29,28 @@ final class VouchersController extends Controller
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
             Response::redirect(base_path('/admin/vouchers'));
         }
-        $key = trim((string)($request->post['key'] ?? ''));
-        $valueRaw = trim((string)($request->post['value'] ?? ''));
-        $value = (string)max(0, (int)$valueRaw);
-        if ($key !== '' && !str_starts_with($key, 'system_')) {
-            Setting::set($key, $value);
+        $code = strtoupper(trim((string)($request->post['code'] ?? '')));
+        $days = max(0, (int)($request->post['days'] ?? 0));
+        $maxUses = (int)($request->post['max_uses'] ?? 0);
+        $expiresAt = trim((string)($request->post['expires_at'] ?? ''));
+        $packageId = (int)($request->post['package_id'] ?? 0);
+        $isActive = !empty($request->post['is_active']) ? 1 : 0;
+
+        if ($code === '' || !str_starts_with($code, 'VC-')) {
+            Response::redirect(base_path('/admin/vouchers?error=code'));
         }
+        if ($packageId <= 0 || !Package::find($packageId)) {
+            Response::redirect(base_path('/admin/vouchers?error=package'));
+        }
+
+        Voucher::upsert([
+            'code' => $code,
+            'package_id' => $packageId,
+            'days' => $days,
+            'max_uses' => $maxUses > 0 ? $maxUses : null,
+            'expires_at' => $expiresAt !== '' ? $expiresAt : null,
+            'is_active' => $isActive,
+        ]);
         Response::redirect(base_path('/admin/vouchers'));
     }
 
@@ -43,9 +59,9 @@ final class VouchersController extends Controller
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
             Response::redirect(base_path('/admin/vouchers'));
         }
-        $key = trim((string)($request->post['key'] ?? ''));
-        if ($key !== '' && !str_starts_with($key, 'system_')) {
-            Setting::delete($key);
+        $code = strtoupper(trim((string)($request->post['code'] ?? '')));
+        if ($code !== '' && str_starts_with($code, 'VC-')) {
+            Voucher::delete($code);
         }
         Response::redirect(base_path('/admin/vouchers'));
     }

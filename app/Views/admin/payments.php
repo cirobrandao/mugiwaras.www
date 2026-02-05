@@ -8,9 +8,9 @@ ob_start();
 	<table class="table table-sm">
 		<thead>
 		<tr>
-			<th>ID</th>
 			<th>Usuário</th>
 			<th>Pacote</th>
+			<th>Meses</th>
 			<th>Status</th>
 			<th>Comprovante</th>
 			<th>Criado</th>
@@ -20,9 +20,9 @@ ob_start();
 		<tbody>
 		<?php foreach (($payments ?? []) as $p): ?>
 			<tr>
-				<td><?= (int)$p['id'] ?></td>
-				<td><?= (int)$p['user_id'] ?></td>
-				<td><?= (int)$p['package_id'] ?></td>
+				<td><?= View::e((string)($p['user_name'] ?? ('#' . (int)$p['user_id']))) ?></td>
+				<td><?= View::e((string)($p['package_name'] ?? ('#' . (int)$p['package_id']))) ?></td>
+				<td><?= (int)($p['months'] ?? 1) ?></td>
 				<td><?= View::e($p['status']) ?></td>
 				<td>
 					<?php if (!empty($p['proof_path'])): ?>

@@ -10,19 +10,29 @@ use App\Models\News;
 use App\Models\Series;
 use App\Models\User;
 use App\Models\Category;
+use App\Models\Payment;
+use App\Models\Package;
+use App\Models\ContentItem;
 
 final class DashboardController extends Controller
 {
     public function index(): void
     {
         $user = Auth::user();
-        $news = News::latestPublished(5);
+        $news = News::latestPublishedSidebar(5);
+        $newsBelowMostRead = News::latestPublishedBelowMostRead(5);
         $favoriteSeries = [];
         $mostReadSeries = [];
         $recentUsers = [];
         $categoryColors = [];
         $categoryColorsByName = [];
-        $isAdmin = !empty($user) && in_array($user['role'] ?? 'none', ['superadmin', 'admin', 'moderator'], true);
+        $isAdmin = Auth::isAdmin($user);
+        $recentContent = [];
+        $accessInfo = [
+            'label' => 'Sem acesso ativo',
+            'expires_at' => null,
+        ];
+        $activePackageTitle = null;
 
         if (!empty($user['id'])) {
             $favoriteSeries = Series::favoritesForUser((int)$user['id'], 8);
@@ -32,6 +42,42 @@ final class DashboardController extends Controller
 
         if ($isAdmin) {
             $recentUsers = User::recentLogins(10);
+        }
+
+        if (!empty($user)) {
+            if (($user['access_tier'] ?? '') === 'vitalicio') {
+                $accessInfo['label'] = 'Acesso vitalício';
+            } elseif (!empty($user['subscription_expires_at'])) {
+                $expires = strtotime((string)$user['subscription_expires_at']);
+                if ($expires !== false && $expires >= time()) {
+                    $days = (int)ceil(($expires - time()) / 86400);
+                    $accessInfo['label'] = 'Acesso ativo: ' . $days . ' dia' . ($days === 1 ? '' : 's');
+                    $accessInfo['expires_at'] = (string)$user['subscription_expires_at'];
+                } else {
+                    $accessInfo['label'] = 'Acesso expirado';
+                }
+            }
+        }
+
+        if (!empty($user['id'])) {
+            $lastApproved = Payment::latestApprovedByUser((int)$user['id']);
+            if ($lastApproved) {
+                $pkg = Package::find((int)($lastApproved['package_id'] ?? 0));
+                if ($pkg) {
+                    $activePackageTitle = (string)($pkg['title'] ?? null);
+                }
+            }
+        }
+
+        $recentContent = ContentItem::latestSeriesWithContent(8);
+        $lastLogin = $user['data_ultimo_login'] ?? $user['data_registro'] ?? null;
+        $lastLoginTs = is_string($lastLogin) ? strtotime($lastLogin) : null;
+        if (!empty($recentContent) && $lastLoginTs) {
+            foreach ($recentContent as $idx => $row) {
+                $createdAt = $row['created_at'] ?? null;
+                $createdTs = is_string($createdAt) ? strtotime($createdAt) : null;
+                $recentContent[$idx]['is_new'] = $createdTs !== false && $createdTs !== null && $createdTs > $lastLoginTs;
+            }
         }
 
         $normalizeName = static function (string $name): string {
@@ -78,9 +124,13 @@ final class DashboardController extends Controller
         echo $this->view('dashboard/index', [
             'user' => $user,
             'news' => $news,
+            'newsBelowMostRead' => $newsBelowMostRead,
             'favoriteSeries' => $favoriteSeries,
             'mostReadSeries' => $mostReadSeries,
             'recentUsers' => $recentUsers,
+            'recentContent' => $recentContent,
+            'accessInfo' => $accessInfo,
+            'activePackageTitle' => $activePackageTitle,
             'isAdmin' => $isAdmin,
             'categoryColors' => $categoryColors,
             'categoryColorsByName' => $categoryColorsByName,

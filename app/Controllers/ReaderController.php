@@ -44,6 +44,8 @@ final class ReaderController extends Controller
             return;
         }
 
+        $cbzMode = 'page';
+        $cbzDirection = 'rtl';
         if (!empty($content['category_id'])) {
             $cat = Category::findByName((string)($content['category_name'] ?? ''));
             if (!$cat) {
@@ -53,6 +55,8 @@ final class ReaderController extends Controller
             }
             if ($cat) {
                 $content['category_name'] = $cat['name'] ?? null;
+                $cbzMode = (string)($cat['cbz_mode'] ?? 'page');
+                $cbzDirection = (string)($cat['cbz_direction'] ?? 'rtl');
             }
         }
         if (!empty($content['series_id'])) {
@@ -114,6 +118,8 @@ final class ReaderController extends Controller
             'lastPage' => $lastPage,
             'nextChapterUrl' => $nextChapterUrl,
             'previousChapterUrl' => $previousChapterUrl,
+            'cbzMode' => $cbzMode,
+            'cbzDirection' => $cbzDirection,
             'csrf' => Csrf::token(),
         ]);
     }
@@ -545,11 +551,27 @@ final class ReaderController extends Controller
 
     private function accessError(array $user): ?string
     {
+        if (Auth::isAdmin($user)) {
+            return null;
+        }
+        if (Auth::isEquipe($user) && (!empty($user['uploader_agent']) || !empty($user['moderator_agent']) || !empty($user['support_agent']))) {
+            return null;
+        }
         if ($user['access_tier'] !== 'vitalicio' && !empty($user['subscription_expires_at'])) {
             $expires = strtotime((string)$user['subscription_expires_at']);
             if ($expires !== false && $expires < time()) {
                 return 'Assinatura expirada.';
             }
+        }
+        $isSubscriber = ($user['access_tier'] ?? '') === 'vitalicio';
+        if (!$isSubscriber && !empty($user['subscription_expires_at'])) {
+            $expires = strtotime((string)$user['subscription_expires_at']);
+            if ($expires !== false && $expires >= time()) {
+                $isSubscriber = true;
+            }
+        }
+        if (!$isSubscriber) {
+            return 'Você precisa adquirir o acesso para continuar.';
         }
         return null;
     }

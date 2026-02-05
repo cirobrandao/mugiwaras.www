@@ -10,6 +10,10 @@ use App\Core\Response;
 use App\Core\Csrf;
 use App\Models\Upload;
 use App\Models\ContentItem;
+use App\Models\Category;
+use App\Models\Series;
+use App\Models\Job;
+use App\Core\Audit;
 
 final class UploadsController extends Controller
 {
@@ -18,38 +22,64 @@ final class UploadsController extends Controller
     {
         $page = (int)($_GET['page'] ?? 1);
         if ($page < 1) $page = 1;
-        $perPage = 20;
+        $perPage = (int)($_GET['perPage'] ?? 50);
+        if ($perPage < 20) $perPage = 20;
+        if ($perPage > 200) $perPage = 200;
         $offset = ($page - 1) * $perPage;
 
-        $total = Upload::countAll();
-        $uploads = Upload::paged($perPage, $offset);
-
-        // attach username for display (keep simple - 20 lookups max per page)
-        $users = [];
-        foreach ($uploads as &$u) {
-            $uid = (int)($u['user_id'] ?? 0);
-            if ($uid > 0) {
-                if (!isset($users[$uid])) {
-                    $usr = \App\Models\User::findById($uid);
-                    $users[$uid] = $usr ? ($usr['username'] ?? ('#' . $uid)) : ('#' . $uid);
-                }
-                $u['username_display'] = $users[$uid];
+        $userFilterRaw = trim((string)($_GET['user'] ?? ''));
+        $categoryFilter = (int)($_GET['category'] ?? 0);
+        $seriesFilter = (int)($_GET['series'] ?? 0);
+        $statusFilter = trim((string)($_GET['status'] ?? ''));
+        $filters = [];
+        if ($categoryFilter > 0) {
+            $filters['category_id'] = $categoryFilter;
+        }
+        if ($seriesFilter > 0) {
+            $filters['series_id'] = $seriesFilter;
+        }
+        if ($statusFilter !== '') {
+            $filters['status'] = $statusFilter;
+        }
+        if ($userFilterRaw !== '') {
+            if (ctype_digit($userFilterRaw)) {
+                $filters['user_id'] = (int)$userFilterRaw;
             } else {
-                $u['username_display'] = '(system)';
+                $filters['username'] = $userFilterRaw;
             }
         }
-        unset($u);
+
+        $total = Upload::countFiltered($filters);
+        $totalSize = Upload::totalSizeFiltered($filters);
+        $uploads = Upload::pagedWithRelationsFiltered($perPage, $offset, $filters);
+        $categories = Category::all();
+        $series = Series::all();
+        $seriesByCategory = [];
+        foreach ($series as $s) {
+            $cid = (int)($s['category_id'] ?? 0);
+            if (!isset($seriesByCategory[$cid])) {
+                $seriesByCategory[$cid] = [];
+            }
+            $seriesByCategory[$cid][] = $s;
+        }
 
         echo $this->view('admin/uploads', [
             'uploads' => $uploads,
             'csrf' => Csrf::token(),
             'total' => $total,
+            'totalSize' => $totalSize,
             'page' => $page,
             'perPage' => $perPage,
+            'categories' => $categories,
+            'seriesByCategory' => $seriesByCategory,
+            'filterUser' => $userFilterRaw,
+            'filterCategory' => $categoryFilter,
+            'filterSeries' => $seriesFilter,
+            'filterStatus' => $statusFilter,
         ]);
     }
 
-    public function delete(Request $request): void
+    public function update(Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
             Response::redirect(base_path('/admin/uploads'));
@@ -58,6 +88,187 @@ final class UploadsController extends Controller
         $upload = Upload::find($id);
         if (!$upload) {
             Response::redirect(base_path('/admin/uploads'));
+        }
+
+        $categoryId = (int)($request->post['category_id'] ?? 0);
+        $seriesId = (int)($request->post['series_id'] ?? 0);
+        $series = null;
+        if ($seriesId > 0) {
+            $series = Series::findById($seriesId);
+            if (!$series) {
+                Response::redirect(base_path('/admin/uploads'));
+            }
+            $categoryId = (int)($series['category_id'] ?? $categoryId);
+        }
+
+        if ($categoryId <= 0) {
+            $categoryId = (int)($upload['category_id'] ?? 0);
+        }
+
+        $categoryIdValue = $categoryId > 0 ? $categoryId : null;
+        $seriesIdValue = $seriesId > 0 ? $seriesId : null;
+
+        Upload::updateCategorySeries($id, $categoryIdValue, $seriesIdValue);
+
+        $target = (string)($upload['target_path'] ?? '');
+        if ($target !== '') {
+            $item = ContentItem::findByPath($target);
+            if ($item) {
+                ContentItem::updateCategorySeries((int)$item['id'], $categoryIdValue, $seriesIdValue);
+            }
+        }
+
+        $page = (int)($request->post['page'] ?? 1);
+        $perPage = (int)($request->post['perPage'] ?? 50);
+        $page = $page < 1 ? 1 : $page;
+        $perPage = $perPage < 20 ? 20 : ($perPage > 200 ? 200 : $perPage);
+        Response::redirect(base_path('/admin/uploads?page=' . $page . '&perPage=' . $perPage));
+    }
+
+    public function approve(Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/admin/uploads'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        if ($id <= 0) {
+            Response::redirect(base_path('/admin/uploads'));
+        }
+
+        $upload = Upload::find($id);
+        if (!$upload || ($upload['status'] ?? '') !== 'pending') {
+            Response::redirect(base_path('/admin/uploads'));
+        }
+
+        $storageRoot = dirname(__DIR__, 3) . '/' . trim((string)config('storage.path', 'storage/uploads'), '/');
+        $libraryRoot = dirname(__DIR__, 3) . '/' . trim((string)config('library.path', 'storage/library'), '/');
+        if (!is_dir($libraryRoot)) {
+            mkdir($libraryRoot, 0777, true);
+        }
+
+        $sourceRel = ltrim((string)($upload['source_path'] ?? ''), '/');
+        $targetRel = ltrim((string)($upload['target_path'] ?? ''), '/');
+        $sourcePath = rtrim($storageRoot, '/') . '/' . $sourceRel;
+        $targetPath = rtrim($libraryRoot, '/') . '/' . $targetRel;
+
+        if ($sourceRel === '' || !file_exists($sourcePath)) {
+            Upload::setStatus($id, 'failed');
+            Response::redirect(base_path('/admin/uploads'));
+        }
+
+        $ext = strtolower(pathinfo((string)($upload['original_name'] ?? ''), PATHINFO_EXTENSION));
+        $isPdf = $ext === 'pdf';
+        $isCbz = $ext === 'cbz';
+
+        if ($isPdf || $isCbz) {
+            $targetDir = dirname($targetPath);
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0777, true);
+            }
+            if (!rename($sourcePath, $targetPath)) {
+                Upload::setStatus($id, 'failed');
+                Response::redirect(base_path('/admin/uploads'));
+            }
+
+            $hash = hash_file('sha256', $targetPath);
+            if (ContentItem::findByHash($hash)) {
+                @unlink($targetPath);
+                Upload::setStatus($id, 'failed');
+                Response::redirect(base_path('/admin/uploads'));
+            }
+
+            $size = filesize($targetPath) ?: (int)($upload['file_size'] ?? 0);
+            $title = (string)($upload['title'] ?? pathinfo($targetPath, PATHINFO_FILENAME));
+            ContentItem::create([
+                'l' => null,
+                'c' => (int)($upload['category_id'] ?? 0),
+                's' => (int)($upload['series_id'] ?? 0),
+                't' => $title,
+                'p' => $targetRel,
+                'h' => $hash,
+                'sz' => $size,
+                'o' => (string)($upload['original_name'] ?? ''),
+            ]);
+            Upload::setStatus($id, 'done');
+            Audit::log('upload_approved', null, ['upload_id' => $id]);
+            Response::redirect(base_path('/admin/uploads'));
+        }
+
+        $jobType = match ($ext) {
+            'epub' => 'epub_to_cbz',
+            'zip' => 'zip_to_cbz',
+            'cbr' => 'cbr_to_cbz',
+            default => '',
+        };
+        if ($jobType === '') {
+            Upload::setStatus($id, 'failed');
+            Response::redirect(base_path('/admin/uploads'));
+        }
+
+        $jobId = Job::create($jobType, [
+            'source' => $sourcePath,
+            'target' => $targetPath,
+            'user_id' => $upload['user_id'] ?? null,
+            'upload_id' => $id,
+            'cleanup_source' => true,
+            'category_id' => (int)($upload['category_id'] ?? 0),
+            'series_id' => (int)($upload['series_id'] ?? 0),
+            'title' => (string)($upload['title'] ?? ''),
+            'original_name' => (string)($upload['original_name'] ?? ''),
+            'file_size' => (int)($upload['file_size'] ?? 0),
+        ]);
+        Upload::setJobId($id, $jobId);
+        Upload::setStatus($id, 'queued');
+        Audit::log('upload_approved', null, ['upload_id' => $id, 'job_id' => $jobId]);
+        Response::redirect(base_path('/admin/uploads'));
+    }
+
+    public function delete(Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/admin/uploads'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        if ($id <= 0) {
+            Response::redirect(base_path('/admin/uploads'));
+        }
+
+        $upload = Upload::find($id);
+        if (!$upload) {
+            Response::redirect(base_path('/admin/uploads'));
+        }
+
+        if (($request->post['confirm'] ?? '') !== '1') {
+            Response::redirect(base_path('/admin/uploads'));
+        }
+
+        $this->deleteUploadById($id);
+        Response::redirect(base_path('/admin/uploads'));
+    }
+
+    public function deleteMultiple(Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/admin/uploads'));
+        }
+        $ids = $request->post['ids'] ?? [];
+        if (!is_array($ids)) {
+            Response::redirect(base_path('/admin/uploads'));
+        }
+        foreach ($ids as $id) {
+            $id = (int)$id;
+            if ($id > 0) {
+                $this->deleteUploadById($id);
+            }
+        }
+        Response::redirect(base_path('/admin/uploads'));
+    }
+
+    private function deleteUploadById(int $id): void
+    {
+        $upload = Upload::find($id);
+        if (!$upload) {
+            return;
         }
 
         $storageRoot = dirname(__DIR__, 3) . '/' . trim((string)config('storage.path', 'storage/uploads'), '/');
@@ -83,6 +294,5 @@ final class UploadsController extends Controller
         }
 
         Upload::delete($id);
-        Response::redirect(base_path('/admin/uploads'));
     }
 }

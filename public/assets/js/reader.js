@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const wheelWrap = wheelToggle ? wheelToggle.closest('.form-check') : null;
   const wrap = document.getElementById('readerWrap');
   const scrollTopBtn = document.getElementById('scrollTopBtn');
+  const pageCompact = document.getElementById('pageCompact');
+  const isRtl = readerEl ? (readerEl.dataset.direction || 'rtl') === 'rtl' : false;
   let scrollMode = modeSelect ? modeSelect.value === 'scroll' : (modeSelectMobile ? modeSelectMobile.value === 'scroll' : false);
   let wheelPaging = wheelToggle ? wheelToggle.checked : true;
   const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
@@ -64,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   let saveTimer = null;
+  let readMarked = false;
 
   const setStatus = (text) => {
     if (status) status.textContent = text || '\u00A0';
@@ -110,6 +113,20 @@ document.addEventListener('DOMContentLoaded', () => {
     img.style.transformOrigin = 'center top';
   };
 
+  const goNext = () => {
+    if (page < total - 1) {
+      page += 1;
+      update();
+    }
+  };
+
+  const goPrev = () => {
+    if (page > 0) {
+      page -= 1;
+      update();
+    }
+  };
+
   const update = () => {
     if (!img) return;
     const baseUrl = readerEl ? readerEl.dataset.baseUrl : (window.__READER && window.__READER.baseUrl);
@@ -122,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (info) info.textContent = `${page + 1} / ${total}`;
     if (pageInput) pageInput.value = String(page + 1);
     if (pageTotal) pageTotal.textContent = `/ ${total}`;
+    if (pageCompact) pageCompact.textContent = `${page + 1}/${total}`;
     if (prev) prev.disabled = page <= 0;
     if (next) next.disabled = page >= total - 1;
     if (lastBtn) lastBtn.disabled = page >= total - 1;
@@ -130,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyFitMode();
     applyZoom();
     scheduleSaveProgress();
+    markReadIfLast();
   };
 
   const scheduleSaveProgress = () => {
@@ -145,6 +164,22 @@ document.addEventListener('DOMContentLoaded', () => {
       form.append('page', String(page));
       fetch('/libraries/progress', { method: 'POST', body: form, credentials: 'same-origin' }).catch(() => {});
     }, 300);
+  };
+
+  const markReadIfLast = () => {
+    if (!readerEl || readMarked || total <= 0) return;
+    if (page < total - 1) return;
+    const contentId = parseInt(readerEl.dataset.contentId || '0', 10);
+    const csrf = readerEl.dataset.csrf || '';
+    if (!contentId || !csrf) return;
+    const form = new FormData();
+    form.append('_csrf', csrf);
+    form.append('id', String(contentId));
+    form.append('read', '1');
+    readMarked = true;
+    fetch('/libraries/read', { method: 'POST', body: form, credentials: 'same-origin' }).catch(() => {
+      readMarked = false;
+    });
   };
 
   const renderScrollMode = () => {
@@ -196,30 +231,24 @@ document.addEventListener('DOMContentLoaded', () => {
     img.addEventListener('click', (e) => {
       if (scrollMode) return;
       if (e.shiftKey) {
-        if (page > 0) {
-          page -= 1;
-          update();
-        }
+        goPrev();
         return;
       }
-      if (page < total - 1) {
-        page += 1;
-        update();
+      const rect = img.getBoundingClientRect();
+      const isLeft = (e.clientX - rect.left) < rect.width / 2;
+      if (isRtl) {
+        if (isLeft) goNext(); else goPrev();
+      } else {
+        if (isLeft) goPrev(); else goNext();
       }
     });
   }
 
   if (prev) prev.addEventListener('click', () => {
-    if (page > 0) {
-      page -= 1;
-      update();
-    }
+    goPrev();
   });
   if (next) next.addEventListener('click', () => {
-    if (page < total - 1) {
-      page += 1;
-      update();
-    }
+    goNext();
   });
 
   if (pageInput) {
@@ -275,16 +304,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     if (e.key === 'ArrowLeft') {
-      if (page > 0) {
-        page -= 1;
-        update();
-      }
+      if (isRtl) goNext(); else goPrev();
     }
     if (e.key === 'ArrowRight') {
-      if (page < total - 1) {
-        page += 1;
-        update();
-      }
+      if (isRtl) goPrev(); else goNext();
     }
     if (e.key === 'Home') {
       e.preventDefault();
@@ -292,17 +315,11 @@ document.addEventListener('DOMContentLoaded', () => {
       update();
     }
     if (e.key === 'PageUp') {
-      if (page > 0) {
-        page -= 1;
-        update();
-      }
+      goPrev();
     }
     if (e.key === 'PageDown' || e.key === ' ') {
       e.preventDefault();
-      if (page < total - 1) {
-        page += 1;
-        update();
-      }
+      goNext();
     }
     if (e.key === 'End') {
       e.preventDefault();
@@ -398,11 +415,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (scrollMode || !wheelPaging) return;
       e.preventDefault();
       if (e.deltaY > 10 && page < total - 1) {
-        page += 1;
-        update();
+        goNext();
       } else if (e.deltaY < -10 && page > 0) {
-        page -= 1;
-        update();
+        goPrev();
       }
     }, { passive: false });
     readerEl.addEventListener('scroll', () => {
@@ -412,9 +427,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (newPage !== page) {
         page = newPage;
         scheduleSaveProgress();
+        markReadIfLast();
         if (info) info.textContent = `${page + 1} / ${total}`;
         if (pageInput) pageInput.value = String(page + 1);
         if (pageTotal) pageTotal.textContent = `/ ${total}`;
+        if (pageCompact) pageCompact.textContent = `${page + 1}/${total}`;
         if (progress) progress.style.width = `${Math.round(((page + 1) / total) * 100)}%`;
       }
       // update scroll-top overlay visibility while scrolling

@@ -37,6 +37,18 @@ final class CategoriesController extends Controller
         }
         $name = trim((string)($request->post['name'] ?? ''));
         $tagColor = trim((string)($request->post['tag_color'] ?? ''));
+        $displayOrientation = (string)($request->post['display_orientation'] ?? 'vertical');
+        $cbzDirection = (string)($request->post['cbz_direction'] ?? 'rtl');
+        $cbzMode = (string)($request->post['cbz_mode'] ?? 'page');
+        $epubMode = (string)($request->post['epub_mode'] ?? 'text');
+        $contentVideo = !empty($request->post['content_video']) ? 1 : 0;
+        $contentCbz = !empty($request->post['content_cbz']) ? 1 : 0;
+        $contentPdf = !empty($request->post['content_pdf']) ? 1 : 0;
+        $contentEpub = !empty($request->post['content_epub']) ? 1 : 0;
+        $contentDownload = !empty($request->post['content_download']) ? 1 : 0;
+        $sortOrder = (int)($request->post['sort_order'] ?? 0);
+        $requiresSubscription = !empty($request->post['requires_subscription']) ? 1 : 0;
+        $adultOnly = !empty($request->post['adult_only']) ? 1 : 0;
         if ($tagColor === '') {
             $tagColor = null;
         }
@@ -48,7 +60,23 @@ final class CategoriesController extends Controller
             Response::redirect(base_path('/admin/categories?error=banner'));
         }
         if (!Category::findByName($name)) {
-            Category::create($name, $bannerPath ?: null, $tagColor);
+            Category::create(
+                $name,
+                $bannerPath ?: null,
+                $tagColor,
+                $displayOrientation,
+                $cbzDirection,
+                $cbzMode,
+                $epubMode,
+                $contentVideo,
+                $contentCbz,
+                $contentPdf,
+                $contentEpub,
+                $contentDownload,
+                $sortOrder,
+                $requiresSubscription,
+                $adultOnly
+            );
         }
         $this->writeTagCss();
         Response::redirect(base_path('/admin/categories?created=1'));
@@ -62,6 +90,18 @@ final class CategoriesController extends Controller
         $id = (int)($request->post['id'] ?? 0);
         $name = trim((string)($request->post['name'] ?? ''));
         $tagColor = trim((string)($request->post['tag_color'] ?? ''));
+        $displayOrientation = (string)($request->post['display_orientation'] ?? 'vertical');
+        $cbzDirection = (string)($request->post['cbz_direction'] ?? 'rtl');
+        $cbzMode = (string)($request->post['cbz_mode'] ?? 'page');
+        $epubMode = (string)($request->post['epub_mode'] ?? 'text');
+        $contentVideo = !empty($request->post['content_video']) ? 1 : 0;
+        $contentCbz = !empty($request->post['content_cbz']) ? 1 : 0;
+        $contentPdf = !empty($request->post['content_pdf']) ? 1 : 0;
+        $contentEpub = !empty($request->post['content_epub']) ? 1 : 0;
+        $contentDownload = !empty($request->post['content_download']) ? 1 : 0;
+        $sortOrder = (int)($request->post['sort_order'] ?? 0);
+        $requiresSubscription = !empty($request->post['requires_subscription']) ? 1 : 0;
+        $adultOnly = !empty($request->post['adult_only']) ? 1 : 0;
         if ($tagColor === '') {
             $tagColor = null;
         }
@@ -70,6 +110,21 @@ final class CategoriesController extends Controller
         }
         Category::rename($id, $name);
         Category::updateTagColor($id, $tagColor);
+        Category::updatePreferences(
+            $id,
+            $displayOrientation,
+            $cbzDirection,
+            $cbzMode,
+            $epubMode,
+            $contentVideo,
+            $contentCbz,
+            $contentPdf,
+            $contentEpub,
+            $contentDownload,
+            $sortOrder,
+            $requiresSubscription,
+            $adultOnly
+        );
         $bannerPath = $this->handleBannerUpload($request, $id);
         if ($bannerPath === false) {
             Response::redirect(base_path('/admin/categories?error=banner'));

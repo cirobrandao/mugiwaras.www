@@ -24,6 +24,8 @@
 # Temporary files
 /tmp/
 /srv/
+/sql/dev_*.sql
+/sql/0*.sql
 
 # Environment overrides
 .env.local

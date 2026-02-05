@@ -22,7 +22,9 @@ final class Middleware
             if (!$user) {
                 Response::redirect(base_path('/'));
             }
-            if (in_array($user['role'], ['admin', 'superadmin', 'moderator', 'uploader'], true)) {
+            $isAdmin = in_array($user['role'], ['admin', 'superadmin'], true);
+            $isEquipe = ($user['role'] ?? '') === 'equipe';
+            if ($isAdmin || ($isEquipe && (!empty($user['uploader_agent']) || !empty($user['moderator_agent']) || !empty($user['support_agent'])))) {
                 return;
             }
             if (($user['access_tier'] ?? '') === 'restrito') {
@@ -34,7 +36,7 @@ final class Middleware
             if (!empty($user['subscription_expires_at'])) {
                 $expires = strtotime((string)$user['subscription_expires_at']);
                 if ($expires !== false && $expires < time()) {
-                    Response::redirect(base_path('/payments?expired=1'));
+                    Response::redirect(base_path('/loja?expired=1'));
                 }
             }
         };

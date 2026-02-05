@@ -10,7 +10,7 @@ final class News
 {
     public static function all(int $limit = 200): array
     {
-        $stmt = Database::connection()->prepare('SELECT * FROM news ORDER BY created_at DESC LIMIT :l');
+        $stmt = Database::connection()->prepare('SELECT n.*, nc.name AS category_name, nc.show_sidebar, nc.show_below_most_read FROM news n LEFT JOIN news_categories nc ON nc.id = n.category_id ORDER BY n.created_at DESC LIMIT :l');
         $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll();
@@ -24,6 +24,22 @@ final class News
         return $stmt->fetchAll();
     }
 
+    public static function latestPublishedSidebar(int $limit = 5): array
+    {
+        $stmt = Database::connection()->prepare("SELECT n.*, nc.name AS category_name FROM news n INNER JOIN news_categories nc ON nc.id = n.category_id WHERE n.is_published = 1 AND nc.show_sidebar = 1 AND (n.published_at IS NULL OR n.published_at <= NOW()) ORDER BY n.published_at DESC, n.created_at DESC LIMIT :l");
+        $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public static function latestPublishedBelowMostRead(int $limit = 5): array
+    {
+        $stmt = Database::connection()->prepare("SELECT n.*, nc.name AS category_name FROM news n INNER JOIN news_categories nc ON nc.id = n.category_id WHERE n.is_published = 1 AND nc.show_below_most_read = 1 AND (n.published_at IS NULL OR n.published_at <= NOW()) ORDER BY n.published_at DESC, n.created_at DESC LIMIT :l");
+        $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
     public static function find(int $id): ?array
     {
         $stmt = Database::connection()->prepare('SELECT * FROM news WHERE id = :id');
@@ -32,24 +48,26 @@ final class News
         return $row ?: null;
     }
 
-    public static function create(string $title, string $body, bool $published, ?string $publishedAt): void
+    public static function create(string $title, string $body, int $categoryId, bool $published, ?string $publishedAt): void
     {
-        $stmt = Database::connection()->prepare('INSERT INTO news (title, body, is_published, published_at, created_at) VALUES (:t,:b,:p,:pa,NOW())');
+        $stmt = Database::connection()->prepare('INSERT INTO news (title, body, category_id, is_published, published_at, created_at) VALUES (:t,:b,:c,:p,:pa,NOW())');
         $stmt->execute([
             't' => $title,
             'b' => $body,
+            'c' => $categoryId,
             'p' => $published ? 1 : 0,
             'pa' => $publishedAt,
         ]);
     }
 
-    public static function update(int $id, string $title, string $body, bool $published, ?string $publishedAt): void
+    public static function update(int $id, string $title, string $body, int $categoryId, bool $published, ?string $publishedAt): void
     {
-        $stmt = Database::connection()->prepare('UPDATE news SET title = :t, body = :b, is_published = :p, published_at = :pa, updated_at = NOW() WHERE id = :id');
+        $stmt = Database::connection()->prepare('UPDATE news SET title = :t, body = :b, category_id = :c, is_published = :p, published_at = :pa, updated_at = NOW() WHERE id = :id');
         $stmt->execute([
             'id' => $id,
             't' => $title,
             'b' => $body,
+            'c' => $categoryId,
             'p' => $published ? 1 : 0,
             'pa' => $publishedAt,
         ]);

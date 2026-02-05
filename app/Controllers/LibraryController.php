@@ -32,7 +32,19 @@ final class LibraryController extends Controller
             return;
         }
         $categories = Category::all();
-        $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && in_array($user['role'] ?? 'none', ['admin','superadmin','moderator'], true);
+        $isSubscriber = ($user['access_tier'] ?? '') === 'vitalicio';
+        if (!$isSubscriber && !empty($user['subscription_expires_at'])) {
+            $expires = strtotime((string)$user['subscription_expires_at']);
+            if ($expires !== false && $expires >= time()) {
+                $isSubscriber = true;
+            }
+        }
+        $isStaff = \App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user);
+        if (!($isSubscriber || $isStaff)) {
+            $categories = array_values(array_filter($categories, fn ($c) => empty($c['requires_subscription'])));
+        }
+        $categories = array_values(array_filter($categories, fn ($c) => !empty($c['content_cbz']) || !empty($c['content_pdf'])));
+        $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user));
 
         echo $this->view('libraries/index', [
             'categories' => $categories,
@@ -54,8 +66,34 @@ final class LibraryController extends Controller
         $q = $this->sanitizeSearchTerm((string)($request->get['q'] ?? ''));
         $seriesResults = [];
         if ($q !== '') {
-            $minChapters = in_array($user['role'], ['superadmin','admin','moderator'], true) ? 0 : 1;
+            $minChapters = (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user)) ? 0 : 1;
             $seriesResults = Series::searchByNameWithCounts($q, 60, $minChapters);
+            $categories = Category::all();
+            $categoryMap = [];
+            foreach ($categories as $c) {
+                $categoryMap[(int)$c['id']] = $c;
+            }
+            $isSubscriber = ($user['access_tier'] ?? '') === 'vitalicio';
+            if (!$isSubscriber && !empty($user['subscription_expires_at'])) {
+                $expires = strtotime((string)$user['subscription_expires_at']);
+                if ($expires !== false && $expires >= time()) {
+                    $isSubscriber = true;
+                }
+            }
+            $isStaff = \App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user);
+            $seriesResults = array_values(array_filter($seriesResults, function ($s) use ($categoryMap, $isSubscriber, $isStaff) {
+                $cid = (int)($s['category_id'] ?? 0);
+                $cat = $categoryMap[$cid] ?? null;
+                if (!$cat) {
+                    return false;
+                }
+                if (!($isSubscriber || $isStaff) && !empty($cat['requires_subscription'])) {
+                    return false;
+                }
+                $allowCbz = !empty($cat['content_cbz']);
+                $allowPdf = !empty($cat['content_pdf']);
+                return $allowCbz || $allowPdf;
+            }));
             SearchLog::create([
                 'uid' => (int)$user['id'],
                 'term' => $q,
@@ -83,6 +121,37 @@ final class LibraryController extends Controller
         return $term;
     }
 
+    private function subscriptionActive(array $user): bool
+    {
+        if (($user['access_tier'] ?? '') === 'vitalicio') {
+            return true;
+        }
+        if (!empty($user['subscription_expires_at'])) {
+            $expires = strtotime((string)$user['subscription_expires_at']);
+            if ($expires !== false && $expires >= time()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function allowedCategoryIds(array $user): array
+    {
+        if (($user['access_tier'] ?? '') === 'vitalicio') {
+            return [];
+        }
+        $payment = Payment::latestApprovedByUser((int)($user['id'] ?? 0));
+        if (!$payment) {
+            return [];
+        }
+        $packageId = (int)($payment['package_id'] ?? 0);
+        if ($packageId <= 0) {
+            return [];
+        }
+        $map = Package::categoriesMap([$packageId]);
+        return array_values(array_map('intval', $map[$packageId] ?? []));
+    }
+
     public function category(\App\Core\Request $request, string $category): void
     {
         $user = Auth::user();
@@ -101,20 +170,62 @@ final class LibraryController extends Controller
             echo $this->view('libraries/category', ['error' => 'Categoria não encontrada.']);
             return;
         }
+        $isSubscriber = ($user['access_tier'] ?? '') === 'vitalicio';
+        if (!$isSubscriber && !empty($user['subscription_expires_at'])) {
+            $expires = strtotime((string)$user['subscription_expires_at']);
+            if ($expires !== false && $expires >= time()) {
+                $isSubscriber = true;
+            }
+        }
+        $isStaff = \App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user);
+        if (!($isSubscriber || $isStaff) && !empty($cat['requires_subscription'])) {
+            Response::redirect(base_path('/loja'));
+        }
         $seriesAll = Series::byCategoryWithCountsAndTypes((int)$cat['id']);
-        if (!in_array($user['role'], ['superadmin','admin','moderator'], true)) {
+        $query = trim((string)($request->get['q'] ?? ''));
+        if ($query !== '') {
+            $seriesAll = array_values(array_filter($seriesAll, fn ($s) => mb_stripos((string)($s['name'] ?? ''), $query) !== false));
+        }
+        $allowCbz = !empty($cat['content_cbz']);
+        $allowPdf = !empty($cat['content_pdf']);
+        if (!$allowCbz || !$allowPdf) {
+            $seriesAll = array_values(array_map(static function ($s) use ($allowCbz, $allowPdf) {
+                if (!$allowCbz) {
+                    $s['cbz_count'] = 0;
+                }
+                if (!$allowPdf) {
+                    $s['pdf_count'] = 0;
+                }
+                $s['chapter_count'] = (int)($s['cbz_count'] ?? 0) + (int)($s['pdf_count'] ?? 0);
+                return $s;
+            }, $seriesAll));
+        }
+        if (!$isStaff) {
             $seriesAll = array_values(array_filter($seriesAll, fn ($s) => (int)($s['chapter_count'] ?? 0) > 0));
         }
+        usort($seriesAll, static function ($a, $b): int {
+            $pa = (int)($a['pin_order'] ?? 0);
+            $pb = (int)($b['pin_order'] ?? 0);
+            if ($pa === $pb) {
+                return strcasecmp((string)($a['name'] ?? ''), (string)($b['name'] ?? ''));
+            }
+            return $pb <=> $pa;
+        });
         $seriesIds = array_map(fn ($s) => (int)$s['id'], $seriesAll);
         $favoriteSeriesIds = UserSeriesFavorite::getIdsForUser((int)$user['id'], $seriesIds);
-        $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && in_array($user['role'] ?? 'none', ['admin','superadmin','moderator'], true);
+        $pendingCounts = $isStaff && !empty($seriesIds)
+            ? Upload::pendingCountsBySeries($seriesIds)
+            : [];
+        $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user));
 
         echo $this->view('libraries/category', [
             'category' => $cat,
             'series' => $seriesAll,
             'favoriteSeries' => $favoriteSeriesIds,
+            'pendingCounts' => $pendingCounts,
             'csrf' => Csrf::token(),
             'user' => $user,
+            'q' => $query,
             'iosTest' => $iosTest,
         ]);
     }
@@ -138,6 +249,17 @@ final class LibraryController extends Controller
             echo $this->view('libraries/series', ['error' => 'Categoria não encontrada.']);
             return;
         }
+        $isSubscriber = ($user['access_tier'] ?? '') === 'vitalicio';
+        if (!$isSubscriber && !empty($user['subscription_expires_at'])) {
+            $expires = strtotime((string)$user['subscription_expires_at']);
+            if ($expires !== false && $expires >= time()) {
+                $isSubscriber = true;
+            }
+        }
+        $isStaff = \App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user);
+        if (!($isSubscriber || $isStaff) && !empty($cat['requires_subscription'])) {
+            Response::redirect(base_path('/loja'));
+        }
         $ser = Series::findByName((int)$cat['id'], $seriesName);
         if (!$ser) {
             http_response_code(404);
@@ -150,10 +272,32 @@ final class LibraryController extends Controller
         if (!in_array($format, ['pdf', 'cbz'], true)) {
             $format = '';
         }
+        $allowCbz = !empty($cat['content_cbz']);
+        $allowPdf = !empty($cat['content_pdf']);
+        if ($format === 'pdf' && !$allowPdf) {
+            $format = '';
+        }
+        if ($format === 'cbz' && !$allowCbz) {
+            $format = '';
+        }
+        if ($format === '' && $allowCbz && !$allowPdf) {
+            $format = 'cbz';
+        }
+        if ($format === '' && !$allowCbz && $allowPdf) {
+            $format = 'pdf';
+        }
         $perPage = 40;
-        $total = $format !== '' ? ContentItem::countBySeriesAndFormat((int)$ser['id'], $format) : ContentItem::countBySeries((int)$ser['id']);
+        if (!$allowCbz && !$allowPdf) {
+            $total = 0;
+        } else {
+            $total = $format !== '' ? ContentItem::countBySeriesAndFormat((int)$ser['id'], $format) : ContentItem::countBySeries((int)$ser['id']);
+        }
         $offset = ($page - 1) * $perPage;
-        $items = $format !== '' ? ContentItem::bySeriesAndFormat((int)$ser['id'], $format, $perPage, $offset) : ContentItem::bySeries((int)$ser['id'], $perPage, $offset);
+        if (!$allowCbz && !$allowPdf) {
+            $items = [];
+        } else {
+            $items = $format !== '' ? ContentItem::bySeriesAndFormat((int)$ser['id'], $format, $perPage, $offset) : ContentItem::bySeries((int)$ser['id'], $perPage, $offset);
+        }
         $pending = Upload::pendingBySeries((int)$ser['id']);
 
         $contentIds = array_map(fn ($i) => (int)$i['id'], $items);
@@ -162,7 +306,7 @@ final class LibraryController extends Controller
         $progressMap = UserContentStatus::getProgressForUser((int)$user['id'], $contentIds);
         $ua = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
         $isIos = false;
-        $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && in_array($user['role'] ?? 'none', ['admin','superadmin','moderator'], true);
+        $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user));
         if ($iosTest) {
             $isIos = true;
         }
@@ -207,7 +351,7 @@ final class LibraryController extends Controller
             Response::redirect(base_path('/libraries'));
         }
         $user = Auth::user();
-        if (!$user || !in_array($user['role'], ['superadmin','admin','moderator'], true)) {
+        if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user))) {
             Response::redirect(base_path('/libraries'));
         }
         $id = (int)($request->post['id'] ?? 0);
@@ -220,13 +364,51 @@ final class LibraryController extends Controller
         Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
     }
 
+    public function updateContentOrder(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        $order = (int)($request->post['content_order'] ?? 0);
+        if ($id <= 0) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        ContentItem::updateOrder($id, $order);
+        Audit::log('content_order', (int)$user['id'], ['content_id' => $id, 'order' => $order]);
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
+    public function pinSeries(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        $pinOrder = (int)($request->post['pin_order'] ?? 0);
+        if ($id <= 0) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        Series::updatePinOrder($id, $pinOrder);
+        Audit::log('series_pin', (int)$user['id'], ['series_id' => $id, 'order' => $pinOrder]);
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
     public function deleteContent(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
             Response::redirect(base_path('/libraries'));
         }
         $user = Auth::user();
-        if (!$user || !in_array($user['role'], ['superadmin','admin','moderator'], true)) {
+        if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
             Response::redirect(base_path('/libraries'));
         }
         $id = (int)($request->post['id'] ?? 0);
@@ -325,7 +507,7 @@ final class LibraryController extends Controller
             Response::redirect(base_path('/libraries'));
         }
         $user = Auth::user();
-        if (!$user || !in_array($user['role'], ['superadmin','admin','moderator'], true)) {
+        if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
             Response::redirect(base_path('/libraries'));
         }
         $id = (int)($request->post['id'] ?? 0);
@@ -344,7 +526,7 @@ final class LibraryController extends Controller
             Response::redirect(base_path('/libraries'));
         }
         $user = Auth::user();
-        if (!$user || !in_array($user['role'], ['superadmin','admin','moderator'], true)) {
+        if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
             Response::redirect(base_path('/libraries'));
         }
         $id = (int)($request->post['id'] ?? 0);

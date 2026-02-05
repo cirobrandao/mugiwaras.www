@@ -3,6 +3,12 @@ use App\Core\View;
 // Controle: arquivo revisado para envio via Git em 2026-02-04
 ob_start();
 ?>
+<?php
+$categoryMap = [];
+foreach (($categories ?? []) as $c) {
+    $categoryMap[(int)$c['id']] = (string)$c['name'];
+}
+?>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h4 mb-0">Gerenciador de Arquivos enviados</h1>
     <?php if (!empty($total)): ?>
@@ -12,20 +18,71 @@ ob_start();
         </div>
     <?php endif; ?>
 </div>
+<form method="get" action="<?= base_path('/admin/uploads') ?>" class="row g-2 align-items-end mb-3">
+    <div class="col-sm-4 col-md-3">
+        <label class="form-label">Usuário (ID ou nome)</label>
+        <input class="form-control form-control-sm" type="text" name="user" value="<?= View::e((string)($filterUser ?? '')) ?>" placeholder="ex: 42 ou joao">
+    </div>
+    <div class="col-sm-4 col-md-3">
+        <label class="form-label">Categoria</label>
+        <select class="form-select form-select-sm" name="category">
+            <option value="0">Todas</option>
+            <?php foreach (($categories ?? []) as $c): ?>
+                <option value="<?= (int)$c['id'] ?>" <?= ((int)($filterCategory ?? 0) === (int)$c['id']) ? 'selected' : '' ?>>
+                    <?= View::e((string)$c['name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="col-sm-4 col-md-4">
+        <label class="form-label">Série</label>
+        <select class="form-select form-select-sm" name="series">
+            <option value="0">Todas</option>
+            <?php foreach (($seriesByCategory ?? []) as $catId => $seriesList): ?>
+                <?php $catLabel = $categoryMap[(int)$catId] ?? ('Categoria #' . (int)$catId); ?>
+                <optgroup label="<?= View::e($catLabel) ?>">
+                    <?php foreach ($seriesList as $s): ?>
+                        <option value="<?= (int)$s['id'] ?>" <?= ((int)($filterSeries ?? 0) === (int)$s['id']) ? 'selected' : '' ?>>
+                            <?= View::e((string)$s['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </optgroup>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="col-sm-4 col-md-2">
+        <label class="form-label">Status</label>
+        <select class="form-select form-select-sm" name="status">
+            <option value="">Todos</option>
+            <option value="pending" <?= ($filterStatus ?? '') === 'pending' ? 'selected' : '' ?>>Pendentes</option>
+            <option value="queued" <?= ($filterStatus ?? '') === 'queued' ? 'selected' : '' ?>>Na fila</option>
+            <option value="processing" <?= ($filterStatus ?? '') === 'processing' ? 'selected' : '' ?>>Processando</option>
+            <option value="done" <?= ($filterStatus ?? '') === 'done' ? 'selected' : '' ?>>Liberado</option>
+            <option value="failed" <?= ($filterStatus ?? '') === 'failed' ? 'selected' : '' ?>>Falhou</option>
+        </select>
+    </div>
+    <div class="col-sm-12 col-md-2 d-flex gap-2">
+        <input type="hidden" name="perPage" value="<?= (int)($perPage ?? 50) ?>">
+        <button class="btn btn-sm btn-primary" type="submit">Filtrar</button>
+        <a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/admin/uploads') ?>">Limpar</a>
+    </div>
+    <div class="col-sm-12 col-md-3 d-flex gap-2 justify-content-md-end"></div>
+</form>
 <div class="table-responsive">
-    <table class="table table-sm">
+    <table class="table table-sm" style="table-layout: fixed;">
         <thead>
         <tr>
-            <th></th>
-            <th>Arquivo</th>
-            <th>Origem</th>
-            <th>Destino</th>
-            <th>Data</th>
-            <th>Usuário</th>
-            <th class="text-end">Ações</th>
+            <th style="width: 40px;"></th>
+            <th style="width: 220px;">Arquivo</th>
+            <th style="width: 160px;">Categoria</th>
+            <th style="width: 200px;">Série</th>
+            <th style="width: 150px;">Data</th>
+            <th style="width: 140px;">Usuário</th>
+            <th class="text-end" style="width: 140px;">Ações</th>
         </tr>
         </thead>
         <tbody>
+        <?php $modals = []; ?>
         <?php foreach (($uploads ?? []) as $u): ?>
             <tr>
                 <td>
@@ -39,40 +96,194 @@ ob_start();
                     ?>
                     <i class="fa-solid <?= $icon ?> <?= $cls ?>" title="<?= View::e($st) ?>"></i>
                 </td>
-                <td><?= View::e($u['original_name']) ?></td>
-                <td><?= View::e((string)$u['source_path']) ?></td>
-                <td><?= View::e((string)$u['target_path']) ?></td>
+                <td class="text-truncate" style="max-width: 220px;">
+                    <?= View::e($u['original_name']) ?>
+                </td>
+                <td>
+                    <?php
+                    $catName = (string)($u['category_name'] ?? '');
+                    $catId = (int)($u['category_id'] ?? 0);
+                    $catLabel = $catName !== '' ? $catName : ($catId > 0 ? ('#' . $catId) : '—');
+                    ?>
+                    <?= View::e($catLabel) ?>
+                </td>
+                <td>
+                    <?php
+                    $seriesName = (string)($u['series_name'] ?? '');
+                    $seriesId = (int)($u['series_id'] ?? 0);
+                    $seriesLabel = $seriesName !== '' ? $seriesName : ($seriesId > 0 ? ('#' . $seriesId) : '—');
+                    ?>
+                    <?= View::e($seriesLabel) ?>
+                </td>
                 <td><?= View::e((string)$u['created_at']) ?></td>
                 <td><?= View::e($u['username_display'] ?? ('#' . (int)$u['user_id'])) ?></td>
                 <td class="text-end">
-                    <button class="btn btn-sm btn-outline-secondary me-1" type="button" title="Editar">
+                    <?php if (($u['status'] ?? '') === 'pending'): ?>
+                        <form method="post" action="<?= base_path('/admin/uploads/approve') ?>" class="d-inline">
+                            <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+                            <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+                            <button class="btn btn-sm btn-outline-success me-1" type="submit" title="Aprovar">
+                                <i class="fa-solid fa-check"></i>
+                                <span class="visually-hidden">Aprovar</span>
+                            </button>
+                        </form>
+                    <?php endif; ?>
+                    <button class="btn btn-sm btn-outline-secondary me-1" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#editUploadModal<?= (int)$u['id'] ?>">
                         <i class="fa-solid fa-pen-to-square"></i>
                         <span class="visually-hidden">Editar</span>
                     </button>
-                    <form method="post" action="<?= base_path('/admin/uploads/delete') ?>" class="d-inline">
-                        <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-                        <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
-                        <button class="btn btn-sm btn-outline-danger" type="submit" title="Excluir">
-                            <i class="fa-solid fa-trash"></i>
-                            <span class="visually-hidden">Excluir</span>
-                        </button>
-                    </form>
+                    <button class="btn btn-sm btn-outline-danger" type="button" title="Excluir" data-bs-toggle="modal" data-bs-target="#deleteUploadModal<?= (int)$u['id'] ?>">
+                        <i class="fa-solid fa-trash"></i>
+                        <span class="visually-hidden">Excluir</span>
+                    </button>
                 </td>
             </tr>
+            <?php
+            ob_start();
+            ?>
+            <div class="modal fade" id="editUploadModal<?= (int)$u['id'] ?>" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Editar categoria/série</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <form method="post" action="<?= base_path('/admin/uploads/update') ?>">
+                            <div class="modal-body">
+                                <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+                                <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+                                <input type="hidden" name="page" value="<?= (int)($page ?? 1) ?>">
+                                <input type="hidden" name="perPage" value="<?= (int)($perPage ?? 50) ?>">
+                                <input type="hidden" name="user" value="<?= View::e((string)($filterUser ?? '')) ?>">
+                                <input type="hidden" name="category" value="<?= (int)($filterCategory ?? 0) ?>">
+                                <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
+                                <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Categoria</label>
+                                        <select class="form-select" name="category_id">
+                                            <option value="0">Sem categoria</option>
+                                            <?php foreach (($categories ?? []) as $c): ?>
+                                                <option value="<?= (int)$c['id'] ?>" <?= ((int)($u['category_id'] ?? 0) === (int)$c['id']) ? 'selected' : '' ?>>
+                                                    <?= View::e((string)$c['name']) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label class="form-label">Série</label>
+                                        <select class="form-select" name="series_id">
+                                            <option value="0">Sem série</option>
+                                            <?php foreach (($seriesByCategory ?? []) as $catId => $seriesList): ?>
+                                                <?php $catLabel = $categoryMap[(int)$catId] ?? ('Categoria #' . (int)$catId); ?>
+                                                <optgroup label="<?= View::e($catLabel) ?>">
+                                                    <?php foreach ($seriesList as $s): ?>
+                                                        <option value="<?= (int)$s['id'] ?>" <?= ((int)($u['series_id'] ?? 0) === (int)$s['id']) ? 'selected' : '' ?>>
+                                                            <?= View::e((string)$s['name']) ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </optgroup>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Salvar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="deleteUploadModal<?= (int)$u['id'] ?>" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Confirmar exclusão</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-2">Tem certeza que deseja excluir este arquivo?</p>
+                            <div class="small text-muted">
+                                <strong>Arquivo:</strong> <?= View::e((string)($u['original_name'] ?? '')) ?>
+                                <span class="ms-2">#<?= (int)$u['id'] ?></span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <form method="post" action="<?= base_path('/admin/uploads/delete') ?>">
+                                <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+                                <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+                                <input type="hidden" name="confirm" value="1">
+                                <button class="btn btn-danger" type="submit">Excluir</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php
+            $modals[] = ob_get_clean();
+            ?>
         <?php endforeach; ?>
         </tbody>
     </table>
 </div>
+<?php if (!empty($modals)): ?>
+    <?php foreach ($modals as $m): ?>
+        <?= $m ?>
+    <?php endforeach; ?>
+<?php endif; ?>
 <?php if (!empty($total)): ?>
-    <?php $pages = (int)ceil($total / ($perPage ?? 20)); ?>
+    <?php
+    $pages = (int)ceil($total / ($perPage ?? 50));
+    $curr = (int)($page ?? 1);
+    $curr = $curr < 1 ? 1 : $curr;
+    $start = max(1, $curr - 2);
+    $end = min($pages, $curr + 2);
+    $base = '/admin/uploads?perPage=' . (int)($perPage ?? 50)
+        . '&user=' . urlencode((string)($filterUser ?? ''))
+        . '&category=' . (int)($filterCategory ?? 0)
+        . '&series=' . (int)($filterSeries ?? 0)
+        . '&status=' . urlencode((string)($filterStatus ?? ''))
+        . '&page=';
+    ?>
     <nav aria-label="pag" class="mb-3">
-        <ul class="pagination pagination-sm mb-0">
-            <?php for ($p = 1; $p <= $pages; $p++): ?>
-                <li class="page-item <?= ($p === ($page ?? 1)) ? 'active' : '' ?>"><a class="page-link" href="<?= base_path('/admin/uploads?page=' . $p) ?>"><?= $p ?></a></li>
+        <ul class="pagination pagination-sm mb-0 justify-content-end">
+            <li class="page-item <?= $curr <= 1 ? 'disabled' : '' ?>">
+                <a class="page-link" href="<?= base_path($base . '1') ?>" aria-label="Primeira">«</a>
+            </li>
+            <li class="page-item <?= $curr <= 1 ? 'disabled' : '' ?>">
+                <a class="page-link" href="<?= base_path($base . ($curr - 1)) ?>" aria-label="Anterior">‹</a>
+            </li>
+            <?php if ($start > 1): ?>
+                <li class="page-item"><a class="page-link" href="<?= base_path($base . '1') ?>">1</a></li>
+                <?php if ($start > 2): ?>
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                <?php endif; ?>
+            <?php endif; ?>
+            <?php for ($p = $start; $p <= $end; $p++): ?>
+                <li class="page-item <?= ($p === $curr) ? 'active' : '' ?>"><a class="page-link" href="<?= base_path($base . $p) ?>"><?= $p ?></a></li>
             <?php endfor; ?>
+            <?php if ($end < $pages): ?>
+                <?php if ($end < $pages - 1): ?>
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                <?php endif; ?>
+                <li class="page-item"><a class="page-link" href="<?= base_path($base . $pages) ?>"><?= $pages ?></a></li>
+            <?php endif; ?>
+            <li class="page-item <?= $curr >= $pages ? 'disabled' : '' ?>">
+                <a class="page-link" href="<?= base_path($base . ($curr + 1)) ?>" aria-label="Próxima">›</a>
+            </li>
+            <li class="page-item <?= $curr >= $pages ? 'disabled' : '' ?>">
+                <a class="page-link" href="<?= base_path($base . $pages) ?>" aria-label="Última">»</a>
+            </li>
         </ul>
     </nav>
 <?php endif; ?>
+<script>
+    (function () {
+    })();
+</script>
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../layout.php';

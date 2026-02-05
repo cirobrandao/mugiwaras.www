@@ -91,7 +91,7 @@ $baseQueryString = empty($baseQuery) ? '' : '?' . implode('&', $baseQuery);
                                 <i class="fa-solid <?= $isRead ? 'fa-eye-slash' : 'fa-eye' ?>"></i>
                             </button>
                         </form>
-                        <?php if (!empty($user) && in_array($user['role'] ?? 'none', ['superadmin','admin','moderator'], true)): ?>
+                        <?php if (!empty($user) && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))): ?>
                             <details>
                                 <summary class="btn btn-sm btn-outline-secondary" title="Editar"><i class="fa-solid fa-pen-to-square"></i></summary>
                                 <form method="post" action="<?= base_path('/libraries/content/update') ?>" class="mt-2">
@@ -101,11 +101,37 @@ $baseQueryString = empty($baseQuery) ? '' : '?' . implode('&', $baseQuery);
                                     <button class="btn btn-sm btn-primary" type="submit">Salvar</button>
                                 </form>
                             </details>
-                            <form method="post" action="<?= base_path('/libraries/content/delete') ?>" onsubmit="return confirm('Excluir arquivo?');">
+                            <form method="post" action="<?= base_path('/libraries/content/order') ?>" class="d-flex align-items-center gap-1">
                                 <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                                 <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
-                                <button class="btn btn-sm btn-outline-danger" type="submit" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                                <input class="form-control form-control-sm" type="number" name="content_order" value="<?= (int)($item['content_order'] ?? 0) ?>" style="width: 80px;" min="0">
+                                <button class="btn btn-sm btn-outline-primary" type="submit">Ordem</button>
                             </form>
+                            <?php $deleteModalId = 'delete-content-' . (int)$item['id']; ?>
+                            <button class="btn btn-sm btn-outline-danger" type="button" title="Excluir" data-bs-toggle="modal" data-bs-target="#<?= $deleteModalId ?>">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <div class="modal fade" id="<?= $deleteModalId ?>" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Excluir conteúdo</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Tem certeza que deseja excluir o conteúdo <strong><?= View::e((string)$item['title']) ?></strong>?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <form method="post" action="<?= base_path('/libraries/content/delete') ?>" class="m-0">
+                                                <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                                                <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
+                                                <button class="btn btn-danger" type="submit">Confirmar exclusão</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>

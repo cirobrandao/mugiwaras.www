@@ -40,7 +40,7 @@ final class UploadController extends Controller
         $perPage = 10;
         $totalUploads = Upload::countByUser((int)$user['id']);
         $totalSize = Upload::totalSizeByUser((int)$user['id']);
-        $pendingCount = Upload::countByUserStatus((int)$user['id'], 'queued');
+        $pendingCount = Upload::countByUserStatus((int)$user['id'], 'pending');
         $pages = (int)ceil($totalUploads / $perPage);
         $offset = ($page - 1) * $perPage;
         $uploads = Upload::byUserPaged((int)$user['id'], $perPage, $offset);
@@ -62,6 +62,14 @@ final class UploadController extends Controller
     {
         $isAjax = (($request->server['HTTP_X_REQUESTED_WITH'] ?? '') === 'XMLHttpRequest')
             || str_contains(strtolower((string)($request->server['HTTP_ACCEPT'] ?? '')), 'application/json');
+        $user = Auth::user();
+        if (!$user) {
+            if ($isAjax) {
+                Response::json(['error' => 'auth'], 401);
+            }
+            Response::redirect(base_path('/'));
+        }
+        $requiresApproval = !(Auth::isAdmin($user) || Auth::isModerator($user));
         $maxBytes = 5 * 1024 * 1024 * 1024;
         $maxFiles = 20;
         if (!Category::isReady()) {
@@ -199,6 +207,24 @@ final class UploadController extends Controller
             $finalExt = $ext === 'pdf' ? 'pdf' : 'cbz';
             $finalRelPath = $baseName . '_' . bin2hex(random_bytes(4)) . '.' . $finalExt;
             $finalPath = rtrim($libraryRoot, '/') . '/' . $finalRelPath;
+
+            if ($requiresApproval) {
+                Upload::create([
+                    'u' => $_SESSION['user_id'] ?? null,
+                    'c' => (int)$cat['id'],
+                    's' => (int)$ser['id'],
+                    'o' => $original,
+                    'ttl' => $baseName,
+                    'sp' => 'incoming/' . $safeName,
+                    'tp' => $finalRelPath,
+                    'st' => 'pending',
+                    'j' => null,
+                    'fs' => $size,
+                ]);
+                Audit::log('upload_pending', $_SESSION['user_id'] ?? null, ['file' => $safeName]);
+                $queued++;
+                continue;
+            }
 
             if ($ext === 'pdf') {
                 if (!rename($targetPath, $finalPath)) {

@@ -15,6 +15,7 @@ ob_start();
         <tr>
             <th>ID</th>
             <th>Pacote</th>
+            <th>Meses</th>
             <th>Status</th>
             <th>Comprovante</th>
             <th>Data</th>
@@ -25,12 +26,13 @@ ob_start();
             <tr>
                 <td><?= (int)$p['id'] ?></td>
                 <td><?= (int)$p['package_id'] ?></td>
+                <td><?= (int)($p['months'] ?? 1) ?></td>
                 <td><?= View::e($p['status']) ?></td>
                 <td>
                     <?php if (!empty($p['proof_path'])): ?>
                         <span class="text-success">Enviado</span>
                     <?php elseif ($p['status'] === 'pending'): ?>
-                        <form method="post" action="<?= base_path('/payments/proof') ?>" enctype="multipart/form-data" class="proofForm">
+                        <form method="post" action="<?= base_path('/loja/proof') ?>" enctype="multipart/form-data" class="proofForm">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                             <input type="hidden" name="payment_id" value="<?= (int)$p['id'] ?>">
                             <input type="file" name="proof" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.pdf" required>

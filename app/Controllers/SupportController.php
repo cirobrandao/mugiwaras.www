@@ -19,7 +19,7 @@ final class SupportController extends Controller
     public function form(): void
     {
         $user = Auth::user();
-        if ($user && in_array($user['role'], ['admin','superadmin','moderator'], true)) {
+        if (Auth::isSupportStaff($user)) {
             Response::redirect(base_path('/admin/support'));
         }
 
@@ -54,7 +54,7 @@ final class SupportController extends Controller
     public function show(Request $request, string $id): void
     {
         $user = Auth::user();
-        if (!$user || !in_array($user['role'], ['none','uploader'], true)) {
+        if (!$user || Auth::isSupportStaff($user)) {
             Response::redirect(base_path('/support'));
         }
         $ticket = SupportMessage::find((int)$id);
@@ -178,7 +178,7 @@ final class SupportController extends Controller
             Response::redirect(base_path('/support/' . (int)$id));
         }
         $user = Auth::user();
-        if (!$user || !in_array($user['role'], ['none','uploader'], true)) {
+        if (!$user || Auth::isSupportStaff($user)) {
             Response::redirect(base_path('/support'));
         }
         $ticket = SupportMessage::find((int)$id);

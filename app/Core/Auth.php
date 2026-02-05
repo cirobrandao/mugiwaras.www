@@ -10,6 +10,45 @@ use App\Models\UserBlocklist;
 
 final class Auth
 {
+    public static function isSuperadmin(?array $user): bool
+    {
+        return !empty($user) && ($user['role'] ?? '') === 'superadmin';
+    }
+
+    public static function isAdmin(?array $user): bool
+    {
+        return !empty($user) && in_array($user['role'] ?? '', ['admin', 'superadmin'], true);
+    }
+
+    public static function isEquipe(?array $user): bool
+    {
+        return !empty($user) && ($user['role'] ?? '') === 'equipe';
+    }
+
+    public static function isModerator(?array $user): bool
+    {
+        return self::isEquipe($user) && !empty($user['moderator_agent']);
+    }
+
+    public static function isUploader(?array $user): bool
+    {
+        return self::isEquipe($user) && !empty($user['uploader_agent']);
+    }
+
+    public static function isSupportAgent(?array $user): bool
+    {
+        return !empty($user) && !empty($user['support_agent']);
+    }
+
+    public static function canUpload(?array $user): bool
+    {
+        return self::isAdmin($user) || self::isModerator($user) || self::isUploader($user);
+    }
+
+    public static function isSupportStaff(?array $user): bool
+    {
+        return self::isAdmin($user) || self::isSupportAgent($user);
+    }
     public static function user(): ?array
     {
         if (isset($_SESSION['user_id'])) {
@@ -89,6 +128,46 @@ final class Auth
         return function (Request $request) use ($roles): void {
             $user = self::user();
             if (!$user || !in_array($user['role'], $roles, true)) {
+                Response::redirect(base_path('/'));
+            }
+        };
+    }
+
+    public static function requireAdmin(): callable
+    {
+        return function (Request $request): void {
+            $user = self::user();
+            if (!self::isAdmin($user)) {
+                Response::redirect(base_path('/'));
+            }
+        };
+    }
+
+    public static function requireTeamAccess(): callable
+    {
+        return function (Request $request): void {
+            $user = self::user();
+            if (!self::isAdmin($user) && !self::isModerator($user)) {
+                Response::redirect(base_path('/'));
+            }
+        };
+    }
+
+    public static function requireUploadAccess(): callable
+    {
+        return function (Request $request): void {
+            $user = self::user();
+            if (!self::canUpload($user)) {
+                Response::redirect(base_path('/'));
+            }
+        };
+    }
+
+    public static function requireSupportStaff(): callable
+    {
+        return function (Request $request): void {
+            $user = self::user();
+            if (!self::isSupportStaff($user)) {
                 Response::redirect(base_path('/'));
             }
         };

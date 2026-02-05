@@ -3,7 +3,10 @@ use App\Core\View;
 ob_start();
 ?>
 <?php if (!empty($error)): ?>
-	<div class="alert alert-warning"><?= View::e($error) ?></div>
+	<div class="alert alert-warning d-flex flex-column gap-2">
+		<span><?= View::e($error) ?></span>
+		<a class="btn btn-sm btn-primary align-self-start" href="<?= base_path('/loja') ?>">Compre o seu acesso.</a>
+	</div>
 <?php endif; ?>
 <?php if (!empty($title)): ?>
 	<div class="reader-header">

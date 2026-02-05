@@ -20,7 +20,7 @@ final class Category
 
     public static function all(): array
     {
-        $stmt = Database::connection()->query('SELECT * FROM categories ORDER BY name ASC');
+        $stmt = Database::connection()->query('SELECT * FROM categories ORDER BY sort_order ASC, name ASC');
         return $stmt->fetchAll();
     }
 
@@ -40,10 +40,42 @@ final class Category
         return $row ?: null;
     }
 
-    public static function create(string $name, ?string $bannerPath = null, ?string $tagColor = null): int
+    public static function create(
+        string $name,
+        ?string $bannerPath = null,
+        ?string $tagColor = null,
+        string $displayOrientation = 'vertical',
+        string $cbzDirection = 'rtl',
+        string $cbzMode = 'page',
+        string $epubMode = 'text',
+        int $contentVideo = 0,
+        int $contentCbz = 1,
+        int $contentPdf = 1,
+        int $contentEpub = 0,
+        int $contentDownload = 0,
+        int $sortOrder = 0,
+        int $requiresSubscription = 0,
+        int $adultOnly = 0
+    ): int
     {
-        $stmt = Database::connection()->prepare('INSERT INTO categories (name, banner_path, tag_color, created_at) VALUES (:n, :b, :t, NOW())');
-        $stmt->execute(['n' => $name, 'b' => $bannerPath, 't' => $tagColor]);
+        $stmt = Database::connection()->prepare('INSERT INTO categories (name, banner_path, tag_color, display_orientation, cbz_direction, cbz_mode, epub_mode, content_video, content_cbz, content_pdf, content_epub, content_download, sort_order, requires_subscription, adult_only, created_at) VALUES (:n, :b, :t, :o, :d, :m, :e, :v, :cbz, :pdf, :epub, :dl, :so, :rs, :ao, NOW())');
+        $stmt->execute([
+            'n' => $name,
+            'b' => $bannerPath,
+            't' => $tagColor,
+            'o' => $displayOrientation,
+            'd' => $cbzDirection,
+            'm' => $cbzMode,
+            'e' => $epubMode,
+            'v' => $contentVideo,
+            'cbz' => $contentCbz,
+            'pdf' => $contentPdf,
+            'epub' => $contentEpub,
+            'dl' => $contentDownload,
+            'so' => $sortOrder,
+            'rs' => $requiresSubscription,
+            'ao' => $adultOnly,
+        ]);
         return (int)Database::connection()->lastInsertId();
     }
 
@@ -63,6 +95,40 @@ final class Category
     {
         $stmt = Database::connection()->prepare('UPDATE categories SET tag_color = :t WHERE id = :id');
         $stmt->execute(['t' => $tagColor, 'id' => $id]);
+    }
+
+    public static function updatePreferences(
+        int $id,
+        string $displayOrientation,
+        string $cbzDirection,
+        string $cbzMode,
+        string $epubMode,
+        int $contentVideo,
+        int $contentCbz,
+        int $contentPdf,
+        int $contentEpub,
+        int $contentDownload,
+        int $sortOrder,
+        int $requiresSubscription,
+        int $adultOnly
+    ): void
+    {
+        $stmt = Database::connection()->prepare('UPDATE categories SET display_orientation = :o, cbz_direction = :d, cbz_mode = :m, epub_mode = :e, content_video = :v, content_cbz = :cbz, content_pdf = :pdf, content_epub = :epub, content_download = :dl, sort_order = :so, requires_subscription = :rs, adult_only = :ao WHERE id = :id');
+        $stmt->execute([
+            'o' => $displayOrientation,
+            'd' => $cbzDirection,
+            'm' => $cbzMode,
+            'e' => $epubMode,
+            'v' => $contentVideo,
+            'cbz' => $contentCbz,
+            'pdf' => $contentPdf,
+            'epub' => $contentEpub,
+            'dl' => $contentDownload,
+            'so' => $sortOrder,
+            'rs' => $requiresSubscription,
+            'ao' => $adultOnly,
+            'id' => $id,
+        ]);
     }
 
     public static function delete(int $id): void

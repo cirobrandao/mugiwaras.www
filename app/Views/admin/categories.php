@@ -2,7 +2,10 @@
 use App\Core\View;
 ob_start();
 ?>
-<h1 class="h4 mb-3">Categorias</h1>
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h4 mb-0">Categorias</h1>
+    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#categoryCreateModal">Adicionar</button>
+</div>
 
 <?php if (!empty($_GET['created'])): ?>
     <div class="alert alert-success">Categoria criada.</div>
@@ -23,24 +26,103 @@ ob_start();
     <div class="alert alert-danger">Biblioteca não inicializada. Execute a migração 009_library_series.sql.</div>
 <?php endif; ?>
 
-<div class="card mb-3">
-    <div class="card-body">
-        <form method="post" action="<?= base_path('/admin/categories/create') ?>" enctype="multipart/form-data">
-            <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-            <div class="mb-2">
-                <label class="form-label">Nome</label>
-                <input class="form-control" type="text" name="name" required>
+<div class="modal fade" id="categoryCreateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adicionar categoria</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
-            <div class="mb-2">
-                <label class="form-label">Cor da TAG</label>
-                <input class="form-control form-control-color" type="color" name="tag_color" value="#6c757d" title="Escolher cor">
+            <div class="modal-body">
+                <form method="post" action="<?= base_path('/admin/categories/create') ?>" enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+                    <div class="mb-2">
+                        <label class="form-label">Nome</label>
+                        <input class="form-control" type="text" name="name" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Ordem</label>
+                        <input class="form-control" type="number" name="sort_order" value="0" min="0">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-check">
+                            <input class="form-check-input" type="checkbox" name="requires_subscription" value="1">
+                            <span class="form-check-label">Ocultar para não assinantes</span>
+                        </label>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-check">
+                            <input class="form-check-input" type="checkbox" name="adult_only" value="1">
+                            <span class="form-check-label">Categoria 18+</span>
+                        </label>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Exibição na biblioteca</label>
+                            <select class="form-select" name="display_orientation">
+                                <option value="vertical" selected>Lista</option>
+                                <option value="horizontal">Grade</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">CBZ: direção</label>
+                            <select class="form-select" name="cbz_direction">
+                                <option value="rtl" selected>Trás pra frente (mangá)</option>
+                                <option value="ltr">Frente pra trás</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">CBZ: modo</label>
+                            <select class="form-select" name="cbz_mode">
+                                <option value="page" selected>Página</option>
+                                <option value="scroll">Scroll</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">ePub: tipo</label>
+                        <select class="form-select" name="epub_mode">
+                            <option value="text" selected>Texto</option>
+                            <option value="comic">Quadrinhos</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Tipos de conteúdo</label>
+                        <div class="d-flex flex-wrap gap-3">
+                            <label class="form-check">
+                                <input class="form-check-input" type="checkbox" name="content_video" value="1">
+                                <span class="form-check-label">Vídeo</span>
+                            </label>
+                            <label class="form-check">
+                                <input class="form-check-input" type="checkbox" name="content_cbz" value="1" checked>
+                                <span class="form-check-label">CBZ</span>
+                            </label>
+                            <label class="form-check">
+                                <input class="form-check-input" type="checkbox" name="content_pdf" value="1" checked>
+                                <span class="form-check-label">PDF</span>
+                            </label>
+                            <label class="form-check">
+                                <input class="form-check-input" type="checkbox" name="content_epub" value="1">
+                                <span class="form-check-label">ePub</span>
+                            </label>
+                            <label class="form-check">
+                                <input class="form-check-input" type="checkbox" name="content_download" value="1">
+                                <span class="form-check-label">Download</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Cor da TAG</label>
+                        <input class="form-control form-control-color" type="color" name="tag_color" value="#6c757d" title="Escolher cor">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Banner</label>
+                        <input class="form-control" type="file" name="banner" accept="image/*">
+                    </div>
+                    <button class="btn btn-primary" type="submit">Criar</button>
+                </form>
             </div>
-            <div class="mb-2">
-                <label class="form-label">Banner</label>
-                <input class="form-control" type="file" name="banner" accept="image/*">
-            </div>
-            <button class="btn btn-primary" type="submit">Criar</button>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -51,6 +133,11 @@ ob_start();
         <tr>
             <th>Banner</th>
             <th>Nome</th>
+            <th>Ordem</th>
+            <th>Padrões</th>
+            <th>Tipos</th>
+            <th>Assinantes</th>
+            <th>18+</th>
             <th class="text-end">Ações</th>
         </tr>
         </thead>
@@ -70,42 +157,178 @@ ob_start();
                         <span class="badge ms-2" style="background: <?= View::e((string)$c['tag_color']) ?>;">TAG</span>
                     <?php endif; ?>
                 </td>
+                <td><?= (int)($c['sort_order'] ?? 0) ?></td>
+                <td class="small text-muted">
+                    <?= (($c['display_orientation'] ?? 'vertical') === 'horizontal') ? 'Grade' : 'Lista' ?> ·
+                    <?= View::e((string)($c['cbz_direction'] ?? 'rtl')) ?> ·
+                    <?= View::e((string)($c['cbz_mode'] ?? 'page')) ?> ·
+                    <?= View::e((string)($c['epub_mode'] ?? 'text')) ?>
+                </td>
+                <td class="small">
+                    <?php if (!empty($c['content_video'])): ?><span class="badge bg-secondary me-1">Vídeo</span><?php endif; ?>
+                    <?php if (!empty($c['content_cbz'])): ?><span class="badge bg-primary me-1">CBZ</span><?php endif; ?>
+                    <?php if (!empty($c['content_pdf'])): ?><span class="badge bg-warning text-dark me-1">PDF</span><?php endif; ?>
+                    <?php if (!empty($c['content_epub'])): ?><span class="badge bg-info text-dark me-1">ePub</span><?php endif; ?>
+                    <?php if (!empty($c['content_download'])): ?><span class="badge bg-dark me-1">Download</span><?php endif; ?>
+                </td>
+                <td class="small">
+                    <?php if (!empty($c['requires_subscription'])): ?>
+                        <span class="badge bg-success">Somente assinantes</span>
+                    <?php else: ?>
+                        <span class="text-muted">Livre</span>
+                    <?php endif; ?>
+                </td>
+                <td class="small">
+                    <?php if (!empty($c['adult_only'])): ?>
+                        <span class="badge bg-danger">18+</span>
+                    <?php else: ?>
+                        <span class="text-muted">-</span>
+                    <?php endif; ?>
+                </td>
                 <td class="text-end">
-                    <form method="post" action="<?= base_path('/admin/categories/delete') ?>" class="d-inline">
-                        <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-                        <input type="hidden" name="id" value="<?= (int)$c['id'] ?>">
-                        <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
-                    </form>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#editCategory<?= (int)$c['id'] ?>">Editar</button>
+                    <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteCategory<?= (int)$c['id'] ?>">Excluir</button>
                 </td>
             </tr>
-            <tr>
-                <td colspan="3">
-                    <details>
-                        <summary class="mb-2">Editar</summary>
+            <?php
+            ob_start();
+            ?>
+            <div class="modal fade" id="editCategory<?= (int)$c['id'] ?>" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Editar categoria</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
                         <form method="post" action="<?= base_path('/admin/categories/update') ?>" enctype="multipart/form-data">
-                            <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-                            <input type="hidden" name="id" value="<?= (int)$c['id'] ?>">
-                            <div class="mb-2">
-                                <label class="form-label">Nome</label>
-                                <input class="form-control" type="text" name="name" value="<?= View::e((string)$c['name']) ?>" required>
+                            <div class="modal-body">
+                                <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+                                <input type="hidden" name="id" value="<?= (int)$c['id'] ?>">
+                                <div class="mb-2">
+                                    <label class="form-label">Nome</label>
+                                    <input class="form-control" type="text" name="name" value="<?= View::e((string)$c['name']) ?>" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Ordem</label>
+                                    <input class="form-control" type="number" name="sort_order" value="<?= (int)($c['sort_order'] ?? 0) ?>" min="0">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="requires_subscription" value="1" <?= !empty($c['requires_subscription']) ? 'checked' : '' ?>>
+                                        <span class="form-check-label">Ocultar para não assinantes</span>
+                                    </label>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="adult_only" value="1" <?= !empty($c['adult_only']) ? 'checked' : '' ?>>
+                                        <span class="form-check-label">Categoria 18+</span>
+                                    </label>
+                                </div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Exibição na biblioteca</label>
+                                        <select class="form-select" name="display_orientation">
+                                            <option value="vertical" <?= (($c['display_orientation'] ?? 'vertical') === 'vertical') ? 'selected' : '' ?>>Lista</option>
+                                            <option value="horizontal" <?= (($c['display_orientation'] ?? '') === 'horizontal') ? 'selected' : '' ?>>Grade</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">CBZ: direção</label>
+                                        <select class="form-select" name="cbz_direction">
+                                            <option value="rtl" <?= (($c['cbz_direction'] ?? 'rtl') === 'rtl') ? 'selected' : '' ?>>Trás pra frente (mangá)</option>
+                                            <option value="ltr" <?= (($c['cbz_direction'] ?? '') === 'ltr') ? 'selected' : '' ?>>Frente pra trás</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">CBZ: modo</label>
+                                        <select class="form-select" name="cbz_mode">
+                                            <option value="page" <?= (($c['cbz_mode'] ?? 'page') === 'page') ? 'selected' : '' ?>>Página</option>
+                                            <option value="scroll" <?= (($c['cbz_mode'] ?? '') === 'scroll') ? 'selected' : '' ?>>Scroll</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">ePub: tipo</label>
+                                    <select class="form-select" name="epub_mode">
+                                        <option value="text" <?= (($c['epub_mode'] ?? 'text') === 'text') ? 'selected' : '' ?>>Texto</option>
+                                        <option value="comic" <?= (($c['epub_mode'] ?? '') === 'comic') ? 'selected' : '' ?>>Quadrinhos</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Tipos de conteúdo</label>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="content_video" value="1" <?= !empty($c['content_video']) ? 'checked' : '' ?>>
+                                            <span class="form-check-label">Vídeo</span>
+                                        </label>
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="content_cbz" value="1" <?= !empty($c['content_cbz']) ? 'checked' : '' ?>>
+                                            <span class="form-check-label">CBZ</span>
+                                        </label>
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="content_pdf" value="1" <?= !empty($c['content_pdf']) ? 'checked' : '' ?>>
+                                            <span class="form-check-label">PDF</span>
+                                        </label>
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="content_epub" value="1" <?= !empty($c['content_epub']) ? 'checked' : '' ?>>
+                                            <span class="form-check-label">ePub</span>
+                                        </label>
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="content_download" value="1" <?= !empty($c['content_download']) ? 'checked' : '' ?>>
+                                            <span class="form-check-label">Download</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Cor da TAG</label>
+                                    <input class="form-control form-control-color" type="color" name="tag_color" value="<?= View::e((string)($c['tag_color'] ?? '#6c757d')) ?>" title="Escolher cor">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Banner</label>
+                                    <input class="form-control" type="file" name="banner" accept="image/*">
+                                </div>
                             </div>
-                            <div class="mb-2">
-                                <label class="form-label">Cor da TAG</label>
-                                <input class="form-control form-control-color" type="color" name="tag_color" value="<?= View::e((string)($c['tag_color'] ?? '#6c757d')) ?>" title="Escolher cor">
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button class="btn btn-primary" type="submit">Salvar</button>
                             </div>
-                            <div class="mb-2">
-                                <label class="form-label">Banner</label>
-                                <input class="form-control" type="file" name="banner" accept="image/*">
-                            </div>
-                            <button class="btn btn-sm btn-primary" type="submit">Salvar</button>
                         </form>
-                    </details>
-                </td>
-            </tr>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="deleteCategory<?= (int)$c['id'] ?>" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Confirmar exclusão</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            Tem certeza que deseja excluir a categoria <strong><?= View::e((string)$c['name']) ?></strong>?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <form method="post" action="<?= base_path('/admin/categories/delete') ?>">
+                                <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+                                <input type="hidden" name="id" value="<?= (int)$c['id'] ?>">
+                                <button class="btn btn-danger" type="submit">Excluir</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php
+            $modals[] = ob_get_clean();
+            ?>
         <?php endforeach; ?>
         </tbody>
     </table>
 </div>
+<?php if (!empty($modals ?? [])): ?>
+    <?php foreach ($modals as $m): ?>
+        <?= $m ?>
+    <?php endforeach; ?>
+<?php endif; ?>
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../layout.php';

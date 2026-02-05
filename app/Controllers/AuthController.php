@@ -153,7 +153,7 @@ final class AuthController extends Controller
         $pdo = \App\Core\Database::connection();
         $pdo->beginTransaction();
         try {
-            $role = User::countSuperadmins() === 0 ? 'superadmin' : 'none';
+            $role = User::countSuperadmins() === 0 ? 'superadmin' : 'user';
             $referrerId = null;
             if ($data['referral'] !== '') {
                 $stmt = $pdo->prepare('SELECT id FROM users WHERE referral_code = :c');

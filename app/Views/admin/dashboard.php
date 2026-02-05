@@ -2,19 +2,28 @@
 use App\Core\Auth;
 ob_start();
 $user = Auth::user();
-$role = $user['role'] ?? 'none';
+$role = $user['role'] ?? 'user';
+$isAdmin = \App\Core\Auth::isAdmin($user);
+$isModerator = \App\Core\Auth::isModerator($user);
 ?>
 <h1 class="h4 mb-3">Admin</h1>
 
-<?php if (in_array($role, ['admin','superadmin'], true)): ?>
+<?php if ($isAdmin): ?>
     <div class="mb-4">
         <h2 class="h6 text-uppercase text-muted">Acesso e segurança</h2>
         <div class="row g-3">
             <div class="col-md-3">
                 <div class="card h-100"><div class="card-body">
                     <h3 class="h6">Usuários</h3>
-                    <p class="text-muted small">Acesso, tiers e bloqueios.</p>
+                    <p class="text-muted small">Acesso e tiers.</p>
                     <a class="btn btn-sm btn-primary" href="<?= base_path('/admin/users') ?>">Abrir</a>
+                </div></div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100"><div class="card-body">
+                    <h3 class="h6">Equipe</h3>
+                    <p class="text-muted small">Admins, mods, uploaders e suporte.</p>
+                    <a class="btn btn-sm btn-primary" href="<?= base_path('/admin/team') ?>">Abrir</a>
                 </div></div>
             </div>
             <div class="col-md-3">
@@ -102,7 +111,7 @@ $role = $user['role'] ?? 'none';
     </div>
 <?php endif; ?>
 
-<?php if ($role === 'moderator'): ?>
+<?php if ($isModerator): ?>
     <div class="row g-3">
         <div class="col-md-4">
             <div class="card h-100"><div class="card-body">

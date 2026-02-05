@@ -39,19 +39,20 @@ use App\Core\View;
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav ms-auto">
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <?php $supportUrl = (!empty($currentUser) && in_array($currentUser['role'], ['admin','superadmin','moderator'], true)) ? base_path('/admin/support') : base_path('/support'); ?>
+                    <?php $isSupportStaff = \App\Core\Auth::isSupportStaff($currentUser); ?>
+                    <?php $supportUrl = (!empty($currentUser) && $isSupportStaff) ? base_path('/admin/support') : base_path('/support'); ?>
                     <?php $supportBadge = 0; ?>
-                    <?php if (!empty($currentUser) && in_array($currentUser['role'], ['none','uploader'], true)): ?>
+                    <?php if (!empty($currentUser) && !$isSupportStaff): ?>
                         <?php $supportBadge = \App\Models\SupportReply::countPendingForUser((int)$currentUser['id']); ?>
                     <?php endif; ?>
                     <?php if (!empty($currentUser) && ($currentUser['access_tier'] ?? '') !== 'restrito'): ?>
                         <li class="nav-item"><a class="nav-link" href="<?= base_path('/libraries') ?>">Bibliotecas</a></li>
                     <?php endif; ?>
-                    <?php if (!empty($currentUser) && in_array($currentUser['role'], ['superadmin','admin','moderator','uploader'], true)): ?>
+                    <?php if (!empty($currentUser) && \App\Core\Auth::canUpload($currentUser)): ?>
                         <li class="nav-item"><a class="nav-link" href="<?= base_path('/upload') ?>">Enviar arquivo</a></li>
                     <?php endif; ?>
-                    <?php if (!empty($currentUser) && ($currentUser['access_tier'] ?? '') !== 'restrito' && $currentUser['access_tier'] !== 'vitalicio' && !in_array($currentUser['role'], ['admin','superadmin'], true)): ?>
-                        <li class="nav-item"><a class="nav-link" href="<?= base_path('/payments') ?>">Compra Créditos</a></li>
+                    <?php if (!empty($currentUser) && ($currentUser['role'] ?? '') === 'user' && ($currentUser['access_tier'] ?? '') !== 'restrito' && $currentUser['access_tier'] !== 'vitalicio'): ?>
+                        <li class="nav-item"><a class="nav-link" href="<?= base_path('/loja') ?>">Loja</a></li>
                     <?php endif; ?>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= $supportUrl ?>">
@@ -61,7 +62,7 @@ use App\Core\View;
                             <?php endif; ?>
                         </a>
                     </li>
-                    <?php if (!empty($currentUser) && in_array($currentUser['role'], ['admin','superadmin','moderator'], true)): ?>
+                    <?php if (!empty($currentUser) && (\App\Core\Auth::isAdmin($currentUser) || \App\Core\Auth::isModerator($currentUser))): ?>
                         <li class="nav-item"><a class="nav-link" href="<?= base_path('/admin') ?>">Admin</a></li>
                     <?php endif; ?>
                     <li class="nav-item"><a class="nav-link" href="<?= base_path('/logout') ?>">Sair</a></li>

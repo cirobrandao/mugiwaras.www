@@ -8,6 +8,20 @@ use App\Core\Database;
 
 final class Series
 {
+    public static function all(): array
+    {
+        $stmt = Database::connection()->query('SELECT * FROM series ORDER BY name ASC');
+        return $stmt->fetchAll();
+    }
+
+    public static function findById(int $id): ?array
+    {
+        $stmt = Database::connection()->prepare('SELECT * FROM series WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
     public static function byCategory(int $categoryId): array
     {
         $stmt = Database::connection()->prepare('SELECT * FROM series WHERE category_id = :c ORDER BY name ASC');
@@ -22,7 +36,7 @@ final class Series
                 LEFT JOIN content_items ci ON ci.series_id = s.id
                 WHERE s.category_id = :c
                 GROUP BY s.id
-                ORDER BY s.name ASC';
+                ORDER BY s.pin_order DESC, s.name ASC';
         $stmt = Database::connection()->prepare($sql);
         $stmt->execute(['c' => $categoryId]);
         return $stmt->fetchAll();
@@ -37,7 +51,7 @@ final class Series
                 LEFT JOIN content_items ci ON ci.series_id = s.id
                 WHERE s.category_id = :c
                 GROUP BY s.id
-                ORDER BY s.name ASC";
+                ORDER BY s.pin_order DESC, s.name ASC";
         $stmt = Database::connection()->prepare($sql);
         $stmt->execute(['c' => $categoryId]);
         return $stmt->fetchAll();
@@ -84,6 +98,12 @@ final class Series
     {
         $stmt = Database::connection()->prepare('UPDATE series SET name = :n WHERE id = :id');
         $stmt->execute(['n' => $name, 'id' => $id]);
+    }
+
+    public static function updatePinOrder(int $id, int $pinOrder): void
+    {
+        $stmt = Database::connection()->prepare('UPDATE series SET pin_order = :p WHERE id = :id');
+        $stmt->execute(['p' => $pinOrder, 'id' => $id]);
     }
 
     public static function countByCategory(int $categoryId): int

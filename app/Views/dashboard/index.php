@@ -34,9 +34,60 @@ if (!function_exists('time_ago')) {
 <h1 class="h4 mb-3">Bem-vindo, <?= View::e($user['username'] ?? 'usuário') ?></h1>
 <div class="card mb-3">
     <div class="card-body">
-        <p class="mb-0">Acompanhe suas séries favoritas e as novidades mais recentes.</p>
+        <p class="mb-1">Acompanhe suas séries favoritas e as novidades mais recentes.</p>
+        <div class="small text-muted">
+            <?php if (!empty($activePackageTitle) && !empty($accessInfo['expires_at'])): ?>
+                <?php
+                $expTs = strtotime((string)$accessInfo['expires_at']);
+                $remaining = $expTs !== false ? max(0, $expTs - time()) : 0;
+                $remDays = (int)floor($remaining / 86400);
+                $remHours = (int)floor(($remaining % 86400) / 3600);
+                $initialCountdown = $remDays . 'd ' . $remHours . 'h';
+                ?>
+                Acesso: <?= View::e((string)$activePackageTitle) ?> expira em <span id="accessCountdown" data-expires="<?= View::e((string)$accessInfo['expires_at']) ?>"><?= View::e($initialCountdown) ?></span>.
+            <?php else: ?>
+                <?= View::e((string)($accessInfo['label'] ?? '')) ?>
+            <?php endif; ?>
+        </div>
     </div>
 </div>
+<?php if (!empty($accessInfo['expires_at'])): ?>
+    <script>
+        (function () {
+            const el = document.getElementById('accessCountdown');
+            if (!el) return;
+            const raw = el.getAttribute('data-expires') || '';
+            const parts = raw.split(' ');
+            if (parts.length < 2) return;
+            const dateParts = parts[0].split('-').map((v) => parseInt(v, 10));
+            const timeParts = parts[1].split(':').map((v) => parseInt(v, 10));
+            if (dateParts.length < 3 || timeParts.length < 2) return;
+            const target = new Date(
+                dateParts[0],
+                dateParts[1] - 1,
+                dateParts[2],
+                timeParts[0] || 0,
+                timeParts[1] || 0,
+                timeParts[2] || 0
+            );
+            if (isNaN(target.getTime())) return;
+            const tick = () => {
+                const now = new Date();
+                let diff = Math.max(0, target.getTime() - now.getTime());
+                const totalSeconds = Math.floor(diff / 1000);
+                const days = Math.floor(totalSeconds / 86400);
+                const hours = Math.floor((totalSeconds % 86400) / 3600);
+                if (totalSeconds <= 0) {
+                    el.textContent = '0d 0h';
+                    return;
+                }
+                el.textContent = days + 'd ' + hours + 'h';
+            };
+            tick();
+            setInterval(tick, 60000);
+        })();
+    </script>
+<?php endif; ?>
 <div class="row">
     <div class="col-lg-8">
         <h2 class="h5">Séries favoritas</h2>
@@ -96,9 +147,25 @@ if (!function_exists('time_ago')) {
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
+
+        <?php if (!empty($newsBelowMostRead)): ?>
+            <h2 class="h5">Notícias</h2>
+            <div class="list-group mb-3">
+                <?php foreach ($newsBelowMostRead as $n): ?>
+                    <div class="list-group-item">
+                        <strong><?= View::e($n['title']) ?></strong>
+                        <?php if (!empty($n['category_name'])): ?>
+                            <span class="badge bg-secondary ms-2"><?= View::e((string)$n['category_name']) ?></span>
+                        <?php endif; ?>
+                        <div class="small text-muted mb-1"><?= View::e((string)($n['published_at'] ?? $n['created_at'])) ?></div>
+                        <div><?= nl2br(View::e(mb_strimwidth((string)$n['body'], 0, 140, '...'))) ?></div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
     <div class="col-lg-4">
-        <h2 class="h5">Notícias</h2>
+        <h2 class="h5">Novidades</h2>
         <?php if (empty($news)): ?>
             <div class="alert alert-secondary">Sem notícias.</div>
         <?php else: ?>
@@ -106,11 +173,60 @@ if (!function_exists('time_ago')) {
                 <?php foreach ($news as $n): ?>
                     <li class="list-group-item">
                         <strong><?= View::e($n['title']) ?></strong>
+                        <?php if (!empty($n['category_name'])): ?>
+                            <span class="badge bg-secondary ms-2"><?= View::e((string)$n['category_name']) ?></span>
+                        <?php endif; ?>
                         <div class="small text-muted mb-1"><?= View::e((string)($n['published_at'] ?? $n['created_at'])) ?></div>
                         <div><?= nl2br(View::e(mb_strimwidth((string)$n['body'], 0, 140, '...'))) ?></div>
                     </li>
                 <?php endforeach; ?>
             </ul>
+        <?php endif; ?>
+
+        <h2 class="h5 mt-4">Últimos envios</h2>
+        <?php if (empty($recentContent)): ?>
+            <div class="alert alert-secondary">Sem novos envios.</div>
+        <?php else: ?>
+            <div class="list-group mb-3">
+                <?php foreach ($recentContent as $rc): ?>
+                    <?php $rcCategory = (string)($rc['category_name'] ?? ''); ?>
+                    <?php $rcSeries = (string)($rc['series_name'] ?? ''); ?>
+                    <?php $rcCatId = (int)($rc['category_id'] ?? 0); ?>
+                    <?php $rcIsNew = !empty($rc['is_new']); ?>
+                    <div class="list-group-item d-flex align-items-center gap-2">
+                        <div class="flex-grow-1">
+                            <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
+                                <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode($rcCategory) . '/' . rawurlencode($rcSeries)) ?>">
+                                    <?= View::e($rcSeries) ?>
+                                </a>
+                            <?php else: ?>
+                                <span class="fw-semibold"><?= View::e((string)($rc['title'] ?? '')) ?></span>
+                            <?php endif; ?>
+                            <div class="small text-muted d-flex flex-wrap align-items-center gap-2">
+                                <?php if ($rcCategory !== ''): ?>
+                                    <?php
+                                    $rcBadgeClass = $rcCatId > 0 ? 'cat-badge-' . $rcCatId : 'bg-secondary';
+                                    $rcBadgeStyle = '';
+                                    if (!empty($rc['category_tag_color'])) {
+                                        $rcBadgeStyle = ' style="background-color: ' . View::e((string)$rc['category_tag_color']) . '; color: #fff;"';
+                                    }
+                                    ?>
+                                    <span class="badge <?= $rcBadgeClass ?>"<?= $rcBadgeStyle ?>><?= View::e($rcCategory) ?></span>
+                                <?php endif; ?>
+                                <?php if ($rcIsNew): ?>
+                                    <span class="badge bg-success">Novo</span>
+                                <?php endif; ?>
+                                <?php if (!empty($rc['created_at'])): ?>
+                                    <span><?= View::e(time_ago((string)$rc['created_at'])) ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
+                            <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/libraries/' . rawurlencode($rcCategory) . '/' . rawurlencode($rcSeries)) ?>">Abrir</a>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         <?php endif; ?>
 
         <?php if (!empty($isAdmin)): ?>

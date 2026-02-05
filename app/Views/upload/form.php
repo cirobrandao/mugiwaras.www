@@ -5,13 +5,8 @@ ob_start();
 <?php if (!empty($_GET['ok']) || !empty($_GET['queued']) || !empty($_GET['failed'])): ?>
     <div class="alert alert-info">
         Enviados: <?= (int)($_GET['ok'] ?? 0) ?>,
-        Enfileirados: <?= (int)($_GET['queued'] ?? 0) ?>,
+        Pendentes de aprovação: <?= (int)($_GET['queued'] ?? 0) ?>,
         Falhas: <?= (int)($_GET['failed'] ?? 0) ?>.
-    </div>
-<?php elseif (isset($_GET['processed'])): ?>
-    <div class="alert alert-info">
-        Conversões processadas: <?= (int)($_GET['processed'] ?? 0) ?>,
-        Falhas: <?= (int)($_GET['failed_jobs'] ?? 0) ?>.
     </div>
 <?php elseif (!empty($_GET['error'])): ?>
     <?php if ($_GET['error'] === 'limit'): ?>
@@ -37,7 +32,6 @@ ob_start();
     <div class="alert alert-warning">Nenhuma categoria cadastrada. Crie uma categoria no painel administrativo.</div>
 <?php endif; ?>
 <div id="uploadResult"></div>
-<div class="alert alert-secondary">Upload e conversões são processados via jobs.</div>
 <div class="mb-3">
     <div class="progress" style="height: 6px;">
         <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>
@@ -90,15 +84,8 @@ $formatBytes = function (int $bytes): string {
 <div id="uploadHistory">
     <h2 class="h5 mb-2">Histórico de envios</h2>
     <?php if (!empty($pendingCount)): ?>
-        <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center">
-            <div class="me-2">
-                Conversões pendentes: <?= (int)$pendingCount ?>.
-                <span class="text-muted">Processa até 5 por clique.</span>
-            </div>
-            <form method="post" action="<?= base_path('/upload/process-pending') ?>" class="mb-0">
-                <input type="hidden" name="_csrf" value="<?= \App\Core\View::e($csrf ?? '') ?>">
-                <button class="btn btn-sm btn-outline-dark" type="submit">Processar conversões</button>
-            </form>
+        <div class="alert alert-warning">
+            Arquivos pendentes de aprovação: <?= (int)$pendingCount ?>.
         </div>
     <?php endif; ?>
     <div class="small text-muted mb-3">
@@ -123,7 +110,20 @@ $formatBytes = function (int $bytes): string {
                     <tr>
                         <td><?= \App\Core\View::e((string)($u['created_at'] ?? '')) ?></td>
                         <td><?= \App\Core\View::e((string)($u['original_name'] ?? $u['title'] ?? '')) ?></td>
-                        <td><?= \App\Core\View::e((string)($u['status'] ?? '')) ?></td>
+                        <td>
+                            <?php
+                            $st = (string)($u['status'] ?? '');
+                            $label = match ($st) {
+                                'pending' => 'Pendente de aprovação',
+                                'queued' => 'Na fila de conversão',
+                                'processing' => 'Processando',
+                                'done', 'completed' => 'Liberado',
+                                'failed' => 'Falhou',
+                                default => $st,
+                            };
+                            ?>
+                            <?= \App\Core\View::e($label) ?>
+                        </td>
                         <td class="text-end"><?= $formatBytes((int)($u['file_size'] ?? 0)) ?></td>
                     </tr>
                 <?php endforeach; ?>
@@ -132,20 +132,41 @@ $formatBytes = function (int $bytes): string {
         </div>
 
         <?php if (!empty($pages) && $pages > 1): ?>
+            <?php
+            $curr = (int)($page ?? 1);
+            $curr = $curr < 1 ? 1 : $curr;
+            $pages = (int)$pages;
+            $start = max(1, $curr - 2);
+            $end = min($pages, $curr + 2);
+            $prev = max(1, $curr - 1);
+            $next = min($pages, $curr + 1);
+            ?>
             <nav>
                 <ul class="pagination pagination-sm">
-                    <?php $prev = max(1, (int)($page ?? 1) - 1); ?>
-                    <?php $next = min((int)$pages, (int)($page ?? 1) + 1); ?>
-                    <li class="page-item <?= ($page ?? 1) <= 1 ? 'disabled' : '' ?>">
-                        <a class="page-link" href="<?= base_path('/upload?page=' . $prev) ?>">Anterior</a>
+                    <li class="page-item <?= $curr <= 1 ? 'disabled' : '' ?>">
+                        <a class="page-link" href="<?= base_path('/upload?page=1') ?>" aria-label="Primeira">«</a>
                     </li>
-                    <?php for ($p = 1; $p <= (int)$pages; $p++): ?>
-                        <li class="page-item <?= ($page ?? 1) === $p ? 'active' : '' ?>">
+                    <li class="page-item <?= $curr <= 1 ? 'disabled' : '' ?>">
+                        <a class="page-link" href="<?= base_path('/upload?page=' . $prev) ?>" aria-label="Anterior">‹</a>
+                    </li>
+                    <?php if ($start > 1): ?>
+                        <li class="page-item"><a class="page-link" href="<?= base_path('/upload?page=1') ?>">1</a></li>
+                        <?php if ($start > 2): ?><li class="page-item disabled"><span class="page-link">…</span></li><?php endif; ?>
+                    <?php endif; ?>
+                    <?php for ($p = $start; $p <= $end; $p++): ?>
+                        <li class="page-item <?= $p === $curr ? 'active' : '' ?>">
                             <a class="page-link" href="<?= base_path('/upload?page=' . $p) ?>"><?= $p ?></a>
                         </li>
                     <?php endfor; ?>
-                    <li class="page-item <?= ($page ?? 1) >= (int)$pages ? 'disabled' : '' ?>">
-                        <a class="page-link" href="<?= base_path('/upload?page=' . $next) ?>">Próxima</a>
+                    <?php if ($end < $pages): ?>
+                        <?php if ($end < $pages - 1): ?><li class="page-item disabled"><span class="page-link">…</span></li><?php endif; ?>
+                        <li class="page-item"><a class="page-link" href="<?= base_path('/upload?page=' . $pages) ?>"><?= $pages ?></a></li>
+                    <?php endif; ?>
+                    <li class="page-item <?= $curr >= $pages ? 'disabled' : '' ?>">
+                        <a class="page-link" href="<?= base_path('/upload?page=' . $next) ?>" aria-label="Próxima">›</a>
+                    </li>
+                    <li class="page-item <?= $curr >= $pages ? 'disabled' : '' ?>">
+                        <a class="page-link" href="<?= base_path('/upload?page=' . $pages) ?>" aria-label="Última">»</a>
                     </li>
                 </ul>
             </nav>

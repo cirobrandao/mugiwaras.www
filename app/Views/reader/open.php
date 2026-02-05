@@ -3,20 +3,27 @@ use App\Core\View;
 ob_start();
 ?>
 <?php if (!empty($error)): ?>
-	<div class="alert alert-warning"><?= View::e($error) ?></div>
+	<div class="alert alert-warning d-flex flex-column gap-2">
+		<span><?= View::e($error) ?></span>
+		<a class="btn btn-sm btn-primary align-self-start" href="<?= base_path('/loja') ?>">Compre o seu acesso.</a>
+	</div>
 <?php endif; ?>
 <?php if (!empty($content)): ?>
 	<div class="reader-header">
 		<?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
-			<a class="btn btn-sm btn-outline-secondary reader-back" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>"><i class="fa-solid fa-chevron-left me-1"></i>Voltar aos capítulos</a>
+			<a class="btn btn-sm btn-outline-secondary reader-back" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>">
+				<i class="fa-solid fa-chevron-left me-1"></i>
+				<span class="d-none d-md-inline">Voltar aos capítulos</span>
+				<span class="d-inline d-md-none">Voltar</span>
+			</a>
 		<?php endif; ?>
 		<div class="reader-title"><?= View::e($content['title'] ?? 'Conteúdo') ?></div>
 		
 		<!-- next chapter link moved to toolbar -->
 		<div class="reader-mobile-actions">
 			<select class="form-select form-select-sm w-auto" id="readerModeMobile">
-				<option value="page">Página</option>
-				<option value="scroll" selected>Scroll</option>
+				<option value="page" <?= (($cbzMode ?? 'page') === 'page') ? 'selected' : '' ?>>Página</option>
+				<option value="scroll" <?= (($cbzMode ?? '') === 'scroll') ? 'selected' : '' ?>>Scroll</option>
 			</select>
 		</div>
 	</div>
@@ -45,8 +52,8 @@ ob_start();
 							<option value="original">Original</option>
 						</select>
 						<select class="form-select form-select-sm w-auto reader-desktop-only" id="readerMode">
-							<option value="page" selected>Página</option>
-							<option value="scroll">Scroll</option>
+							<option value="page" <?= (($cbzMode ?? 'page') === 'page') ? 'selected' : '' ?>>Página</option>
+							<option value="scroll" <?= (($cbzMode ?? '') === 'scroll') ? 'selected' : '' ?>>Scroll</option>
 						</select>
 						<div class="d-flex align-items-center gap-2">
 							<label class="small text-muted mb-0">Zoom</label>
@@ -92,7 +99,7 @@ ob_start();
 			<div class="reader-progress-bar" id="readerProgress" style="width: 0%"></div>
 		</div>
 	</div>
-		<div id="reader" class="reader-frame" data-total="<?= count($pages ?? []) ?>" data-base-url="<?= base_path('/reader/' . (int)($content['id'] ?? 0) . '/page') ?>" data-content-id="<?= (int)($content['id'] ?? 0) ?>" data-csrf="<?= View::e($csrf ?? '') ?>" data-last-page="<?= (int)($lastPage ?? 0) ?>">
+		<div id="reader" class="reader-frame" data-total="<?= count($pages ?? []) ?>" data-base-url="<?= base_path('/reader/' . (int)($content['id'] ?? 0) . '/page') ?>" data-content-id="<?= (int)($content['id'] ?? 0) ?>" data-csrf="<?= View::e($csrf ?? '') ?>" data-last-page="<?= (int)($lastPage ?? 0) ?>" data-direction="<?= View::e((string)($cbzDirection ?? 'rtl')) ?>">
 		<div class="reader-overlay d-none" id="readerOverlay">Carregando...</div>
 		<img id="readerImage" alt="Página">
 	</div>
@@ -103,11 +110,12 @@ ob_start();
 		</button>
 		<!-- reader footer: page guide placed after the material -->
 		<div class="reader-footer mt-2">
-			<div class="input-group input-group-sm w-auto mx-auto" role="group" aria-label="Guia de páginas">
+			<div class="input-group input-group-sm w-auto mx-auto d-none d-md-flex" role="group" aria-label="Guia de páginas">
 				<span class="input-group-text">Página</span>
 				<input type="number" min="1" class="form-control" id="pageNumber" style="width: 90px;">
 				<span class="input-group-text" id="pageTotal">/ 0</span>
 			</div>
+			<div class="d-md-none text-center small text-muted" id="pageCompact">0/0</div>
 		</div>
 	</div>
 	<script src="<?= url('assets/js/reader.js') ?>"></script>
