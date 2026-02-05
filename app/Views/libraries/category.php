@@ -59,10 +59,14 @@ ob_start();
                     </form>
 
                         <div>
+                            <?php $isAdultSeries = !empty($s['adult_only']); ?>
                             <div class="d-flex align-items-center gap-2 flex-wrap">
                                 <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode((string)$category['name']) . '/' . rawurlencode((string)$s['name']) . '?format=' . $entry['format'] . (!empty($iosTest) ? '&ios_test=1' : '')) ?>">
                                     <?= View::e((string)$s['name']) ?>
                                 </a>
+                                <?php if ($isAdultSeries): ?>
+                                    <span class="badge bg-danger ms-2">18+</span>
+                                <?php endif; ?>
                                 <?php if ($entry['tag'] !== ''): ?>
                                     <span class="badge bg-warning text-dark ms-2">PDF</span>
                                 <?php endif; ?>
@@ -96,6 +100,15 @@ ob_start();
                             </form>
                         <?php endif; ?>
                         <?php if ($canManage): ?>
+                            <form method="post" action="<?= base_path('/libraries/series/adult') ?>">
+                                <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                                <input type="hidden" name="id" value="<?= $seriesId ?>">
+                                <input type="hidden" name="adult_only" value="<?= $isAdultSeries ? 0 : 1 ?>">
+                                <button class="btn btn-sm <?= $isAdultSeries ? 'btn-danger' : 'btn-outline-secondary' ?>" type="submit" title="<?= $isAdultSeries ? 'Remover 18+' : 'Definir 18+' ?>" aria-pressed="<?= $isAdultSeries ? 'true' : 'false' ?>">
+                                    <i class="fa-solid <?= $isAdultSeries ? 'fa-circle-check' : 'fa-circle' ?>"></i>
+                                    <span class="badge bg-light text-danger ms-1">18+</span>
+                                </button>
+                            </form>
                             <?php $editModalId = 'edit-series-' . $seriesId; ?>
                             <button class="btn btn-sm btn-outline-secondary" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#<?= $editModalId ?>">
                                 <i class="fa-solid fa-pen-to-square"></i>

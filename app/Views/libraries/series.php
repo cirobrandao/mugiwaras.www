@@ -6,7 +6,12 @@ ob_start();
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="<?= base_path('/libraries') ?>">Bibliotecas</a></li>
         <li class="breadcrumb-item"><a href="<?= base_path('/libraries/' . rawurlencode((string)($category['name'] ?? ''))) ?>"><?= View::e((string)($category['name'] ?? '')) ?></a></li>
-        <li class="breadcrumb-item active" aria-current="page"><?= View::e((string)($series['name'] ?? '')) ?></li>
+        <li class="breadcrumb-item active" aria-current="page">
+            <?= View::e((string)($series['name'] ?? '')) ?>
+            <?php if (!empty($series['adult_only'])): ?>
+                <span class="badge bg-danger ms-2">18+</span>
+            <?php endif; ?>
+        </li>
     </ol>
 </nav>
 <?php

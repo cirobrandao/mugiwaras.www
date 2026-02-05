@@ -106,6 +106,12 @@ final class Series
         $stmt->execute(['p' => $pinOrder, 'id' => $id]);
     }
 
+    public static function updateAdultOnly(int $id, int $adultOnly): void
+    {
+        $stmt = Database::connection()->prepare('UPDATE series SET adult_only = :a WHERE id = :id');
+        $stmt->execute(['a' => $adultOnly, 'id' => $id]);
+    }
+
     public static function countByCategory(int $categoryId): int
     {
         $stmt = Database::connection()->prepare('SELECT COUNT(*) AS c FROM series WHERE category_id = :c');

@@ -161,13 +161,13 @@ final class LibraryController extends Controller
         $name = rawurldecode($category);
         if (!Category::isReady()) {
             http_response_code(500);
-            echo $this->view('libraries/category', ['error' => 'Biblioteca ainda não inicializada.']);
+            echo $this->view('libraries/category', ['error' => 'Biblioteca ainda não inicializada.', 'category' => ['name' => '']]);
             return;
         }
         $cat = Category::findByName($name);
         if (!$cat) {
             http_response_code(404);
-            echo $this->view('libraries/category', ['error' => 'Categoria não encontrada.']);
+            echo $this->view('libraries/category', ['error' => 'Categoria não encontrada.', 'category' => ['name' => '']]);
             return;
         }
         $isSubscriber = ($user['access_tier'] ?? '') === 'vitalicio';
@@ -182,6 +182,10 @@ final class LibraryController extends Controller
             Response::redirect(base_path('/loja'));
         }
         $seriesAll = Series::byCategoryWithCountsAndTypes((int)$cat['id']);
+        $isAdultUser = $this->isAdultUser($user);
+        if (!$isStaff && !$isAdultUser) {
+            $seriesAll = array_values(array_filter($seriesAll, static fn ($s) => empty($s['adult_only'])));
+        }
         $query = trim((string)($request->get['q'] ?? ''));
         if ($query !== '') {
             $seriesAll = array_values(array_filter($seriesAll, fn ($s) => mb_stripos((string)($s['name'] ?? ''), $query) !== false));
@@ -264,6 +268,12 @@ final class LibraryController extends Controller
         if (!$ser) {
             http_response_code(404);
             echo $this->view('libraries/series', ['error' => 'Série não encontrada.']);
+            return;
+        }
+        $isAdultUser = $this->isAdultUser($user);
+        if (!$isStaff && !$isAdultUser && (!empty($cat['adult_only']) || !empty($ser['adult_only']))) {
+            http_response_code(403);
+            echo $this->view('libraries/series', ['error' => 'Conteúdo 18+ disponível apenas para maiores.']);
             return;
         }
 
@@ -527,6 +537,25 @@ final class LibraryController extends Controller
         Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
     }
 
+    public function updateSeriesAdult(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        $adultOnly = (int)($request->post['adult_only'] ?? 0) > 0 ? 1 : 0;
+        if ($id <= 0) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        Series::updateAdultOnly($id, $adultOnly);
+        Audit::log('series_adult', (int)$user['id'], ['series_id' => $id, 'adult_only' => $adultOnly]);
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
     public function deleteSeries(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
@@ -559,6 +588,36 @@ final class LibraryController extends Controller
             return $real;
         }
         return null;
+    }
+
+    private function isAdultUser(array $user): bool
+    {
+        $birth = trim((string)($user['birth_date'] ?? ''));
+        if ($birth === '') {
+            return false;
+        }
+        $formats = ['d-m-Y', 'd/m/Y', 'Y-m-d', 'Y/m/d'];
+        $dt = null;
+        foreach ($formats as $fmt) {
+            $tmp = \DateTimeImmutable::createFromFormat($fmt, $birth);
+            if ($tmp !== false && $tmp->format($fmt) === $birth) {
+                $dt = $tmp;
+                break;
+            }
+        }
+        if (!$dt) {
+            try {
+                $dt = new \DateTimeImmutable($birth);
+            } catch (\Throwable $e) {
+                return false;
+            }
+        }
+        $now = new \DateTimeImmutable('now');
+        if ($dt > $now) {
+            return false;
+        }
+        $age = $now->diff($dt)->y;
+        return $age >= 18;
     }
 
     private function deleteSeriesCascade(int $seriesId): void

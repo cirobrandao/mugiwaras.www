@@ -193,6 +193,7 @@ CREATE TABLE IF NOT EXISTS series (
     category_id INT NOT NULL,
     name VARCHAR(190) NOT NULL,
     pin_order INT NOT NULL DEFAULT 0,
+    adult_only TINYINT(1) NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL,
     UNIQUE KEY (category_id, name),
     FOREIGN KEY (category_id) REFERENCES categories(id)
