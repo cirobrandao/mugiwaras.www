@@ -10,8 +10,11 @@ final class ContentItem
 {
     public static function create(array $data): int
     {
+        if (!array_key_exists('co', $data)) {
+            $data['co'] = 0;
+        }
         $stmt = Database::connection()->prepare(
-            'INSERT INTO content_items (library_id, category_id, series_id, title, cbz_path, file_hash, file_size, original_name, content_order, view_count, download_count, created_at) VALUES (:l,:c,:s,:t,:p,:h,:sz,:o,0,0,0,NOW())'
+            'INSERT INTO content_items (library_id, category_id, series_id, title, cbz_path, file_hash, file_size, original_name, content_order, view_count, download_count, created_at) VALUES (:l,:c,:s,:t,:p,:h,:sz,:o,:co,0,0,NOW())'
         );
         $stmt->execute($data);
         return (int)Database::connection()->lastInsertId();
@@ -76,9 +79,10 @@ final class ContentItem
         $stmt->execute(['id' => $id]);
     }
 
-    public static function bySeries(int $seriesId, int $limit = 100, int $offset = 0): array
+    public static function bySeries(int $seriesId, string $direction = 'asc', int $limit = 100, int $offset = 0): array
     {
-        $stmt = Database::connection()->prepare('SELECT * FROM content_items WHERE series_id = :s ORDER BY content_order ASC, title ASC, id ASC LIMIT :l OFFSET :o');
+        $dir = strtolower($direction) === 'desc' ? 'DESC' : 'ASC';
+        $stmt = Database::connection()->prepare("SELECT * FROM content_items WHERE series_id = :s ORDER BY content_order {$dir}, title {$dir}, id {$dir} LIMIT :l OFFSET :o");
         $stmt->bindValue('s', $seriesId, \PDO::PARAM_INT);
         $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
         $stmt->bindValue('o', $offset, \PDO::PARAM_INT);
@@ -86,13 +90,14 @@ final class ContentItem
         return $stmt->fetchAll();
     }
 
-    public static function bySeriesAndFormat(int $seriesId, string $format, int $limit = 100, int $offset = 0): array
+    public static function bySeriesAndFormat(int $seriesId, string $format, string $direction = 'asc', int $limit = 100, int $offset = 0): array
     {
         $format = strtolower($format);
         $isPdf = $format === 'pdf';
+        $dir = strtolower($direction) === 'desc' ? 'DESC' : 'ASC';
         $sql = $isPdf
-            ? "SELECT * FROM content_items WHERE series_id = :s AND LOWER(cbz_path) LIKE '%.pdf' ORDER BY content_order ASC, title ASC, id ASC LIMIT :l OFFSET :o"
-            : "SELECT * FROM content_items WHERE series_id = :s AND (cbz_path IS NULL OR LOWER(cbz_path) NOT LIKE '%.pdf') ORDER BY content_order ASC, title ASC, id ASC LIMIT :l OFFSET :o";
+            ? "SELECT * FROM content_items WHERE series_id = :s AND LOWER(cbz_path) LIKE '%.pdf' ORDER BY content_order {$dir}, title {$dir}, id {$dir} LIMIT :l OFFSET :o"
+            : "SELECT * FROM content_items WHERE series_id = :s AND (cbz_path IS NULL OR LOWER(cbz_path) NOT LIKE '%.pdf') ORDER BY content_order {$dir}, title {$dir}, id {$dir} LIMIT :l OFFSET :o";
         $stmt = Database::connection()->prepare($sql);
         $stmt->bindValue('s', $seriesId, \PDO::PARAM_INT);
         $stmt->bindValue('l', $limit, \PDO::PARAM_INT);

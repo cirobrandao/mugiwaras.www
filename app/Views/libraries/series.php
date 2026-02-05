@@ -14,11 +14,27 @@ $seriesBaseUrl = base_path('/libraries/' . rawurlencode((string)($category['name
 $baseQuery = [];
 if (!empty($format)) $baseQuery[] = 'format=' . urlencode((string)$format);
 if (!empty($iosTest)) $baseQuery[] = 'ios_test=1';
+if (!empty($order)) $baseQuery[] = 'order=' . urlencode((string)$order);
 $baseQueryString = empty($baseQuery) ? '' : '?' . implode('&', $baseQuery);
+$nextOrder = ($order ?? 'asc') === 'asc' ? 'desc' : 'asc';
+$orderLabel = ($order ?? 'asc') === 'asc' ? 'Crescente' : 'Decrescente';
+$orderBtnLabel = ($order ?? 'asc') === 'asc' ? 'Inverter para decrescente' : 'Inverter para crescente';
+$orderQuery = $baseQuery;
+foreach ($orderQuery as $i => $entry) {
+    if (str_starts_with($entry, 'order=')) {
+        unset($orderQuery[$i]);
+    }
+}
+$orderQuery[] = 'order=' . $nextOrder;
+$orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orderQuery));
 ?>
 <?php if (!empty($error)): ?>
     <div class="alert alert-warning"><?= View::e($error) ?></div>
 <?php endif; ?>
+<div class="d-flex align-items-center justify-content-between mb-2">
+    <div class="small text-muted">Ordem dos capítulos: <strong><?= View::e($orderLabel) ?></strong></div>
+    <a class="btn btn-sm btn-outline-secondary" href="<?= $orderUrl ?>"> <?= View::e($orderBtnLabel) ?></a>
+</div>
 <?php if (!empty($pending)): ?>
     <div class="card mb-3">
         <div class="card-body">
@@ -47,8 +63,8 @@ $baseQueryString = empty($baseQuery) ? '' : '?' . implode('&', $baseQuery);
             <?php $downloadToken = !empty($downloadTokens[(int)$item['id']]) ? (string)$downloadTokens[(int)$item['id']] : ''; ?>
             <?php if ($isPdf) { $hasPdf = true; } ?>
             <div class="list-group-item" data-series-title="<?= View::e((string)($series['name'] ?? '')) ?>" data-item-title="<?= View::e((string)($item['title'] ?? '')) ?>">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-2">
+                <div class="d-flex justify-content-between align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
                         <form method="post" action="<?= base_path('/libraries/favorite') ?>">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                             <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
@@ -58,7 +74,7 @@ $baseQueryString = empty($baseQuery) ? '' : '?' . implode('&', $baseQuery);
                                 <?= $isFav ? '★' : '☆' ?>
                             </button>
                         </form>
-                        <div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
                             <a href="<?= $isPdf ? ($iosOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : base_path('/reader/' . (int)$item['id']) ?>" <?= $isPdf && !$iosOnlyDownload ? 'data-open-pdf' : '' ?> <?= $isPdf && !$iosOnlyDownload ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
                                 <?= View::e(str_replace('_', ' ', (string)$item['title'])) ?>
                             </a>
@@ -73,15 +89,7 @@ $baseQueryString = empty($baseQuery) ? '' : '?' . implode('&', $baseQuery);
                             <?php endif; ?>
                         </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <?php if (!$isPdf && !empty($progress) && isset($progress[(int)$item['id']]) && $progress[(int)$item['id']] > 0): ?>
-                            <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/reader/' . (int)$item['id'] . '?page=' . (int)$progress[(int)$item['id']]) ?>">Voltar à leitura</a>
-                        <?php endif; ?>
-                        <?php if ($isPdf): ?>
-                            <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) ?>" title="Baixar PDF">
-                                <i class="fa-solid fa-download"></i>
-                            </a>
-                        <?php endif; ?>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
                         <form method="post" action="<?= base_path('/libraries/read') ?>">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                             <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
@@ -92,25 +100,47 @@ $baseQueryString = empty($baseQuery) ? '' : '?' . implode('&', $baseQuery);
                             </button>
                         </form>
                         <?php if (!empty($user) && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))): ?>
-                            <details>
-                                <summary class="btn btn-sm btn-outline-secondary" title="Editar"><i class="fa-solid fa-pen-to-square"></i></summary>
-                                <form method="post" action="<?= base_path('/libraries/content/update') ?>" class="mt-2">
-                                    <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                                    <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
-                                    <input class="form-control form-control-sm mb-2" type="text" name="title" value="<?= View::e((string)$item['title']) ?>" required>
-                                    <button class="btn btn-sm btn-primary" type="submit">Salvar</button>
-                                </form>
-                            </details>
+                            <span class="text-muted">|</span>
                             <form method="post" action="<?= base_path('/libraries/content/order') ?>" class="d-flex align-items-center gap-1">
                                 <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                                 <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
                                 <input class="form-control form-control-sm" type="number" name="content_order" value="<?= (int)($item['content_order'] ?? 0) ?>" style="width: 80px;" min="0">
-                                <button class="btn btn-sm btn-outline-primary" type="submit">Ordem</button>
+                                <button class="btn btn-sm btn-outline-primary" type="submit">Salvar</button>
                             </form>
+                            <?php $editModalId = 'edit-content-' . (int)$item['id']; ?>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#<?= $editModalId ?>">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
                             <?php $deleteModalId = 'delete-content-' . (int)$item['id']; ?>
                             <button class="btn btn-sm btn-outline-danger" type="button" title="Excluir" data-bs-toggle="modal" data-bs-target="#<?= $deleteModalId ?>">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php if (!empty($user) && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))): ?>
+                        <div class="modal fade" id="<?= $editModalId ?>" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Editar conteúdo</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                        </div>
+                                        <form method="post" action="<?= base_path('/libraries/content/update') ?>">
+                                            <div class="modal-body">
+                                                <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                                                <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
+                                                <label class="form-label" for="title-<?= (int)$item['id'] ?>">Título</label>
+                                                <input class="form-control" id="title-<?= (int)$item['id'] ?>" type="text" name="title" value="<?= View::e((string)$item['title']) ?>" required>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button class="btn btn-primary" type="submit">Salvar</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="modal fade" id="<?= $deleteModalId ?>" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
@@ -132,9 +162,7 @@ $baseQueryString = empty($baseQuery) ? '' : '?' . implode('&', $baseQuery);
                                     </div>
                                 </div>
                             </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
     </div>

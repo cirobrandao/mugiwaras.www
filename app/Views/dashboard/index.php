@@ -191,16 +191,19 @@ if (!function_exists('time_ago')) {
                 <?php foreach ($recentContent as $rc): ?>
                     <?php $rcCategory = (string)($rc['category_name'] ?? ''); ?>
                     <?php $rcSeries = (string)($rc['series_name'] ?? ''); ?>
+                    <?php $rcTitle = (string)($rc['title'] ?? ''); ?>
+                    <?php $rcSeriesLabel = mb_strimwidth($rcSeries, 0, 40, '...'); ?>
+                    <?php $rcTitleLabel = mb_strimwidth($rcTitle, 0, 40, '...'); ?>
                     <?php $rcCatId = (int)($rc['category_id'] ?? 0); ?>
                     <?php $rcIsNew = !empty($rc['is_new']); ?>
                     <div class="list-group-item d-flex align-items-center gap-2">
                         <div class="flex-grow-1">
                             <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
                                 <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode($rcCategory) . '/' . rawurlencode($rcSeries)) ?>">
-                                    <?= View::e($rcSeries) ?>
+                                    <?= View::e($rcSeriesLabel) ?>
                                 </a>
                             <?php else: ?>
-                                <span class="fw-semibold"><?= View::e((string)($rc['title'] ?? '')) ?></span>
+                                <span class="fw-semibold"><?= View::e($rcTitleLabel) ?></span>
                             <?php endif; ?>
                             <div class="small text-muted d-flex flex-wrap align-items-center gap-2">
                                 <?php if ($rcCategory !== ''): ?>

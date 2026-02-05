@@ -179,6 +179,7 @@ final class UploadsController extends Controller
 
             $size = filesize($targetPath) ?: (int)($upload['file_size'] ?? 0);
             $title = (string)($upload['title'] ?? pathinfo($targetPath, PATHINFO_FILENAME));
+            $contentOrder = $this->extractChapterOrder($title, (string)($upload['original_name'] ?? ''));
             ContentItem::create([
                 'l' => null,
                 'c' => (int)($upload['category_id'] ?? 0),
@@ -188,6 +189,7 @@ final class UploadsController extends Controller
                 'h' => $hash,
                 'sz' => $size,
                 'o' => (string)($upload['original_name'] ?? ''),
+                'co' => $contentOrder,
             ]);
             Upload::setStatus($id, 'done');
             Audit::log('upload_approved', null, ['upload_id' => $id]);
@@ -262,6 +264,37 @@ final class UploadsController extends Controller
             }
         }
         Response::redirect(base_path('/admin/uploads'));
+    }
+
+    private function extractChapterOrder(string $title, string $originalName = ''): int
+    {
+        $candidates = array_filter([trim($title), trim($originalName)], static fn ($v) => $v !== '');
+        foreach ($candidates as $candidate) {
+            $name = pathinfo($candidate, PATHINFO_FILENAME);
+            $name = str_replace(['_', '-', '.', '[', ']', '(', ')'], ' ', $name);
+            $name = preg_replace('/\s+/u', ' ', $name) ?? '';
+            $name = trim($name);
+            if ($name === '') {
+                continue;
+            }
+            $lower = mb_strtolower($name, 'UTF-8');
+            if (preg_match('/\b(?:cap(?:i?tulo)?|cap[íi]tulo|ch(?:apter)?|ep(?:is[oó]dio)?|vol(?:ume)?)\s*#?\s*(\d{1,4})\b/u', $lower, $match)) {
+                return (int)$match[1];
+            }
+            if (preg_match('/^\s*(\d{1,4})\b/u', $lower, $match)) {
+                return (int)$match[1];
+            }
+            if (preg_match_all('/\b(\d{1,4})\b/u', $lower, $matches)) {
+                foreach ($matches[1] as $raw) {
+                    $num = (int)$raw;
+                    if ($num >= 1900 && $num <= 2100) {
+                        continue;
+                    }
+                    return $num;
+                }
+            }
+        }
+        return 0;
     }
 
     private function deleteUploadById(int $id): void

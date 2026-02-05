@@ -286,6 +286,10 @@ final class LibraryController extends Controller
         if ($format === '' && !$allowCbz && $allowPdf) {
             $format = 'pdf';
         }
+        $order = strtolower((string)($request->get['order'] ?? 'asc'));
+        if (!in_array($order, ['asc', 'desc'], true)) {
+            $order = 'asc';
+        }
         $perPage = 40;
         if (!$allowCbz && !$allowPdf) {
             $total = 0;
@@ -296,7 +300,9 @@ final class LibraryController extends Controller
         if (!$allowCbz && !$allowPdf) {
             $items = [];
         } else {
-            $items = $format !== '' ? ContentItem::bySeriesAndFormat((int)$ser['id'], $format, $perPage, $offset) : ContentItem::bySeries((int)$ser['id'], $perPage, $offset);
+            $items = $format !== ''
+                ? ContentItem::bySeriesAndFormat((int)$ser['id'], $format, $order, $perPage, $offset)
+                : ContentItem::bySeries((int)$ser['id'], $order, $perPage, $offset);
         }
         $pending = Upload::pendingBySeries((int)$ser['id']);
 
@@ -331,6 +337,7 @@ final class LibraryController extends Controller
             'downloadTokens' => $downloadTokens,
             'iosTest' => $iosTest,
             'format' => $format,
+            'order' => $order,
         ]);
     }
 

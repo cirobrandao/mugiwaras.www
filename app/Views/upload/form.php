@@ -14,7 +14,7 @@ ob_start();
     <?php elseif ($_GET['error'] === 'category'): ?>
         <div class="alert alert-danger">Selecione uma categoria válida.</div>
     <?php elseif ($_GET['error'] === 'files'): ?>
-        <div class="alert alert-danger">Máximo de 20 arquivos por envio.</div>
+        <div class="alert alert-danger">Máximo de 50 arquivos por envio.</div>
     <?php elseif ($_GET['error'] === 'series'): ?>
         <div class="alert alert-danger">Série é obrigatória.</div>
     <?php elseif ($_GET['error'] === 'csrf'): ?>
@@ -36,7 +36,7 @@ ob_start();
     <div class="progress" style="height: 6px;">
         <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>
     </div>
-    <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="5368709120" data-max-files="20">0 B / 5 GB · 0 / 20 arquivos</div>
+    <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="5368709120" data-max-files="50">0 B / 5 GB · 0 / 50 arquivos</div>
 </div>
 <form method="post" action="<?= base_path('/upload') ?>" enctype="multipart/form-data">
     <input type="hidden" name="_csrf" value="<?= \App\Core\View::e($csrf ?? '') ?>">

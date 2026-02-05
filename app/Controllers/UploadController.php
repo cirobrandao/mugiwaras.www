@@ -71,7 +71,7 @@ final class UploadController extends Controller
         }
         $requiresApproval = !(Auth::isAdmin($user) || Auth::isModerator($user));
         $maxBytes = 5 * 1024 * 1024 * 1024;
-        $maxFiles = 20;
+        $maxFiles = 50;
         if (!Category::isReady()) {
             if ($isAjax) {
                 Response::json(['error' => 'setup'], 500);
@@ -243,6 +243,7 @@ final class UploadController extends Controller
                 }
 
                 $size = filesize($finalPath) ?: $size;
+                $contentOrder = $this->extractChapterOrder($baseName, $original);
                 ContentItem::create([
                     'l' => null,
                     'c' => (int)$cat['id'],
@@ -252,6 +253,7 @@ final class UploadController extends Controller
                     'h' => $hash,
                     'sz' => $size,
                     'o' => $original,
+                    'co' => $contentOrder,
                 ]);
                 Upload::create([
                     'u' => $_SESSION['user_id'] ?? null,
@@ -298,6 +300,7 @@ final class UploadController extends Controller
                     continue;
                 }
                 $size = filesize($finalPath) ?: $size;
+                $contentOrder = $this->extractChapterOrder($baseName, $original);
                 ContentItem::create([
                     'l' => null,
                     'c' => (int)$cat['id'],
@@ -307,6 +310,7 @@ final class UploadController extends Controller
                     'h' => $hash,
                     'sz' => $size,
                     'o' => $original,
+                    'co' => $contentOrder,
                 ]);
                 Upload::create([
                     'u' => $_SESSION['user_id'] ?? null,
@@ -420,15 +424,19 @@ final class UploadController extends Controller
                     $libraryRoot = rtrim(str_replace('\\', '/', $libraryRoot), '/');
                     $targetNorm = str_replace('\\', '/', $target);
                     $relative = str_starts_with($targetNorm, $libraryRoot . '/') ? substr($targetNorm, strlen($libraryRoot) + 1) : basename($targetNorm);
+                    $title = (string)($payload['title'] ?? pathinfo($target, PATHINFO_FILENAME));
+                    $originalName = (string)($payload['original_name'] ?? '');
+                    $contentOrder = $this->extractChapterOrder($title, $originalName);
                     ContentItem::create([
                         'l' => null,
                         'c' => (int)($payload['category_id'] ?? 0),
                         's' => (int)($payload['series_id'] ?? 0),
-                        't' => (string)($payload['title'] ?? pathinfo($target, PATHINFO_FILENAME)),
+                        't' => $title,
                         'p' => $relative,
                         'h' => $hash,
                         'sz' => (int)($payload['file_size'] ?? filesize($target)),
-                        'o' => (string)($payload['original_name'] ?? ''),
+                        'o' => $originalName,
+                        'co' => $contentOrder,
                     ]);
                 }
 
@@ -460,6 +468,37 @@ final class UploadController extends Controller
         }
         $value = str_replace(' ', '_', $value);
         return $value;
+    }
+
+    private function extractChapterOrder(string $title, string $originalName = ''): int
+    {
+        $candidates = array_filter([trim($title), trim($originalName)], static fn ($v) => $v !== '');
+        foreach ($candidates as $candidate) {
+            $name = pathinfo($candidate, PATHINFO_FILENAME);
+            $name = str_replace(['_', '-', '.', '[', ']', '(', ')'], ' ', $name);
+            $name = preg_replace('/\s+/u', ' ', $name) ?? '';
+            $name = trim($name);
+            if ($name === '') {
+                continue;
+            }
+            $lower = mb_strtolower($name, 'UTF-8');
+            if (preg_match('/\b(?:cap(?:i?tulo)?|cap[íi]tulo|ch(?:apter)?|ep(?:is[oó]dio)?|vol(?:ume)?)\s*#?\s*(\d{1,4})\b/u', $lower, $match)) {
+                return (int)$match[1];
+            }
+            if (preg_match('/^\s*(\d{1,4})\b/u', $lower, $match)) {
+                return (int)$match[1];
+            }
+            if (preg_match_all('/\b(\d{1,4})\b/u', $lower, $matches)) {
+                foreach ($matches[1] as $raw) {
+                    $num = (int)$raw;
+                    if ($num >= 1900 && $num <= 2100) {
+                        continue;
+                    }
+                    return $num;
+                }
+            }
+        }
+        return 0;
     }
 
     private function sanitizeFileName(string $value): string
