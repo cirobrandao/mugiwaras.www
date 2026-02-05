@@ -87,7 +87,9 @@ foreach (($categories ?? []) as $c) {
     <table class="table table-sm" style="table-layout: fixed;">
         <thead>
         <tr>
-            <th style="width: 32px;"></th>
+            <th style="width: 32px;">
+                <input class="form-check-input" type="checkbox" id="selectAllPending" aria-label="Selecionar todos os pendentes">
+            </th>
             <th style="width: 40px;"></th>
             <th style="width: 220px;">Arquivo</th>
             <th style="width: 160px;">Categoria</th>
@@ -104,7 +106,7 @@ foreach (($categories ?? []) as $c) {
             <tr>
                 <td>
                     <?php if (($u['status'] ?? '') === 'pending'): ?>
-                        <input class="form-check-input" type="checkbox" name="ids[]" value="<?= (int)$u['id'] ?>" aria-label="Selecionar pendente" form="bulkApproveForm">
+                        <input class="form-check-input bulk-pending-checkbox" type="checkbox" name="ids[]" value="<?= (int)$u['id'] ?>" aria-label="Selecionar pendente" form="bulkApproveForm">
                     <?php endif; ?>
                 </td>
                 <td>
@@ -279,6 +281,32 @@ foreach (($categories ?? []) as $c) {
         <?= $m ?>
     <?php endforeach; ?>
 <?php endif; ?>
+<script>
+(() => {
+    const selectAll = document.getElementById('selectAllPending');
+    const form = document.getElementById('bulkApproveForm');
+    if (selectAll) {
+        selectAll.addEventListener('change', () => {
+            document.querySelectorAll('.bulk-pending-checkbox').forEach((cb) => {
+                cb.checked = selectAll.checked;
+            });
+        });
+    }
+    if (form) {
+        form.addEventListener('submit', () => {
+            form.querySelectorAll('input[name="ids[]"][data-generated="1"]').forEach((el) => el.remove());
+            document.querySelectorAll('.bulk-pending-checkbox:checked').forEach((cb) => {
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'ids[]';
+                hidden.value = cb.value;
+                hidden.setAttribute('data-generated', '1');
+                form.appendChild(hidden);
+            });
+        });
+    }
+})();
+</script>
 <?php if (!empty($total)): ?>
     <?php
     $pages = (int)ceil($total / ($perPage ?? 50));

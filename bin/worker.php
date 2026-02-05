@@ -12,14 +12,31 @@ use App\Core\Audit;
 use App\Models\ContentItem;
 
 $jobs = Job::pending(5);
+$startedAt = date('Y-m-d H:i:s');
+echo "Worker start: {$startedAt}\n";
+echo 'Jobs pending (batch): ' . count($jobs) . "\n";
 $processor = new JobProcessor();
 
+if (empty($jobs)) {
+    echo "No pending jobs.\n";
+}
+
 foreach ($jobs as $job) {
+    $jobId = (int)($job['id'] ?? 0);
+    $jobType = (string)($job['job_type'] ?? '');
+    echo "Processing job #{$jobId} ({$jobType})...\n";
     try {
-        Job::markRunning((int)$job['id']);
+        Job::markRunning($jobId);
         $processor->process($job);
         $payload = json_decode((string)$job['payload'], true) ?: [];
         $target = (string)($payload['target'] ?? '');
+        $source = (string)($payload['source'] ?? '');
+        if ($source !== '') {
+            echo "  source: {$source}\n";
+        }
+        if ($target !== '') {
+            echo "  target: {$target}\n";
+        }
         if ($target !== '' && file_exists($target)) {
             if (!isValidCbz($target)) {
                 @unlink($target);
@@ -44,17 +61,20 @@ foreach ($jobs as $job) {
                 'sz' => (int)($payload['file_size'] ?? filesize($target)),
                 'o' => (string)($payload['original_name'] ?? ''),
             ]);
+            echo "  converted: {$relative}\n";
         }
         $payload = json_decode((string)$job['payload'], true) ?: [];
         if (!empty($payload['cleanup_source']) && !empty($payload['source']) && file_exists((string)$payload['source'])) {
             @unlink((string)$payload['source']);
         }
-        Job::markDone((int)$job['id']);
-        Upload::setStatusByJob((int)$job['id'], 'done');
-        Audit::log('convert_job', null, ['job_id' => (int)$job['id']]);
+        Job::markDone($jobId);
+        Upload::setStatusByJob($jobId, 'done');
+        Audit::log('convert_job', null, ['job_id' => $jobId]);
+        echo "  status: done\n";
     } catch (Throwable $e) {
-        Job::markFailed((int)$job['id'], $e->getMessage());
-        Upload::setStatusByJob((int)$job['id'], 'failed');
+        Job::markFailed($jobId, $e->getMessage());
+        Upload::setStatusByJob($jobId, 'failed');
+        echo "  status: failed ({$e->getMessage()})\n";
     }
 }
 
