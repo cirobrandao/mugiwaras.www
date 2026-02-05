@@ -68,16 +68,33 @@ foreach (($categories ?? []) as $c) {
     </div>
     <div class="col-sm-12 col-md-3 d-flex gap-2 justify-content-md-end"></div>
 </form>
+<form id="bulkApproveForm" method="post" action="<?= base_path('/admin/uploads/approve-multiple') ?>">
+    <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+    <input type="hidden" name="page" value="<?= (int)($page ?? 1) ?>">
+    <input type="hidden" name="perPage" value="<?= (int)($perPage ?? 50) ?>">
+    <input type="hidden" name="user" value="<?= View::e((string)($filterUser ?? '')) ?>">
+    <input type="hidden" name="category" value="<?= (int)($filterCategory ?? 0) ?>">
+    <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
+    <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
+    <div class="d-flex justify-content-end mb-2">
+        <button class="btn btn-sm btn-outline-success" type="submit" title="Liberar pendentes selecionados">
+            <i class="fa-solid fa-check-double"></i>
+            <span class="ms-1">Liberar pendentes selecionados</span>
+        </button>
+    </div>
+</form>
 <div class="table-responsive">
     <table class="table table-sm" style="table-layout: fixed;">
         <thead>
         <tr>
+            <th style="width: 32px;"></th>
             <th style="width: 40px;"></th>
             <th style="width: 220px;">Arquivo</th>
             <th style="width: 160px;">Categoria</th>
             <th style="width: 200px;">Série</th>
             <th style="width: 150px;">Data</th>
             <th style="width: 140px;">Usuário</th>
+            <th style="width: 220px;">Falha</th>
             <th class="text-end" style="width: 140px;">Ações</th>
         </tr>
         </thead>
@@ -86,8 +103,17 @@ foreach (($categories ?? []) as $c) {
         <?php foreach (($uploads ?? []) as $u): ?>
             <tr>
                 <td>
+                    <?php if (($u['status'] ?? '') === 'pending'): ?>
+                        <input class="form-check-input" type="checkbox" name="ids[]" value="<?= (int)$u['id'] ?>" aria-label="Selecionar pendente" form="bulkApproveForm">
+                    <?php endif; ?>
+                </td>
+                <td>
                     <?php
                     $st = (string)($u['status'] ?? '');
+                    $jobStatus = (string)($u['job_status'] ?? '');
+                    if ($jobStatus === 'failed') {
+                        $st = 'failed';
+                    }
                     $icon = 'fa-circle'; $cls = 'text-secondary';
                     if ($st === 'queued' || $st === 'pending') { $icon = 'fa-clock'; $cls = 'text-muted'; }
                     elseif ($st === 'processing') { $icon = 'fa-spinner fa-spin'; $cls = 'text-primary'; }
@@ -117,11 +143,24 @@ foreach (($categories ?? []) as $c) {
                 </td>
                 <td><?= View::e((string)$u['created_at']) ?></td>
                 <td><?= View::e($u['username_display'] ?? ('#' . (int)$u['user_id'])) ?></td>
+                <td class="text-truncate" style="max-width: 220px;">
+                    <?php if ($st === 'failed'): ?>
+                        <?= View::e((string)($u['job_error'] ?? 'Falha sem detalhe.')) ?>
+                    <?php else: ?>
+                        <span class="text-muted">—</span>
+                    <?php endif; ?>
+                </td>
                 <td class="text-end">
                     <?php if (($u['status'] ?? '') === 'pending'): ?>
                         <form method="post" action="<?= base_path('/admin/uploads/approve') ?>" class="d-inline">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
                             <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+                            <input type="hidden" name="page" value="<?= (int)($page ?? 1) ?>">
+                            <input type="hidden" name="perPage" value="<?= (int)($perPage ?? 50) ?>">
+                            <input type="hidden" name="user" value="<?= View::e((string)($filterUser ?? '')) ?>">
+                            <input type="hidden" name="category" value="<?= (int)($filterCategory ?? 0) ?>">
+                            <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
+                            <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
                             <button class="btn btn-sm btn-outline-success me-1" type="submit" title="Aprovar">
                                 <i class="fa-solid fa-check"></i>
                                 <span class="visually-hidden">Aprovar</span>
@@ -216,6 +255,12 @@ foreach (($categories ?? []) as $c) {
                                 <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
                                 <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
                                 <input type="hidden" name="confirm" value="1">
+                                <input type="hidden" name="page" value="<?= (int)($page ?? 1) ?>">
+                                <input type="hidden" name="perPage" value="<?= (int)($perPage ?? 50) ?>">
+                                <input type="hidden" name="user" value="<?= View::e((string)($filterUser ?? '')) ?>">
+                                <input type="hidden" name="category" value="<?= (int)($filterCategory ?? 0) ?>">
+                                <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
+                                <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
                                 <button class="btn btn-danger" type="submit">Excluir</button>
                             </form>
                         </div>

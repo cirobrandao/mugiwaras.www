@@ -47,7 +47,8 @@ ob_start();
             <?php foreach ($entries as $entry): ?>
             <?php $isPinned = (int)($s['pin_order'] ?? 0) > 0; ?>
             <div class="list-group-item<?= $isPinned ? ' bg-warning-subtle' : '' ?>">
-                <div class="d-flex flex-wrap align-items-center gap-2">
+                <div class="d-flex justify-content-between align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
                     <form method="post" action="<?= base_path('/libraries/series/favorite') ?>">
                         <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                         <input type="hidden" name="id" value="<?= $seriesId ?>">
@@ -57,97 +58,100 @@ ob_start();
                         </button>
                     </form>
 
-                    <div class="flex-grow-1">
-                        <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode((string)$category['name']) . '/' . rawurlencode((string)$s['name']) . '?format=' . $entry['format'] . (!empty($iosTest) ? '&ios_test=1' : '')) ?>">
-                            <?= View::e((string)$s['name']) ?>
-                        </a>
-                        <?php if ($entry['tag'] !== ''): ?>
-                            <span class="badge bg-warning text-dark ms-2">PDF</span>
-                        <?php endif; ?>
-                        <?php if ($isPinned): ?>
-                            <span class="badge bg-primary ms-2">Em destaque</span>
-                        <?php endif; ?>
-                        <?php if ($entry['format'] === 'empty'): ?>
-                            <span class="badge bg-secondary ms-2">Sem conteúdo</span>
-                        <?php elseif ($entry['format'] === 'pending'): ?>
-                            <span class="badge bg-info text-dark ms-2">Aguardando conversão</span>
-                        <?php endif; ?>
-                        <?php if ($pendingCount > 0 && $canPin && $entry['format'] !== 'pending'): ?>
-                            <span class="badge bg-info text-dark ms-2">Em conversão: <?= $pendingCount ?></span>
-                        <?php endif; ?>
-                        <div class="small text-muted">Capítulos: <?= (int)$entry['count'] ?></div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode((string)$category['name']) . '/' . rawurlencode((string)$s['name']) . '?format=' . $entry['format'] . (!empty($iosTest) ? '&ios_test=1' : '')) ?>">
+                                    <?= View::e((string)$s['name']) ?>
+                                </a>
+                                <?php if ($entry['tag'] !== ''): ?>
+                                    <span class="badge bg-warning text-dark ms-2">PDF</span>
+                                <?php endif; ?>
+                                <?php if ($isPinned): ?>
+                                    <span class="badge bg-primary ms-2">Em destaque</span>
+                                <?php endif; ?>
+                                <?php if ($entry['format'] === 'empty'): ?>
+                                    <span class="badge bg-secondary ms-2">Sem conteúdo</span>
+                                <?php elseif ($entry['format'] === 'pending'): ?>
+                                    <span class="badge bg-info text-dark ms-2">Aguardando conversão</span>
+                                <?php endif; ?>
+                                <?php if ($pendingCount > 0 && $canPin && $entry['format'] !== 'pending'): ?>
+                                    <span class="badge bg-info text-dark ms-2">Em conversão: <?= $pendingCount ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="small text-muted">Capítulos: <?= (int)$entry['count'] ?></div>
+                        </div>
                     </div>
-                    <?php if ($canPin): ?>
-                        <?php $pinModalId = 'pin-series-' . $seriesId; ?>
-                        <form class="d-flex align-items-center gap-1">
-                            <input class="form-control form-control-sm" type="number" name="pin_order" value="<?= (int)($s['pin_order'] ?? 0) ?>" style="width: 70px;" min="0" disabled>
-                            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#<?= $pinModalId ?>" title="Sinalizar">
-                                <i class="fa-solid fa-thumbtack"></i>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <?php if ($canPin || $canManage): ?>
+                            <span class="text-muted">|</span>
+                        <?php endif; ?>
+                        <?php if ($canPin): ?>
+                            <form method="post" action="<?= base_path('/libraries/series/pin') ?>" class="d-flex align-items-center gap-1">
+                                <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                                <input type="hidden" name="id" value="<?= $seriesId ?>">
+                                <input class="form-control form-control-sm" type="number" name="pin_order" value="<?= (int)($s['pin_order'] ?? 0) ?>" style="width: 70px;" min="0">
+                                <button class="btn btn-sm btn-outline-primary" type="submit" title="Salvar ordem" aria-label="Salvar ordem">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                </button>
+                            </form>
+                        <?php endif; ?>
+                        <?php if ($canManage): ?>
+                            <?php $editModalId = 'edit-series-' . $seriesId; ?>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#<?= $editModalId ?>">
+                                <i class="fa-solid fa-pen-to-square"></i>
                             </button>
-                        </form>
-                        <div class="modal fade" id="<?= $pinModalId ?>" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Sinalizar série</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            <?php $deleteModalId = 'delete-series-' . $seriesId; ?>
+                            <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#<?= $deleteModalId ?>" title="Excluir" aria-label="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <?php if ($canManage): ?>
+                    <div class="modal fade" id="<?= $editModalId ?>" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Editar série</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                </div>
+                                <form method="post" action="<?= base_path('/libraries/series/update') ?>">
+                                    <div class="modal-body">
+                                        <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                                        <input type="hidden" name="id" value="<?= $seriesId ?>">
+                                        <label class="form-label" for="series-name-<?= $seriesId ?>">Nome</label>
+                                        <input class="form-control" id="series-name-<?= $seriesId ?>" type="text" name="name" value="<?= View::e((string)$s['name']) ?>" required>
                                     </div>
-                                    <form method="post" action="<?= base_path('/libraries/series/pin') ?>">
-                                        <div class="modal-body">
-                                            <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                                            <input type="hidden" name="id" value="<?= $seriesId ?>">
-                                            <p class="mb-2">Confirmar sinalização da série <strong><?= View::e((string)$s['name']) ?></strong>?</p>
-                                            <label class="form-label small">Ordem de fixação</label>
-                                            <input class="form-control" type="number" name="pin_order" value="<?= (int)($s['pin_order'] ?? 0) ?>" min="0">
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                            <button class="btn btn-primary" type="submit">Confirmar</button>
-                                        </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button class="btn btn-primary" type="submit">Salvar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="<?= $deleteModalId ?>" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Remover série</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Tem certeza que deseja remover a série <strong><?= View::e((string)$s['name']) ?></strong> e seus conteúdos?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <form method="post" action="<?= base_path('/libraries/series/delete') ?>" class="m-0">
+                                        <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                                        <input type="hidden" name="id" value="<?= $seriesId ?>">
+                                        <button class="btn btn-danger" type="submit">Confirmar remoção</button>
                                     </form>
                                 </div>
                             </div>
                         </div>
-                    <?php endif; ?>
-                    <?php if ($canManage): ?>
-                        <?php $deleteModalId = 'delete-series-' . $seriesId; ?>
-                        <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#<?= $deleteModalId ?>">Excluir</button>
-                        <div class="modal fade" id="<?= $deleteModalId ?>" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Remover série</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        Tem certeza que deseja remover a série <strong><?= View::e((string)$s['name']) ?></strong> e seus conteúdos?
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                        <form method="post" action="<?= base_path('/libraries/series/delete') ?>" class="m-0">
-                                            <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                                            <input type="hidden" name="id" value="<?= $seriesId ?>">
-                                            <button class="btn btn-danger" type="submit">Confirmar remoção</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <?php if ($canManage): ?>
-                    <details class="mt-2">
-                        <summary>Editar</summary>
-                        <form method="post" action="<?= base_path('/libraries/series/update') ?>" class="mt-2">
-                            <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                            <input type="hidden" name="id" value="<?= $seriesId ?>">
-                            <div class="input-group input-group-sm" style="max-width: 420px;">
-                                <input class="form-control" type="text" name="name" value="<?= View::e((string)$s['name']) ?>" required>
-                                <button class="btn btn-outline-primary" type="submit">Salvar</button>
-                            </div>
-                        </form>
-                    </details>
+                    </div>
                 <?php endif; ?>
             </div>
             <?php endforeach; ?>

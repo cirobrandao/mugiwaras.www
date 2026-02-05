@@ -119,6 +119,7 @@ $router->get('/admin/support/{id}', [new App\Controllers\Admin\SupportController
 $router->get('/admin/uploads', [new App\Controllers\Admin\UploadsController(), 'index'], [App\Core\Auth::requireTeamAccess()]);
 $router->post('/admin/uploads/update', [new App\Controllers\Admin\UploadsController(), 'update'], [App\Core\Auth::requireTeamAccess()]);
 $router->post('/admin/uploads/approve', [new App\Controllers\Admin\UploadsController(), 'approve'], [App\Core\Auth::requireTeamAccess()]);
+$router->post('/admin/uploads/approve-multiple', [new App\Controllers\Admin\UploadsController(), 'approveMultiple'], [App\Core\Auth::requireTeamAccess()]);
 $router->post('/admin/uploads/delete-multiple', [new App\Controllers\Admin\UploadsController(), 'deleteMultiple'], [App\Core\Auth::requireTeamAccess()]);
 $router->post('/admin/uploads/delete', [new App\Controllers\Admin\UploadsController(), 'delete'], [App\Core\Auth::requireTeamAccess()]);
 $router->post('/admin/support/status', [new App\Controllers\Admin\SupportController(), 'status'], [App\Core\Auth::requireSupportStaff()]);

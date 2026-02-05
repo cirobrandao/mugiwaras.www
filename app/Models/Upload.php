@@ -114,15 +114,22 @@ final class Upload
             $params['username'] = '%' . $filters['username'] . '%';
         }
         if (!empty($filters['status'])) {
-            $where[] = 'u.status = :status';
-            $params['status'] = (string)$filters['status'];
+            if ($filters['status'] === 'failed') {
+                $where[] = '(u.status = :status OR j.status = :job_status)';
+                $params['status'] = 'failed';
+                $params['job_status'] = 'failed';
+            } else {
+                $where[] = 'u.status = :status';
+                $params['status'] = (string)$filters['status'];
+            }
         }
 
-        $sql = 'SELECT u.*, c.name AS category_name, s.name AS series_name, usr.username AS username_display
+        $sql = 'SELECT u.*, c.name AS category_name, s.name AS series_name, usr.username AS username_display, j.status AS job_status, j.error_message AS job_error
                 FROM uploads u
                 LEFT JOIN categories c ON c.id = u.category_id
                 LEFT JOIN series s ON s.id = u.series_id
-                LEFT JOIN users usr ON usr.id = u.user_id';
+                LEFT JOIN users usr ON usr.id = u.user_id
+                LEFT JOIN jobs j ON j.id = u.job_id';
         if (!empty($where)) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
@@ -170,11 +177,17 @@ final class Upload
             $params['username'] = '%' . $filters['username'] . '%';
         }
         if (!empty($filters['status'])) {
-            $where[] = 'u.status = :status';
-            $params['status'] = (string)$filters['status'];
+            if ($filters['status'] === 'failed') {
+                $where[] = '(u.status = :status OR j.status = :job_status)';
+                $params['status'] = 'failed';
+                $params['job_status'] = 'failed';
+            } else {
+                $where[] = 'u.status = :status';
+                $params['status'] = (string)$filters['status'];
+            }
         }
 
-        $sql = 'SELECT COUNT(*) AS c FROM uploads u LEFT JOIN users usr ON usr.id = u.user_id';
+        $sql = 'SELECT COUNT(*) AS c FROM uploads u LEFT JOIN users usr ON usr.id = u.user_id LEFT JOIN jobs j ON j.id = u.job_id';
         if (!empty($where)) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
@@ -219,11 +232,17 @@ final class Upload
             $params['username'] = '%' . $filters['username'] . '%';
         }
         if (!empty($filters['status'])) {
-            $where[] = 'u.status = :status';
-            $params['status'] = (string)$filters['status'];
+            if ($filters['status'] === 'failed') {
+                $where[] = '(u.status = :status OR j.status = :job_status)';
+                $params['status'] = 'failed';
+                $params['job_status'] = 'failed';
+            } else {
+                $where[] = 'u.status = :status';
+                $params['status'] = (string)$filters['status'];
+            }
         }
 
-        $sql = 'SELECT COALESCE(SUM(u.file_size),0) AS s FROM uploads u LEFT JOIN users usr ON usr.id = u.user_id';
+        $sql = 'SELECT COALESCE(SUM(u.file_size),0) AS s FROM uploads u LEFT JOIN users usr ON usr.id = u.user_id LEFT JOIN jobs j ON j.id = u.job_id';
         if (!empty($where)) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
