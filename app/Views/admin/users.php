@@ -74,7 +74,7 @@ foreach (($users ?? []) as $u) {
 			$label = $tierLabels[$tier] ?? $tier;
 			$color = $tierColors[$tier] ?? '#6c757d';
 			?>
-			<span class="legend-dot" style="background-color: <?= View::e($color) ?>; border-color: <?= View::e($color) ?>;"></span>
+			<span class="legend-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color: <?= View::e($color) ?>; border:1px solid <?= View::e($color) ?>; margin-right:4px;"></span>
 			<span class="me-2"><?= View::e($label) ?></span>
 		<?php endforeach; ?>
 	</div>
@@ -130,7 +130,7 @@ $page = min($page, $pages);
 			?>
 			<tr class="<?= $rowClass ?>" style="<?= $isLocked ? 'text-decoration: line-through;' : '' ?>">
 				<td>
-					<span class="tier-dot" style="background-color: <?= View::e($tierColor) ?>; border-color: <?= View::e($tierColor) ?>;" title="<?= View::e($tierLabels[$tier] ?? $tier) ?>"></span>
+					<span class="tier-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color: <?= View::e($tierColor) ?>; border:1px solid <?= View::e($tierColor) ?>;" title="<?= View::e($tierLabels[$tier] ?? $tier) ?>"></span>
 				</td>
 				<td><?= View::e($u['username']) ?></td>
 				<td>
