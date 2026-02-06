@@ -26,6 +26,7 @@
 /srv/
 /sql/dev_*.sql
 /sql/0*.sql
+/z1hd/
 
 # Environment overrides
 .env.local

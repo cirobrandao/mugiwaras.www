@@ -45,220 +45,187 @@ if (!function_exists('time_ago_compact')) {
         <link rel="icon" href="<?= base_path('/' . ltrim((string)$systemFavicon, '/')) ?>">
     <?php endif; ?>
     <link rel="stylesheet" href="<?= base_path('/assets/bootstrap.min.css') ?>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="<?= url('assets/css/app.css') ?>">
+    <link rel="stylesheet" href="<?= url('assets/css/z1hd.css') ?>">
     <link rel="stylesheet" href="<?= base_path('/assets/category-tags.css') ?>">
-    <style>
-        html,
-        body {
-            height: 100%;
-        }
-        body {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
-        main {
-            flex: 1 0 auto;
-        }
-        footer {
-            margin-top: auto;
-            flex-shrink: 0;
-        }
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            background: #ffffff;
-            color: #000000;
-            border: 2px solid #ffffff;
-            border-radius: 999px;
-            box-sizing: border-box;
-        }
-        .user-menu-toggle {
-            border: 1px solid rgba(59, 130, 246, 0.85);
-            border-radius: 0.5rem;
-            height: 31px;
-            padding: 0 0.6rem;
-            display: inline-flex;
-            align-items: center;
-            background: rgba(59, 130, 246, 0.18);
-        }
-        .user-menu-toggle:hover,
-        .user-menu-toggle:focus {
-            border-color: rgba(59, 130, 246, 1);
-        }
-        #botoes-acao {
-            border: none;
-            outline: none;
-            cursor: pointer;
-            transition: background 0.2s, opacity 0.2s;
-        }
-        #botoes-acao:hover,
-        #botoes-acao:focus {
-            background: rgba(13, 110, 253, 0.95) !important;
-            opacity: 1 !important;
-        }
-    </style>
 </head>
-<body>
-<?php if (empty($hideHeader)): ?>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-        <?php $currentUser = \App\Core\Auth::user(); ?>
-        <a class="navbar-brand d-flex align-items-center gap-2" href="<?= $currentUser ? base_path('/dashboard') : base_path('/') ?>">
-            <?php if (!empty($systemLogo)): ?>
-                <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="Logo" class="navbar-logo">
-            <?php else: ?>
-                <span><?= View::e($systemName) ?></span>
-            <?php endif; ?>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="mainNav">
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <?php $supportUrl = base_path('/support'); ?>
-                <?php $supportBadge = 0; ?>
-                <?php if (!empty($currentUser) && !$isSupportStaff): ?>
-                    <?php $supportBadge = \App\Models\SupportReply::countPendingForUser((int)$currentUser['id']); ?>
+<body class="app-body">
+<?php
+$currentUser = \App\Core\Auth::user();
+$displaySystemName = trim(preg_replace('/\s*\[DEV\]\s*/i', '', (string)$systemName));
+$isLoggedIn = isset($_SESSION['user_id']);
+$isAdmin = $currentUser ? \App\Core\Auth::isAdmin($currentUser) : false;
+$isModerator = $currentUser ? \App\Core\Auth::isModerator($currentUser) : false;
+$isUploader = $currentUser ? \App\Core\Auth::isUploader($currentUser) : false;
+$isSupportStaff = $currentUser ? \App\Core\Auth::isSupportStaff($currentUser) : false;
+$isEquipe = $currentUser ? \App\Core\Auth::isEquipe($currentUser) : false;
+$canUseSideMenu = $isAdmin || $isModerator || $isUploader || $isSupportStaff;
+
+$supportUrl = base_path('/support');
+$supportBadge = 0;
+$pendingPayments = 0;
+$pendingSupport = 0;
+$pendingUploads = 0;
+$recentUsers = [];
+
+if ($isLoggedIn && !empty($currentUser)) {
+    if (!$isSupportStaff) {
+        $supportBadge = \App\Models\SupportReply::countPendingForUser((int)$currentUser['id']);
+    }
+    if ($isAdmin) {
+        $recentUsers = \App\Models\User::recentLogins(10);
+        $pendingPayments = \App\Models\Payment::countPending();
+    }
+    if ($isSupportStaff) {
+        $pendingSupport = \App\Models\SupportMessage::countOpenForStaff();
+    }
+    if ($isAdmin || $isUploader || $isModerator) {
+        $pendingUploads = \App\Models\Upload::countPending();
+    }
+}
+
+$displayName = (string)($currentUser['username'] ?? 'Usuário');
+$initial = $displayName !== '' ? mb_strtoupper(mb_substr($displayName, 0, 1)) : 'U';
+$activePage = $activePage ?? '';
+?>
+
+<?php if (!empty($hideHeader)): ?>
+    <div class="auth-shell">
+        <div class="auth-hero">
+            <div>
+                <?php if (!empty($systemLogo)): ?>
+                    <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="Logo" class="auth-logo">
                 <?php endif; ?>
-                <?php $displayName = (string)($currentUser['username'] ?? 'Usuário'); ?>
-                <?php $initial = mb_strtoupper(mb_substr($displayName, 0, 1)); ?>
-                <?php $canUseSideMenu = \App\Core\Auth::isAdmin($currentUser) || \App\Core\Auth::isModerator($currentUser) || \App\Core\Auth::isUploader($currentUser) || \App\Core\Auth::isSupportStaff($currentUser); ?>
-                <?php $recentUsers = \App\Core\Auth::isAdmin($currentUser) ? \App\Models\User::recentLogins(10) : []; ?>
-                <?php $pendingPayments = \App\Core\Auth::isAdmin($currentUser) ? \App\Models\Payment::countPending() : 0; ?>
-                <?php $pendingSupport = \App\Core\Auth::isSupportStaff($currentUser) ? \App\Models\SupportMessage::countOpenForStaff() : 0; ?>
-                <?php $pendingUploads = (\App\Core\Auth::isAdmin($currentUser) || \App\Core\Auth::isUploader($currentUser) || \App\Core\Auth::isModerator($currentUser)) ? \App\Models\Upload::countPending() : 0; ?>
-            <?php endif; ?>
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_path('/libraries') ?>">Bibliotecas</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_path('/loja') ?>">Loja</a></li>
-                        <?php if (!empty($currentUser) && !\App\Core\Auth::isAdmin($currentUser) && !\App\Core\Auth::isEquipe($currentUser) && !\App\Core\Auth::isSupportStaff($currentUser) && !\App\Core\Auth::isUploader($currentUser) && !\App\Core\Auth::isModerator($currentUser)): ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= $supportUrl ?>">
-                                    Abrir chamado
-                                    <?php if (!empty($supportBadge)): ?>
-                                        <span class="badge bg-danger ms-1"><?= (int)$supportBadge ?></span>
-                                    <?php endif; ?>
-                                </a>
-                            </li>
-                        <?php endif; ?>
-                <?php else: ?>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_path('/') ?>">Login</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_path('/register') ?>">Registrar</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_path('/support') ?>">Abrir chamado</a></li>
-                <?php endif; ?>
-            </ul>
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item dropdown">
-                        <div class="btn-group" role="group">
-                            <a class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 user-menu-toggle" href="<?= base_path('/perfil') ?>">
-                                <span class="rounded-circle d-inline-flex align-items-center justify-content-center user-avatar">
-                                    <?= View::e($initial) ?>
-                                </span>
-                                <span><?= View::e($displayName) ?></span>
-                            </a>
-                            <button type="button" class="btn btn-outline-light btn-sm dropdown-toggle dropdown-toggle-split user-menu-toggle" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="visually-hidden">Abrir menu</span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                                <li><a class="dropdown-item" href="<?= base_path('/perfil') ?>">Atualizar conta</a></li>
-                                <li><a class="dropdown-item" href="<?= base_path('/perfil/senha') ?>">Mudar senha</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="<?= base_path('/logout') ?>">Sair</a></li>
-                            </ul>
-                        </div>
-                    </li>
-                    <?php if (!empty($canUseSideMenu)): ?>
-                        <li class="nav-item ms-2">
-                            <button class="btn btn-outline-light btn-sm menu-side-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSideMenu" aria-controls="mobileSideMenu" aria-label="Abrir menu lateral">
-                                <i class="fa-solid fa-bars"></i>
-                            </button>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            <?php endif; ?>
+                <h1 class="mt-4">Bem-vindo de volta</h1>
+                <p class="text-muted">Acesse sua conta para continuar sua leitura e gerenciar seus conteúdos.</p>
+                <div class="mt-4">
+                    <div class="fw-semibold">Precisa de acesso?</div>
+                    <a class="text-decoration-none" href="<?= base_path('/register') ?>">Cadastre-se agora.</a>
+                </div>
+            </div>
+            <div class="text-muted small">© <?= date('Y') ?> <?= View::e($displaySystemName !== '' ? $displaySystemName : $systemName) ?></div>
+        </div>
+        <div class="auth-panel">
+            <?= $content ?? '' ?>
         </div>
     </div>
-</nav>
-<?php if (!empty($canUseSideMenu)): ?>
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="mobileSideMenu" aria-labelledby="mobileSideMenuLabel">
-        <div class="offcanvas-header">
-            <span class="offcanvas-title" id="mobileSideMenuLabel"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
-        </div>
-        <div class="offcanvas-body">
-            <?php if (\App\Core\Auth::isAdmin($currentUser)): ?>
-                <div class="mb-3">
-                    <div class="text-muted small mb-2">Administrador</div>
-                    <div class="list-group">
-                        <a class="list-group-item list-group-item-action" href="<?= base_path('/admin') ?>">Dashboard</a>
-                        <a class="list-group-item list-group-item-action" href="<?= base_path('/admin/users') ?>">Usuários</a>
-                        <a class="list-group-item list-group-item-action d-flex align-items-center" href="<?= base_path('/admin/uploads') ?>">
-                            <span>Gerenciador de Arquivos</span>
-                            <?php if (!empty($pendingUploads)): ?>
-                                <span class="badge bg-danger ms-auto"><?= (int)$pendingUploads ?></span>
+<?php else: ?>
+    <div class="app-shell">
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-mark"><?= View::e(mb_strtoupper(mb_substr($systemName, 0, 1))) ?></div>
+                <div class="brand-text">
+                    <div class="brand-title"><?= View::e($systemName) ?></div>
+                    <div class="brand-sub">Biblioteca digital</div>
+                </div>
+            </div>
+            <button class="btn btn-sm btn-ghost w-100 d-lg-none" data-sidebar-toggle>
+                <i class="bi bi-layout-text-sidebar-reverse"></i>
+                Menu
+            </button>
+            <nav class="sidebar-nav">
+                <?php if ($isLoggedIn): ?>
+                    <a class="nav-link <?= $activePage === 'dashboard' ? 'active' : '' ?>" href="<?= base_path('/dashboard') ?>">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a class="nav-link <?= $activePage === 'libraries' ? 'active' : '' ?>" href="<?= base_path('/libraries') ?>">
+                        <i class="bi bi-collection"></i>
+                        <span>Bibliotecas</span>
+                    </a>
+                    <a class="nav-link <?= $activePage === 'loja' ? 'active' : '' ?>" href="<?= base_path('/loja') ?>">
+                        <i class="bi bi-bag"></i>
+                        <span>Loja</span>
+                    </a>
+                    <?php if (!$isAdmin && !$isEquipe && !$isSupportStaff && !$isUploader && !$isModerator): ?>
+                        <a class="nav-link" href="<?= $supportUrl ?>">
+                            <i class="bi bi-life-preserver"></i>
+                            <span>Abrir chamado</span>
+                            <?php if (!empty($supportBadge)): ?>
+                                <span class="badge bg-danger ms-auto"><?= (int)$supportBadge ?></span>
                             <?php endif; ?>
                         </a>
-                    </div>
-                </div>
-            <?php endif; ?>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <a class="nav-link" href="<?= base_path('/') ?>">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span>Login</span>
+                    </a>
+                    <a class="nav-link" href="<?= base_path('/register') ?>">
+                        <i class="bi bi-person-plus"></i>
+                        <span>Registrar</span>
+                    </a>
+                    <a class="nav-link" href="<?= base_path('/support') ?>">
+                        <i class="bi bi-life-preserver"></i>
+                        <span>Suporte</span>
+                    </a>
+                <?php endif; ?>
 
-            <?php if (\App\Core\Auth::isAdmin($currentUser)): ?>
-                <div class="mb-3">
-                    <div class="text-muted small mb-2">Financeiro</div>
-                    <div class="list-group">
-                        <a class="list-group-item list-group-item-action d-flex align-items-center" href="<?= base_path('/admin/payments') ?>">
+                <?php if ($canUseSideMenu): ?>
+                    <div class="nav-section">Administracao</div>
+                    <?php if ($isAdmin): ?>
+                        <a class="nav-link" href="<?= base_path('/admin') ?>">
+                            <i class="bi bi-grid"></i>
+                            <span>Admin</span>
+                        </a>
+                        <a class="nav-link" href="<?= base_path('/admin/users') ?>">
+                            <i class="bi bi-people"></i>
+                            <span>Usuarios</span>
+                        </a>
+                        <a class="nav-link" href="<?= base_path('/admin/payments') ?>">
+                            <i class="bi bi-cash-coin"></i>
                             <span>Pagamentos</span>
                             <?php if (!empty($pendingPayments)): ?>
                                 <span class="badge bg-danger ms-auto"><?= (int)$pendingPayments ?></span>
                             <?php endif; ?>
                         </a>
-                    </div>
-                </div>
-            <?php endif; ?>
-
-            <?php if (\App\Core\Auth::isModerator($currentUser)): ?>
-                <div class="mb-3">
-                    <div class="text-muted small mb-2">Moderador</div>
-                    <div class="list-group">
-                        <a class="list-group-item list-group-item-action" href="<?= base_path('/admin/uploads') ?>">Uploads</a>
-                        <a class="list-group-item list-group-item-action" href="<?= base_path('/admin/categories') ?>">Categorias</a>
-                    </div>
-                </div>
-            <?php endif; ?>
-
-            <?php if (\App\Core\Auth::isUploader($currentUser) || \App\Core\Auth::isAdmin($currentUser)): ?>
-                <div class="mb-3">
-                    <div class="text-muted small mb-2">Uploader</div>
-                    <div class="list-group">
-                        <a class="list-group-item list-group-item-action" href="<?= base_path('/upload') ?>">Enviar arquivo</a>
-                    </div>
-                </div>
-            <?php endif; ?>
-
-            <?php if (\App\Core\Auth::isSupportStaff($currentUser)): ?>
-                <div class="mb-3">
-                    <div class="text-muted small mb-2">Suporte</div>
-                    <div class="list-group">
-                        <a class="list-group-item list-group-item-action d-flex align-items-center" href="<?= base_path('/admin/support') ?>">
-                            <span>Chamados</span>
+                    <?php endif; ?>
+                    <?php if ($isAdmin || $isUploader || $isModerator): ?>
+                        <a class="nav-link" href="<?= base_path('/admin/uploads') ?>">
+                            <i class="bi bi-upload"></i>
+                            <span>Uploads</span>
+                            <?php if (!empty($pendingUploads)): ?>
+                                <span class="badge bg-danger ms-auto"><?= (int)$pendingUploads ?></span>
+                            <?php endif; ?>
+                        </a>
+                    <?php endif; ?>
+                    <?php if ($isModerator): ?>
+                        <a class="nav-link" href="<?= base_path('/admin/categories') ?>">
+                            <i class="bi bi-tags"></i>
+                            <span>Categorias</span>
+                        </a>
+                    <?php endif; ?>
+                    <?php if ($isSupportStaff): ?>
+                        <a class="nav-link" href="<?= base_path('/admin/support') ?>">
+                            <i class="bi bi-headset"></i>
+                            <span>Suporte</span>
                             <?php if (!empty($pendingSupport)): ?>
                                 <span class="badge bg-danger ms-auto"><?= (int)$pendingSupport ?></span>
                             <?php endif; ?>
                         </a>
-                    </div>
-                </div>
-            <?php endif; ?>
+                    <?php endif; ?>
+                <?php endif; ?>
 
+                <?php if ($isLoggedIn): ?>
+                    <div class="nav-section">Conta</div>
+                    <a class="nav-link" href="<?= base_path('/perfil') ?>">
+                        <i class="bi bi-person"></i>
+                        <span>Perfil</span>
+                    </a>
+                    <a class="nav-link" href="<?= base_path('/logout') ?>">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Sair</span>
+                    </a>
+                <?php endif; ?>
+            </nav>
             <?php if (!empty($recentUsers)): ?>
-                <div class="mt-4">
-                    <div class="text-muted small mb-2">Últimos usuários conectados</div>
+                <div class="sidebar-card">
+                    <div class="card-label">Ultimos usuarios conectados</div>
                     <div class="list-group list-group-flush small">
                         <?php foreach ($recentUsers as $ru): ?>
                             <div class="list-group-item d-flex align-items-center justify-content-between py-1">
@@ -270,20 +237,57 @@ if (!function_exists('time_ago_compact')) {
                     </div>
                 </div>
             <?php endif; ?>
+        </aside>
+
+        <div class="app-main">
+            <header class="app-topbar">
+                <div class="topbar-left">
+                    <button class="btn btn-icon btn-ghost d-lg-none" data-sidebar-toggle>
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div>
+                        <div class="crumb-title"><?= View::e($title ?? $systemName) ?></div>
+                        <div class="crumb-sub"><?= $isLoggedIn ? 'Leitura, biblioteca e administracao' : 'Acesse sua conta' ?></div>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <?php if ($isLoggedIn): ?>
+                        <form class="topbar-search" method="get" action="<?= base_path('/libraries/search') ?>">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar nas bibliotecas">
+                        </form>
+                        <div class="dropdown">
+                            <button class="btn btn-ghost dropdown-toggle" data-bs-toggle="dropdown">
+                                <span class="d-none d-md-inline"><?= View::e($displayName) ?></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="<?= base_path('/perfil') ?>">Atualizar conta</a></li>
+                                <li><a class="dropdown-item" href="<?= base_path('/perfil/senha') ?>">Mudar senha</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="<?= base_path('/logout') ?>">Sair</a></li>
+                            </ul>
+                        </div>
+                    <?php else: ?>
+                        <a class="btn btn-ghost" href="<?= base_path('/') ?>">Login</a>
+                        <a class="btn btn-dark" href="<?= base_path('/register') ?>">Registrar</a>
+                    <?php endif; ?>
+                </div>
+            </header>
+
+            <main class="app-content">
+                <section class="section-card app-page">
+                    <?= $content ?? '' ?>
+                </section>
+            </main>
+
+            <footer class="app-footer">
+                <div>© <?= date('Y') ?> <?= View::e($systemName) ?></div>
+                <div class="text-muted">Ultima atualizacao <span data-last-sync>agora</span></div>
+            </footer>
         </div>
     </div>
 <?php endif; ?>
-<?php endif; ?>
-<main class="container py-4">
-    <?= $content ?? '' ?>
-</main>
-<?php if (empty($hideHeader)): ?>
-<footer class="bg-dark text-white-50 text-center py-3">
-    <div class="container">
-        <small>© <?= date('Y') ?> <?= View::e($systemName) ?>. Todos os direitos reservados.</small>
-    </div>
-</footer>
-<?php endif; ?>
+
 <script src="<?= base_path('/assets/bootstrap.bundle.min.js') ?>"></script>
 <script src="<?= url('assets/js/phone-mask.js') ?>"></script>
 <script src="<?= url('assets/js/app.js') ?>"></script>

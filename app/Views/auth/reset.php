@@ -1,5 +1,6 @@
 <?php
 use App\Core\View;
+$hideHeader = true;
 ob_start();
 ?>
 <h1 class="h4 mb-3">Redefinir senha</h1>

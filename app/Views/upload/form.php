@@ -57,7 +57,7 @@ ob_start();
     </div>
     <div class="mb-3">
         <label class="form-label">Arquivos</label>
-        <input type="file" name="file[]" class="form-control" multiple required data-max-bytes="5368709120" data-max-files="20">
+        <input type="file" name="file[]" class="form-control" multiple required data-max-bytes="5368709120" data-max-files="50">
         <div class="small text-muted mt-1">Formatos aceitos: *.epub, *.cbr, *.cbz, *.zip (imagens).</div>
         <div class="small text-muted">PDF: sem leitor, apenas download (aparece sinalizado na biblioteca).</div>
     </div>

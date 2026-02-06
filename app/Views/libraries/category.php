@@ -8,15 +8,6 @@ ob_start();
         <li class="breadcrumb-item active" aria-current="page"><?= View::e($category['name'] ?? 'Categoria') ?></li>
     </ol>
 </nav>
-<form method="get" action="<?= base_path('/libraries/' . rawurlencode((string)($category['name'] ?? ''))) ?>" class="mb-2">
-    <div class="input-group">
-        <input type="text" name="q" class="form-control" placeholder="Buscar série" value="<?= View::e((string)($q ?? '')) ?>">
-        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
-        <?php if (!empty($q)): ?>
-            <a class="btn btn-outline-secondary" href="<?= base_path('/libraries/' . rawurlencode((string)($category['name'] ?? ''))) ?>">Limpar</a>
-        <?php endif; ?>
-    </div>
-</form>
 <?php if (!empty($error)): ?>
     <div class="alert alert-warning"><?= View::e($error) ?></div>
 <?php endif; ?>

@@ -115,3 +115,21 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+	const toggles = document.querySelectorAll('[data-sidebar-toggle]');
+	const shell = document.querySelector('.app-shell');
+	if (toggles.length && shell) {
+		toggles.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				shell.classList.toggle('sidebar-open');
+			});
+		});
+	}
+
+	const sync = document.querySelector('[data-last-sync]');
+	if (sync) {
+		const now = new Date();
+		sync.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+	}
+});
+

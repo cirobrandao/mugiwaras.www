@@ -5,15 +5,7 @@ ob_start();
 <?php if (!empty($error)): ?>
     <div class="alert alert-warning"><?= View::e($error) ?></div>
 <?php endif; ?>
-<form method="get" action="<?= base_path('/libraries/search') ?>" class="mb-3">
-    <div class="input-group">
-        <input type="text" name="q" class="form-control" placeholder="Pesquisar" value="<?= View::e((string)($q ?? '')) ?>">
-        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
-        <?php if (!empty($q)): ?>
-            <a class="btn btn-outline-secondary" href="<?= base_path('/libraries') ?>">Limpar</a>
-        <?php endif; ?>
-    </div>
-</form>
+<h1 class="h4 mb-3">Bibliotecas</h1>
 <?php if (empty($categories)): ?>
     <div class="alert alert-secondary">Nenhuma biblioteca encontrada.</div>
 <?php else: ?>

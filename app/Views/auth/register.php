@@ -1,5 +1,6 @@
 <?php
 use App\Core\View;
+$hideHeader = true;
 ob_start();
 ?>
 <div class="row justify-content-center">
