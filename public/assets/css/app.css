@@ -62,19 +62,11 @@ body.lights-off .reader-frame { background: #000; border-color: #111827; }
 .reader-footer #pageNumber { width: 90px; }
 .reader-footer #pageTotal { padding-left: 10px; padding-right: 10px; }
 
-@media (max-width: 768px) {
-	.reader-footer { bottom: 8px; padding: 4px; }
-	.reader-footer .input-group { padding: 4px; }
-	.reader-footer #pageNumber { width: 70px; }
-}
 
 /* scroll-to-top overlay button (visible in scroll mode) */
 .reader-scroll-top { position: absolute; right: 18px; bottom: 110px; z-index: 60; border-radius: 999px; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
 .reader-scroll-top i { font-size: 1rem; }
 
-@media (max-width: 768px) {
-	.reader-scroll-top { right: 12px; bottom: 90px; width: 40px; height: 40px; }
-}
 
 /* Library grid improvements */
 .library-card { color: inherit; }
@@ -92,6 +84,45 @@ body.lights-off .reader-frame { background: #000; border-color: #111827; }
 .navbar-logo { height: 58px; width: auto; object-fit: contain; display: block; position: relative; top: 0px; }
 .navbar-logo-preview { max-height: 28px; height: 28px; width: auto; object-fit: contain; display: block; }
 
+/* Lateral menu button */
+.menu-side-btn {
+	width: 36px;
+	height: 36px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+}
+
+
+/* Dashboard list font size */
+.dashboard-list .list-group-item {
+	font-size: 0.95rem;
+}
+
+/* Admin users table row height */
+.admin-users-table tbody td {
+	padding-top: 0.6rem;
+	padding-bottom: 0.6rem;
+	vertical-align: middle;
+}
+.admin-users-table .admin-actions {
+	white-space: nowrap;
+}
+
+/* Admin users dots */
+.legend-dot,
+.tier-dot {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	border: 1px solid transparent;
+	margin-right: 4px;
+	vertical-align: middle;
+}
+
+
 /* Limit header width so it never exceeds 1200px on very large screens */
 nav.navbar .container {
 	max-width: 1200px;
@@ -108,21 +139,6 @@ main.container {
 	margin-right: auto;
 }
 
-@media (max-width: 768px) {
-	.library-card .card-img-wrap { padding-top: 60%; }
-	.reader-toolbar { padding-top: 4px; }
-	.reader-toolbar .btn,
-	.reader-toolbar .input-group,
-	.reader-toolbar .form-check,
-	.reader-toolbar #readerFitMode,
-	.reader-toolbar #readerZoom,
-	.reader-toolbar label { display: none !important; }
-	.reader-toolbar #readerMode { display: none !important; }
-	.reader-toolbar .btn-outline-warning { display: none !important; }
-	.reader-header .reader-mobile-actions { display: inline-flex; }
-	.reader-header .reader-actions { display: none; }
-	.reader-progress { display: none; }
-}
 
 /* Limit library grid width for better visibility */
 .library-grid-wrapper { max-width: 1200px; }
@@ -196,3 +212,4 @@ main.container {
 	width: 100%;
 	height: 100%;
 }
+

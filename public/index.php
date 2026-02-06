@@ -41,6 +41,26 @@ Auth::checkRemember($request);
 
 $router = new Router();
 
+$router->get('/assets/bootstrap.min.css', function (): void {
+    $path = dirname(__DIR__) . '/vendor/twbs/bootstrap/dist/css/bootstrap.min.css';
+    if (!is_file($path)) {
+        http_response_code(404);
+        return;
+    }
+    header('Content-Type: text/css; charset=utf-8');
+    readfile($path);
+});
+
+$router->get('/assets/bootstrap.bundle.min.js', function (): void {
+    $path = dirname(__DIR__) . '/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js';
+    if (!is_file($path)) {
+        http_response_code(404);
+        return;
+    }
+    header('Content-Type: application/javascript; charset=utf-8');
+    readfile($path);
+});
+
 $router->get('/', [new App\Controllers\AuthController(), 'loginForm']);
 $router->post('/login', [new App\Controllers\AuthController(), 'login']);
 $router->get('/register', [new App\Controllers\AuthController(), 'registerForm']);

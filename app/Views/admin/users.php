@@ -45,13 +45,38 @@ $formatSub = static function (?string $dt): string {
 	$hours = (int)floor($diff / 3600);
 	return $hours . ' h';
 };
+
+$tierLabels = [
+	'trial' => 'Trial',
+	'assinante' => 'Assinante',
+	'restrito' => 'Restrito',
+	'vitalicio' => 'Vitalício',
+	'user' => 'User',
+];
+$tierColors = [
+	'trial' => '#0dcaf0',
+	'assinante' => '#198754',
+	'restrito' => '#dc3545',
+	'vitalicio' => '#6f42c1',
+	'user' => '#6c757d',
+];
+$tiersInUse = [];
+foreach (($users ?? []) as $u) {
+	$tier = (string)($u['access_tier'] ?? 'user');
+	$tiersInUse[$tier] = true;
+}
 ?>
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
 	<h1 class="h4 mb-0">Gerenciamento de Usuarios</h1>
-	<div class="small text-muted" style="border:1px solid rgba(0,0,0,.15); border-radius:6px; padding:6px 10px;">
-		<span style="color:#0d6efd;">◉</span> Administrador
-		<span class="ms-2" style="color:#20c997;">◉</span> Equipe
-		<span class="ms-2" style="color:#6c757d;">◉</span> Usuário
+	<div class="small text-muted" style="border:1px solid #ced4da; border-radius:6px; padding:6px 10px;">
+		<?php foreach ($tiersInUse as $tier => $_): ?>
+			<?php
+			$label = $tierLabels[$tier] ?? $tier;
+			$color = $tierColors[$tier] ?? '#6c757d';
+			?>
+			<span class="legend-dot" style="background-color: <?= View::e($color) ?>; border-color: <?= View::e($color) ?>;"></span>
+			<span class="me-2"><?= View::e($label) ?></span>
+		<?php endforeach; ?>
 	</div>
 </div>
 
@@ -78,7 +103,7 @@ $page = min($page, $pages);
 
 
 <div class="table-responsive">
-	<table class="table table-sm">
+	<table class="table table-sm admin-users-table">
 		<thead>
 		<tr>
 			<th></th>
@@ -100,15 +125,13 @@ $page = min($page, $pages);
 				$isSelf = !empty($currentUser) && (int)$currentUser['id'] === (int)$u['id'];
 				$canEdit = !$isSuper && \App\Core\Auth::isAdmin($currentUser);
 				$rowClass = $isLocked ? 'text-muted' : '';
-				$roleColor = match ((string)($u['role'] ?? 'user')) {
-					'superadmin' => '#0d6efd',
-					'admin' => '#0d6efd',
-					'equipe' => '#20c997',
-					default => '#6c757d',
-				};
+				$tier = (string)($u['access_tier'] ?? 'user');
+				$tierColor = $tierColors[$tier] ?? '#6c757d';
 			?>
 			<tr class="<?= $rowClass ?>" style="<?= $isLocked ? 'text-decoration: line-through;' : '' ?>">
-				<td><span class="role-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color:<?= View::e($roleColor) ?>;border:1px solid rgba(0,0,0,.15);" title="<?= View::e((string)($u['role'] ?? 'user')) ?>"></span></td>
+				<td>
+					<span class="tier-dot" style="background-color: <?= View::e($tierColor) ?>; border-color: <?= View::e($tierColor) ?>;" title="<?= View::e($tierLabels[$tier] ?? $tier) ?>"></span>
+				</td>
 				<td><?= View::e($u['username']) ?></td>
 				<td>
 					<?php
@@ -159,7 +182,8 @@ $page = min($page, $pages);
 						</div>
 					</div>
 				</td>
-				<td class="d-flex gap-2 justify-content-end">
+				<td class="text-end">
+					<div class="d-inline-flex gap-2 admin-actions">
 					<button class="btn btn-sm btn-outline-secondary px-2" type="button" data-bs-toggle="modal" data-bs-target="#editUserModal<?= (int)$u['id'] ?>" title="Editar">
 						<i class="fa-solid fa-pen-to-square"></i>
 						<span class="visually-hidden">Editar</span>
@@ -200,6 +224,7 @@ $page = min($page, $pages);
 							</button>
 						</form>
 					<?php endif; ?>
+					</div>
 				</td>
 			</tr>
 			<?php

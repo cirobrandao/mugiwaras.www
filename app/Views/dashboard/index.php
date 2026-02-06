@@ -31,26 +31,6 @@ if (!function_exists('time_ago')) {
     }
 }
 ?>
-<h1 class="h4 mb-3">Bem-vindo, <?= View::e($user['username'] ?? 'usuário') ?></h1>
-<div class="card mb-3">
-    <div class="card-body">
-        <p class="mb-1">Acompanhe suas séries favoritas e as novidades mais recentes.</p>
-        <div class="small text-muted">
-            <?php if (!empty($activePackageTitle) && !empty($accessInfo['expires_at'])): ?>
-                <?php
-                $expTs = strtotime((string)$accessInfo['expires_at']);
-                $remaining = $expTs !== false ? max(0, $expTs - time()) : 0;
-                $remDays = (int)floor($remaining / 86400);
-                $remHours = (int)floor(($remaining % 86400) / 3600);
-                $initialCountdown = $remDays . 'd ' . $remHours . 'h';
-                ?>
-                Acesso: <?= View::e((string)$activePackageTitle) ?> expira em <span id="accessCountdown" data-expires="<?= View::e((string)$accessInfo['expires_at']) ?>"><?= View::e($initialCountdown) ?></span>.
-            <?php else: ?>
-                <?= View::e((string)($accessInfo['label'] ?? '')) ?>
-            <?php endif; ?>
-        </div>
-    </div>
-</div>
 <?php if (!empty($accessInfo['expires_at'])): ?>
     <script>
         (function () {
@@ -90,63 +70,108 @@ if (!function_exists('time_ago')) {
 <?php endif; ?>
 <div class="row">
     <div class="col-lg-8">
-        <h2 class="h5">Séries favoritas</h2>
+        <h2 class="h5">Meus Favoritos</h2>
         <?php if (empty($favoriteSeries)): ?>
             <div class="alert alert-secondary">Você ainda não favoritou nenhuma série. <a href="<?= base_path('/libraries') ?>">Explorar bibliotecas</a></div>
         <?php else: ?>
-            <div class="list-group mb-3">
-                <?php foreach ($favoriteSeries as $s): ?>
+            <?php $favoriteTop = array_slice($favoriteSeries ?? [], 0, 10); ?>
+            <div class="list-group list-group-flush dashboard-list mb-2">
+                <?php foreach ($favoriteTop as $s): ?>
                     <?php $seriesName = (string)($s['name'] ?? ''); ?>
                     <?php $categoryName = (string)($s['category_name'] ?? ''); ?>
-                    <div class="list-group-item d-flex align-items-center gap-2">
-                        <div class="flex-grow-1">
+                    <div class="list-group-item d-flex align-items-center justify-content-between gap-2 py-1">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
                             <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode($categoryName) . '/' . rawurlencode($seriesName)) ?>">
                                 <?= View::e($seriesName) ?>
                             </a>
-                            <div class="small text-muted">Categoria: <?= View::e($categoryName) ?> • Capítulos: <?= (int)($s['chapter_count'] ?? 0) ?></div>
+                            <span class="badge bg-secondary"><?= View::e($categoryName) ?></span>
                         </div>
-                        <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/libraries/' . rawurlencode($categoryName) . '/' . rawurlencode($seriesName)) ?>">Abrir</a>
+                        <span class="small text-muted text-nowrap"><?= (int)($s['chapter_count'] ?? 0) ?> capítulos</span>
                     </div>
                 <?php endforeach; ?>
+                <div class="list-group-item text-end py-1">
+                    <span class="text-muted small">Veja mais</span>
+                </div>
             </div>
         <?php endif; ?>
 
-        <h2 class="h5">Séries mais lidas</h2>
-        <?php if (empty($mostReadSeries)): ?>
-            <div class="alert alert-secondary">Ainda não há leituras registradas.</div>
-        <?php else: ?>
-            <div class="list-group mb-3">
-                <?php foreach ($mostReadSeries as $mr): ?>
-                    <?php $mrName = (string)($mr['name'] ?? ''); ?>
-                    <?php $mrCategory = (string)($mr['category_name'] ?? ''); ?>
-                    <?php $mrCatId = (int)($mr['category_id'] ?? 0); ?>
-                    <div class="list-group-item d-flex align-items-center gap-2">
-                        <div class="flex-grow-1">
-                            <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode($mrCategory) . '/' . rawurlencode($mrName)) ?>">
-                                <?= View::e($mrName) ?>
-                            </a>
-                            <div class="small text-muted d-flex flex-wrap align-items-center gap-2">
-                                <?php
-                                $badgeClass = $mrCatId > 0 ? 'cat-badge-' . $mrCatId : 'bg-secondary';
-                                $badgeStyle = '';
-                                if (!empty($mr['resolved_tag_color'])) {
-                                    $badgeStyle = ' style="background-color: ' . View::e((string)$mr['resolved_tag_color']) . '; color: #fff;"';
-                                }
-                                ?>
-                                <span class="badge <?= $badgeClass ?>"<?= $badgeStyle ?>>
-                                    <?= View::e($mrCategory) ?>
-                                </span>
-                                <?php if (!empty($mr['has_pdf'])): ?>
-                                    <span class="badge bg-warning text-dark">PDF</span>
-                                <?php endif; ?>
-                                <span><?= (int)($mr['read_count'] ?? 0) ?> leituras</span>
+        <div class="row g-3">
+            <div class="col-lg-6">
+                <h2 class="h5">Top 10 séries mais lidas</h2>
+                <?php $mostReadTop = array_slice($mostReadSeries ?? [], 0, 10); ?>
+                <?php if (empty($mostReadTop)): ?>
+                    <div class="alert alert-secondary">Ainda não há leituras registradas.</div>
+                <?php else: ?>
+                    <div class="list-group list-group-flush dashboard-list mb-2">
+                        <?php foreach ($mostReadTop as $mr): ?>
+                            <?php $mrName = (string)($mr['name'] ?? ''); ?>
+                            <?php $mrCategory = (string)($mr['category_name'] ?? ''); ?>
+                            <?php $mrCatId = (int)($mr['category_id'] ?? 0); ?>
+                            <div class="list-group-item d-flex align-items-center justify-content-between gap-2 py-1">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode($mrCategory) . '/' . rawurlencode($mrName)) ?>">
+                                        <?= View::e($mrName) ?>
+                                    </a>
+                                    <?php
+                                    $badgeClass = $mrCatId > 0 ? 'cat-badge-' . $mrCatId : 'bg-secondary';
+                                    $badgeStyle = '';
+                                    if (!empty($mr['resolved_tag_color'])) {
+                                        $badgeStyle = ' style="background-color: ' . View::e((string)$mr['resolved_tag_color']) . '; color: #fff;"';
+                                    }
+                                    ?>
+                                    <span class="badge <?= $badgeClass ?>"<?= $badgeStyle ?>>
+                                        <?= View::e($mrCategory) ?>
+                                    </span>
+                                </div>
+                                <span class="small text-muted text-nowrap"><?= (int)($mr['read_count'] ?? 0) ?> leituras</span>
                             </div>
-                        </div>
-                        <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/libraries/' . rawurlencode($mrCategory) . '/' . rawurlencode($mrName)) ?>">Abrir</a>
+                        <?php endforeach; ?>
                     </div>
-                <?php endforeach; ?>
+                <?php endif; ?>
             </div>
-        <?php endif; ?>
+            <div class="col-lg-6">
+                <h2 class="h5">Ultimos Lançamentos</h2>
+                <?php if (empty($recentContent)): ?>
+                    <div class="alert alert-secondary">Sem novos envios.</div>
+                <?php else: ?>
+                    <div class="list-group list-group-flush dashboard-list mb-2">
+                        <?php foreach ($recentContent as $rc): ?>
+                            <?php $rcCategory = (string)($rc['category_name'] ?? ''); ?>
+                            <?php $rcSeries = (string)($rc['series_name'] ?? ''); ?>
+                            <?php $rcTitle = (string)($rc['title'] ?? ''); ?>
+                            <?php $rcSeriesLabel = mb_strimwidth($rcSeries, 0, 40, '...'); ?>
+                            <?php $rcTitleLabel = mb_strimwidth($rcTitle, 0, 40, '...'); ?>
+                            <?php $rcCatId = (int)($rc['category_id'] ?? 0); ?>
+                            <?php $rcIsNew = !empty($rc['is_new']); ?>
+                            <div class="list-group-item d-flex align-items-center justify-content-between gap-2 py-1">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
+                                        <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode($rcCategory) . '/' . rawurlencode($rcSeries)) ?>">
+                                            <?= View::e($rcSeriesLabel) ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="fw-semibold"><?= View::e($rcTitleLabel) ?></span>
+                                    <?php endif; ?>
+                                    <?php if ($rcCategory !== ''): ?>
+                                        <?php
+                                        $rcBadgeClass = $rcCatId > 0 ? 'cat-badge-' . $rcCatId : 'bg-secondary';
+                                        $rcBadgeStyle = '';
+                                        if (!empty($rc['category_tag_color'])) {
+                                            $rcBadgeStyle = ' style="background-color: ' . View::e((string)$rc['category_tag_color']) . '; color: #fff;"';
+                                        }
+                                        ?>
+                                        <span class="badge <?= $rcBadgeClass ?>"<?= $rcBadgeStyle ?>><?= View::e($rcCategory) ?></span>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if (!empty($rc['created_at'])): ?>
+                                    <span class="small text-muted text-nowrap"><?= View::e(time_ago((string)$rc['created_at'])) ?></span>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
 
         <?php if (!empty($newsBelowMostRead)): ?>
             <h2 class="h5">Notícias</h2>
@@ -165,6 +190,26 @@ if (!function_exists('time_ago')) {
         <?php endif; ?>
     </div>
     <div class="col-lg-4">
+        <div class="card mb-3 border-0">
+            <div class="card-body p-0">
+                <?php if (!empty($activePackageTitle) && !empty($accessInfo['expires_at'])): ?>
+                    <?php
+                    $expTs = strtotime((string)$accessInfo['expires_at']);
+                    $remaining = $expTs !== false ? max(0, $expTs - time()) : 0;
+                    $remDays = (int)floor($remaining / 86400);
+                    $remHours = (int)floor(($remaining % 86400) / 3600);
+                    $initialCountdown = $remDays . 'd ' . $remHours . 'h';
+                    ?>
+                    <div class="alert alert-warning py-2 mb-0 border-0 small">
+                        Acesso: <?= View::e((string)$activePackageTitle) ?> expira em <span id="accessCountdown" data-expires="<?= View::e((string)$accessInfo['expires_at']) ?>"><?= View::e($initialCountdown) ?></span>.
+                    </div>
+                <?php else: ?>
+                    <div class="alert alert-secondary py-2 mb-0 border-0 small">
+                        <?= View::e((string)($accessInfo['label'] ?? '')) ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
         <h2 class="h5">Novidades</h2>
         <?php if (empty($news)): ?>
             <div class="alert alert-secondary">Sem notícias.</div>
@@ -183,71 +228,6 @@ if (!function_exists('time_ago')) {
             </ul>
         <?php endif; ?>
 
-        <h2 class="h5 mt-4">Últimos envios</h2>
-        <?php if (empty($recentContent)): ?>
-            <div class="alert alert-secondary">Sem novos envios.</div>
-        <?php else: ?>
-            <div class="list-group mb-3">
-                <?php foreach ($recentContent as $rc): ?>
-                    <?php $rcCategory = (string)($rc['category_name'] ?? ''); ?>
-                    <?php $rcSeries = (string)($rc['series_name'] ?? ''); ?>
-                    <?php $rcTitle = (string)($rc['title'] ?? ''); ?>
-                    <?php $rcSeriesLabel = mb_strimwidth($rcSeries, 0, 40, '...'); ?>
-                    <?php $rcTitleLabel = mb_strimwidth($rcTitle, 0, 40, '...'); ?>
-                    <?php $rcCatId = (int)($rc['category_id'] ?? 0); ?>
-                    <?php $rcIsNew = !empty($rc['is_new']); ?>
-                    <div class="list-group-item d-flex align-items-center gap-2">
-                        <div class="flex-grow-1">
-                            <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
-                                <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode($rcCategory) . '/' . rawurlencode($rcSeries)) ?>">
-                                    <?= View::e($rcSeriesLabel) ?>
-                                </a>
-                            <?php else: ?>
-                                <span class="fw-semibold"><?= View::e($rcTitleLabel) ?></span>
-                            <?php endif; ?>
-                            <div class="small text-muted d-flex flex-wrap align-items-center gap-2">
-                                <?php if ($rcCategory !== ''): ?>
-                                    <?php
-                                    $rcBadgeClass = $rcCatId > 0 ? 'cat-badge-' . $rcCatId : 'bg-secondary';
-                                    $rcBadgeStyle = '';
-                                    if (!empty($rc['category_tag_color'])) {
-                                        $rcBadgeStyle = ' style="background-color: ' . View::e((string)$rc['category_tag_color']) . '; color: #fff;"';
-                                    }
-                                    ?>
-                                    <span class="badge <?= $rcBadgeClass ?>"<?= $rcBadgeStyle ?>><?= View::e($rcCategory) ?></span>
-                                <?php endif; ?>
-                                <?php if ($rcIsNew): ?>
-                                    <span class="badge bg-success">Novo</span>
-                                <?php endif; ?>
-                                <?php if (!empty($rc['created_at'])): ?>
-                                    <span><?= View::e(time_ago((string)$rc['created_at'])) ?></span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
-                            <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/libraries/' . rawurlencode($rcCategory) . '/' . rawurlencode($rcSeries)) ?>">Abrir</a>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if (!empty($isAdmin)): ?>
-            <h2 class="h5 mt-4">Últimos usuários conectados</h2>
-            <?php if (empty($recentUsers)): ?>
-                <div class="alert alert-secondary">Nenhum acesso registrado.</div>
-            <?php else: ?>
-                <div class="list-group">
-                    <?php foreach ($recentUsers as $ru): ?>
-                        <?php $lastLogin = $ru['data_ultimo_login'] ?? $ru['data_registro'] ?? null; ?>
-                        <div class="list-group-item d-flex align-items-center justify-content-between gap-2">
-                            <div class="fw-semibold"><?= View::e((string)($ru['username'] ?? '')) ?></div>
-                            <div class="small text-muted text-end"><?= View::e(time_ago(is_string($lastLogin) ? $lastLogin : null)) ?></div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        <?php endif; ?>
     </div>
 </div>
 <?php

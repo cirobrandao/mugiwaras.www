@@ -108,4 +108,15 @@ final class Payment
         }
         return $map;
     }
+
+    public static function countPending(): int
+    {
+        try {
+            $stmt = Database::connection()->query("SELECT COUNT(*) AS c FROM payments WHERE status = 'pending'");
+            $row = $stmt->fetch();
+            return (int)($row['c'] ?? 0);
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
 }

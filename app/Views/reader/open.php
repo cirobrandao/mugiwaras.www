@@ -13,8 +13,7 @@ ob_start();
 		<?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
 			<a class="btn btn-sm btn-outline-secondary reader-back" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>">
 				<i class="fa-solid fa-chevron-left me-1"></i>
-				<span class="d-none d-md-inline">Voltar aos capítulos</span>
-				<span class="d-inline d-md-none">Voltar</span>
+				<span>Voltar aos capítulos</span>
 			</a>
 		<?php endif; ?>
 		<div class="reader-title"><?= View::e($content['title'] ?? 'Conteúdo') ?></div>
@@ -55,11 +54,11 @@ ob_start();
 							<option value="page" <?= (($cbzMode ?? 'page') === 'page') ? 'selected' : '' ?>>Página</option>
 							<option value="scroll" <?= (($cbzMode ?? '') === 'scroll') ? 'selected' : '' ?>>Scroll</option>
 						</select>
-						<div class="d-none d-md-flex align-items-center gap-2">
+						<div class="d-flex align-items-center gap-2">
 							<label class="small text-muted mb-0">Zoom</label>
 							<input type="range" id="readerZoom" min="60" max="160" step="5" value="100">
 						</div>
-						<div class="form-check form-switch m-0 d-none d-md-flex align-items-center">
+						<div class="form-check form-switch m-0 d-flex align-items-center">
 							<input class="form-check-input" type="checkbox" id="readerWheel" checked>
 							<label class="form-check-label small mb-0" for="readerWheel">Scroll do mouse</label>
 						</div>
@@ -110,12 +109,12 @@ ob_start();
 		</button>
 		<!-- reader footer: page guide placed after the material -->
 		<div class="reader-footer mt-2">
-			<div class="input-group input-group-sm w-auto mx-auto d-none d-md-flex" role="group" aria-label="Guia de páginas">
+			<div class="input-group input-group-sm w-auto mx-auto" role="group" aria-label="Guia de páginas">
 				<span class="input-group-text">Página</span>
 				<input type="number" min="1" class="form-control" id="pageNumber" style="width: 90px;">
 				<span class="input-group-text" id="pageTotal">/ 0</span>
 			</div>
-			<div class="d-md-none text-center small text-muted" id="pageCompact">0/0</div>
+			<div class="text-center small text-muted" id="pageCompact">0/0</div>
 		</div>
 	</div>
 	<script src="<?= url('assets/js/reader.js') ?>"></script>

@@ -137,6 +137,7 @@ final class DashboardController extends Controller
         ]);
     }
 
+
     private function writeTagCss(): void
     {
         $target = dirname(__DIR__, 2) . '/public/assets/category-tags.css';

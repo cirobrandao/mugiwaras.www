@@ -42,11 +42,11 @@ ob_start();
                 <input type="hidden" name="accept_terms" value="1">
                 <div class="mb-3">
                     <label class="form-label" for="register-username">Usuário</label>
-                    <input id="register-username" type="text" name="username" class="form-control" required>
+                    <input id="register-username" type="text" name="username" class="form-control" required autocapitalize="none" oninput="this.value = this.value.toLowerCase()">
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="register-email">Email</label>
-                    <input id="register-email" type="email" name="email" class="form-control" required>
+                    <input id="register-email" type="email" name="email" class="form-control" required autocapitalize="none" oninput="this.value = this.value.toLowerCase()">
                 </div>
                 <div class="row">
                     <div class="col-4 mb-3">
