@@ -32,10 +32,27 @@ final class User
         return (int)($row['c'] ?? 0);
     }
 
+    public static function countAll(): int
+    {
+        $stmt = Database::connection()->query("SELECT COUNT(*) AS c FROM users");
+        $row = $stmt->fetch();
+        return (int)($row['c'] ?? 0);
+    }
+
     public static function pagedNonStaff(int $page, int $perPage): array
     {
         $offset = max(0, ($page - 1) * $perPage);
         $stmt = Database::connection()->prepare("SELECT * FROM users WHERE role = 'user' AND support_agent = 0 AND uploader_agent = 0 AND moderator_agent = 0 ORDER BY id DESC LIMIT :l OFFSET :o");
+        $stmt->bindValue('l', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue('o', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public static function pagedAll(int $page, int $perPage): array
+    {
+        $offset = max(0, ($page - 1) * $perPage);
+        $stmt = Database::connection()->prepare("SELECT * FROM users ORDER BY id DESC LIMIT :l OFFSET :o");
         $stmt->bindValue('l', $perPage, \PDO::PARAM_INT);
         $stmt->bindValue('o', $offset, \PDO::PARAM_INT);
         $stmt->execute();

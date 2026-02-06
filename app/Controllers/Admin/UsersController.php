@@ -28,12 +28,12 @@ final class UsersController extends Controller
         if ($perPage > 200) {
             $perPage = 200;
         }
-        $total = User::countNonStaff();
+        $total = User::countAll();
         $pages = (int)max(1, ceil($total / $perPage));
         if ($page > $pages) {
             $page = $pages;
         }
-        $users = User::pagedNonStaff($page, $perPage);
+        $users = User::pagedAll($page, $perPage);
         $userIds = array_map(static fn ($u) => (int)($u['id'] ?? 0), $users);
         $latestPayments = Payment::latestApprovedByUsers($userIds);
         $packages = Package::all();
