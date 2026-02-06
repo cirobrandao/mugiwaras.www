@@ -303,6 +303,14 @@ body.app-body {
   border-bottom: none;
 }
 
+.news-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .app-page {
   min-height: 60vh;
 }

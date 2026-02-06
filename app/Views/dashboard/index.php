@@ -210,11 +210,13 @@ if (!function_exists('time_ago')) {
                 <div class="list-group news-list">
                     <?php foreach ($newsBelowMostRead as $n): ?>
                         <div class="list-group-item news-item">
-                            <strong><?= View::e($n['title']) ?></strong>
-                            <?php if (!empty($n['category_name'])): ?>
-                                <span class="badge bg-secondary ms-2"><?= View::e((string)$n['category_name']) ?></span>
-                            <?php endif; ?>
-                            <div class="small text-muted mb-1"><?= View::e((string)($n['published_at'] ?? $n['created_at'])) ?></div>
+                            <div class="news-row">
+                                <strong><?= View::e($n['title']) ?></strong>
+                                <?php if (!empty($n['category_name'])): ?>
+                                    <span class="badge bg-secondary"><?= View::e((string)$n['category_name']) ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="small text-muted mb-1"><?= View::e((string)($n['published_at'] ?? $n['created_at'])) ?> · <?= View::e((string)($n['author_name'] ?? $n['author'] ?? '')) ?></div>
                             <div><?= nl2br(View::e(mb_strimwidth((string)$n['body'], 0, 140, '...'))) ?></div>
                         </div>
                     <?php endforeach; ?>
@@ -277,12 +279,14 @@ if (!function_exists('time_ago')) {
                 <ul class="list-group news-list">
                     <?php foreach ($news as $n): ?>
                         <li class="list-group-item news-item">
-                            <strong><?= View::e($n['title']) ?></strong>
-                            <?php if (!empty($n['category_name'])): ?>
-                                <span class="badge bg-secondary ms-2"><?= View::e((string)$n['category_name']) ?></span>
-                            <?php endif; ?>
-                            <div class="small text-muted mb-1"><?= View::e((string)($n['published_at'] ?? $n['created_at'])) ?></div>
-                            <div><?= nl2br(View::e(mb_strimwidth((string)$n['body'], 0, 140, '...'))) ?></div>
+                            <div class="news-row">
+                                <strong><?= View::e($n['title']) ?></strong>
+                                <?php if (!empty($n['category_name'])): ?>
+                                    <span class="badge bg-secondary"><?= View::e((string)$n['category_name']) ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="small text-muted mb-1"><?= View::e((string)($n['published_at'] ?? $n['created_at'])) ?> · <?= View::e((string)($n['author_name'] ?? $n['author'] ?? '')) ?></div>
+                            <div><?= nl2br(View::e((string)$n['body'])) ?></div>
                         </li>
                     <?php endforeach; ?>
                 </ul>
