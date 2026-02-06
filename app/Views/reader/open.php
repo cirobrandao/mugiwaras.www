@@ -9,14 +9,16 @@ ob_start();
 	</div>
 <?php endif; ?>
 <?php if (!empty($content)): ?>
-	<div class="reader-header">
-		<?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
-			<a class="btn btn-sm btn-outline-secondary reader-back" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>">
-				<i class="fa-solid fa-chevron-left me-1"></i>
-				<span>Voltar aos capítulos</span>
-			</a>
-		<?php endif; ?>
-		<div class="reader-title"><?= View::e($content['title'] ?? 'Conteúdo') ?></div>
+	<div class="reader-header reader-shell-header">
+		<div class="reader-header-left">
+			<?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
+				<a class="btn btn-sm btn-outline-secondary reader-back" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>">
+					<i class="fa-solid fa-chevron-left me-1"></i>
+					<span>Voltar aos capítulos</span>
+				</a>
+			<?php endif; ?>
+			<div class="reader-title"><?= View::e($content['title'] ?? 'Conteúdo') ?></div>
+		</div>
 		
 		<!-- next chapter link moved to toolbar -->
 		<div class="reader-mobile-actions">
@@ -31,7 +33,7 @@ ob_start();
 <?php if (empty($pages) && empty($error)): ?>
 	<div class="alert alert-secondary">Nenhuma página disponível.</div>
 <?php elseif (!empty($pages)): ?>
-	<div id="readerWrap">
+	<div id="readerWrap" class="reader-shell">
 	<div class="reader-toolbar mb-2">
 			<div class="toolbar-row">
 				<div class="reader-toolbar-left">
@@ -65,13 +67,14 @@ ob_start();
 					</div>
 				</div>
 				<div class="reader-toolbar-right ms-auto">
-					<button class="btn btn-sm btn-outline-secondary" id="readerLights" type="button" title="Apagar as luzes" aria-label="Apagar as luzes"><i class="fa-solid fa-moon"></i></button>
+					<button class="btn btn-sm btn-outline-secondary" id="readerExpand" type="button" title="Expandir leitor" aria-label="Expandir leitor"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
 					<?php $favBtnClass = !empty($isFavorite) ? 'btn-warning' : 'btn-outline-warning'; ?>
+					<?php $favIconClass = !empty($isFavorite) ? 'fa-solid' : 'fa-regular'; ?>
 					<form method="post" action="<?= base_path('/libraries/favorite') ?>" class="m-0">
 						<input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
 						<input type="hidden" name="id" value="<?= (int)($content['id'] ?? 0) ?>">
 						<input type="hidden" name="action" value="<?= !empty($isFavorite) ? 'remove' : 'add' ?>">
-						<button class="btn btn-sm <?= $favBtnClass ?>" type="submit" title="Favoritar" data-favorited="<?= !empty($isFavorite) ? '1' : '0' ?>" aria-label="Favoritar"><i class="fa-solid fa-star"></i></button>
+						<button class="btn btn-sm <?= $favBtnClass ?>" type="submit" title="Favoritar" data-favorited="<?= !empty($isFavorite) ? '1' : '0' ?>" aria-label="Favoritar"><i class="<?= $favIconClass ?> fa-star"></i></button>
 					</form>
 					<?php if (!empty($downloadToken)): ?>
 						<div class="btn-group">

@@ -55,7 +55,7 @@ body.lights-off .reader-frame { background: #000; border-color: #111827; }
 #readerWrap { position: relative; }
 
 /* footer containing the page guide — now an overlay positioned above the reader */
-.reader-footer { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; justify-content: center; align-items: center; padding: 6px; }
+.reader-footer { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 60; display: flex; justify-content: center; align-items: center; padding: 6px; }
 .reader-footer .input-group { box-shadow: 0 6px 20px rgba(0,0,0,0.35); background: #ffffff; border-radius: 8px; padding: 6px; }
 .reader-footer .input-group .input-group-text { background: transparent; border: none; font-weight: 600; }
 .reader-footer .form-control { border: none; outline: none; box-shadow: none; font-size: 1rem; }
@@ -87,7 +87,7 @@ body.lights-off .reader-frame { background: #000; border-color: #111827; }
 
 /* Library grid improvements */
 .library-card { color: inherit; }
-.library-card .card-img-wrap { position: relative; width: 100%; padding-top: 56.25%; background: #1f2937; border-top-left-radius: .5rem; border-top-right-radius: .5rem; overflow: hidden; }
+.library-card .card-img-wrap { position: relative; width: 100%; padding-top: 62%; background: #1f2937; border-top-left-radius: .5rem; border-top-right-radius: .5rem; overflow: hidden; }
 .library-card .card-img-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .28s ease, filter .28s ease; display: block; }
 .library-card:hover .card-img-wrap img { transform: scale(1.03); filter: brightness(1.04) contrast(1.04) saturate(1.02); }
 .library-card .card-img-wrap img { box-shadow: 0 1px 6px rgba(0,0,0,0.12); filter: brightness(1.02) saturate(1.02); }
@@ -157,8 +157,8 @@ main.container {
 }
 
 
-/* Limit library grid width for better visibility */
-.library-grid-wrapper { max-width: 1200px; }
+/* Library grid wrapper */
+.library-grid-wrapper { width: 100%; }
 
 /* Login logo */
 .login-logo {

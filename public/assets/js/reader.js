@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const fitMode = document.getElementById('readerFitMode');
   const zoomInput = document.getElementById('readerZoom');
   const progress = document.getElementById('readerProgress');
-  const lightsBtn = document.getElementById('readerLights');
+  const expandBtn = document.getElementById('readerExpand');
   const modeSelect = document.getElementById('readerMode');
   const modeSelectMobile = document.getElementById('readerModeMobile');
   const overlay = document.getElementById('readerOverlay');
@@ -269,6 +269,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', (e) => {
     const tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
     if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+    if (e.key === 'Escape') {
+      if (document.body.classList.contains('reader-expanded')) {
+        document.body.classList.remove('reader-expanded');
+        if (wrap) wrap.classList.remove('is-expanded');
+      }
+      return;
+    }
     if (scrollMode && readerEl) {
       if (e.key === 'Home') {
         e.preventDefault();
@@ -441,91 +448,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
-  if (lightsBtn) {
-    lightsBtn.addEventListener('click', () => {
-      document.body.classList.toggle('lights-off');
+  if (expandBtn) {
+    expandBtn.addEventListener('click', () => {
+      document.body.classList.toggle('reader-expanded');
+      if (wrap) wrap.classList.toggle('is-expanded');
+      setTimeout(() => {
+        if (typeof updateScrollTopVisibility === 'function') updateScrollTopVisibility();
+      }, 60);
     });
   }
 
-  // Intercept favorite forms in the reader to toggle UI immediately without full reload
-  const favForms = Array.from(document.querySelectorAll('form[action$="/libraries/favorite"]'));
-  favForms.forEach((form) => {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const btn = form.querySelector('button[type="submit"]');
-      const actionInput = form.querySelector('input[name="action"]');
-      const csrfInput = form.querySelector('input[name="_csrf"]');
-      if (!btn || !actionInput) return;
-      const formData = new FormData(form);
-      fetch(form.action, {
-        method: 'POST',
-        body: formData,
-        credentials: 'same-origin',
-      }).then(() => {
-        // toggle UI state regardless of server response (server will persist)
-        const isNowFavorited = actionInput.value === 'add';
-        if (isNowFavorited) {
-          // we just added -> switch to remove
-          actionInput.value = 'remove';
-          btn.classList.remove('btn-outline-warning');
-          btn.classList.add('btn-warning');
-          btn.dataset.favorited = '1';
-        } else {
-          // we just removed -> switch to add
-          actionInput.value = 'add';
-          btn.classList.remove('btn-warning');
-          btn.classList.add('btn-outline-warning');
-          btn.dataset.favorited = '0';
-        }
-      }).catch(() => {
-        // ignore errors — state will update on full reload
-      });
-    });
-
-      // Adjust reader title box so its border touches left/right buttons exactly
-      const adjustTitleBounds = () => {
-        const title = document.querySelector('.reader-title');
-        const backBtn = document.querySelector('.reader-back');
-        const nextBtn = document.querySelector('.reader-next');
-        if (!title) return;
-        // reset
-        title.style.left = '';
-        title.style.right = '';
-        title.style.maxWidth = '';
-        const header = document.querySelector('.reader-header');
-        if (!header) return;
-        const headerRect = header.getBoundingClientRect();
-        const gap = 6; // small gap so border doesn't overlap button edges
-        // prefer to center the title box; set its explicit width to span between buttons
-        if (backBtn && nextBtn) {
-          const backRect = backBtn.getBoundingClientRect();
-          const nextRect = nextBtn.getBoundingClientRect();
-          const available = Math.max(80, Math.floor(nextRect.left - backRect.right - gap * 2));
-          title.style.width = available + 'px';
-          title.style.left = '50%';
-          title.style.transform = 'translate(-50%, -50%)';
-        } else if (backBtn) {
-          const backRect = backBtn.getBoundingClientRect();
-          const available = Math.max(80, Math.floor(headerRect.right - backRect.right - 24));
-          title.style.width = available + 'px';
-          title.style.left = '50%';
-          title.style.transform = 'translate(-50%, -50%)';
-        } else if (nextBtn) {
-          const nextRect = nextBtn.getBoundingClientRect();
-          const available = Math.max(80, Math.floor(nextRect.left - headerRect.left - 24));
-          title.style.width = available + 'px';
-          title.style.left = '50%';
-          title.style.transform = 'translate(-50%, -50%)';
-        } else {
-          title.style.left = '50%';
-          title.style.transform = 'translate(-50%, -50%)';
-          title.style.width = '';
-        }
-      };
-      // run on load and resize
-      setTimeout(adjustTitleBounds, 60);
-      window.addEventListener('resize', () => {
-        setTimeout(adjustTitleBounds, 60);
-      });
-  });
+  const adjustTitleBounds = () => {
+    const title = document.querySelector('.reader-title');
+    if (!title) return;
+    title.style.left = '';
+    title.style.right = '';
+    title.style.maxWidth = '';
+    title.style.width = '';
+    title.style.transform = '';
+  };
+  setTimeout(adjustTitleBounds, 60);
 });

@@ -118,7 +118,13 @@ $activePage = $activePage ?? '';
     <div class="app-shell">
         <aside class="app-sidebar">
             <div class="sidebar-brand">
-                <div class="brand-mark"><?= View::e(mb_strtoupper(mb_substr($systemName, 0, 1))) ?></div>
+                <div class="brand-mark">
+                    <?php if (!empty($systemFavicon)): ?>
+                        <img src="<?= base_path('/' . ltrim((string)$systemFavicon, '/')) ?>" alt="Favicon" class="brand-icon">
+                    <?php else: ?>
+                        <?= View::e(mb_strtoupper(mb_substr($systemName, 0, 1))) ?>
+                    <?php endif; ?>
+                </div>
                 <div class="brand-text">
                     <div class="brand-title"><?= View::e($systemName) ?></div>
                     <div class="brand-sub">Biblioteca digital</div>
@@ -227,31 +233,17 @@ $activePage = $activePage ?? '';
                     </a>
                 <?php endif; ?>
             </nav>
-            <?php if (!empty($recentUsers)): ?>
-                <div class="sidebar-card">
-                    <div class="card-label">Ultimos usuarios conectados</div>
-                    <div class="list-group list-group-flush small">
-                        <?php foreach ($recentUsers as $ru): ?>
-                            <div class="list-group-item d-flex align-items-center justify-content-between py-1">
-                                <span><?= View::e((string)($ru['username'] ?? '')) ?></span>
-                                <?php $lastLogin = $ru['data_ultimo_login'] ?? $ru['data_registro'] ?? null; ?>
-                                <span class="small text-muted"><?= View::e(time_ago_compact(is_string($lastLogin) ? $lastLogin : null)) ?></span>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            <?php endif; ?>
         </aside>
 
         <div class="app-main">
             <header class="app-topbar">
                 <div class="topbar-left">
-                    <button class="btn btn-icon btn-ghost d-lg-none" data-sidebar-toggle>
-                        <i class="bi bi-list"></i>
-                    </button>
                     <div>
-                        <div class="crumb-title"><?= View::e($title ?? $systemName) ?></div>
-                        <div class="crumb-sub"><?= $isLoggedIn ? 'Leitura, biblioteca e administracao' : 'Acesse sua conta' ?></div>
+                        <?php if (!empty($systemLogo)): ?>
+                            <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="Logo" class="topbar-logo" data-sidebar-toggle>
+                        <?php else: ?>
+                            <div class="crumb-sub"><?= $isLoggedIn ? 'Leitura, biblioteca e administracao' : 'Acesse sua conta' ?></div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="topbar-right">
