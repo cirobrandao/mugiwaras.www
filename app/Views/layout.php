@@ -80,7 +80,10 @@ if (!function_exists('time_ago_compact')) {
         .user-menu-toggle {
             border: 1px solid rgba(59, 130, 246, 0.85);
             border-radius: 0.5rem;
-            padding: 0.25rem 0.6rem;
+            height: 31px;
+            padding: 0 0.6rem;
+            display: inline-flex;
+            align-items: center;
             background: rgba(59, 130, 246, 0.18);
         }
         .user-menu-toggle:hover,
@@ -153,18 +156,23 @@ if (!function_exists('time_ago_compact')) {
             <?php if (isset($_SESSION['user_id'])): ?>
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 user-menu-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="rounded-circle d-inline-flex align-items-center justify-content-center user-avatar">
-                                <?= View::e($initial) ?>
-                            </span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                            <li><a class="dropdown-item" href="<?= base_path('/perfil') ?>">Ver meu perfil</a></li>
-                            <li><a class="dropdown-item" href="<?= base_path('/perfil/editar') ?>">Editar meu perfil</a></li>
-                            <li><a class="dropdown-item" href="<?= base_path('/perfil/senha') ?>">Editar senha</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="<?= base_path('/logout') ?>">Sair</a></li>
-                        </ul>
+                        <div class="btn-group" role="group">
+                            <a class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 user-menu-toggle" href="<?= base_path('/perfil') ?>">
+                                <span class="rounded-circle d-inline-flex align-items-center justify-content-center user-avatar">
+                                    <?= View::e($initial) ?>
+                                </span>
+                                <span><?= View::e($displayName) ?></span>
+                            </a>
+                            <button type="button" class="btn btn-outline-light btn-sm dropdown-toggle dropdown-toggle-split user-menu-toggle" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Abrir menu</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                                <li><a class="dropdown-item" href="<?= base_path('/perfil') ?>">Atualizar conta</a></li>
+                                <li><a class="dropdown-item" href="<?= base_path('/perfil/senha') ?>">Mudar senha</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="<?= base_path('/logout') ?>">Sair</a></li>
+                            </ul>
+                        </div>
                     </li>
                     <?php if (!empty($canUseSideMenu)): ?>
                         <li class="nav-item ms-2">

@@ -86,8 +86,8 @@ body.lights-off .reader-frame { background: #000; border-color: #111827; }
 
 /* Lateral menu button */
 .menu-side-btn {
-	width: 36px;
-	height: 36px;
+	width: 31px;
+	height: 31px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
