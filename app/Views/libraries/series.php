@@ -64,6 +64,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php $itemPath = (string)($item['cbz_path'] ?? ''); ?>
             <?php $itemExt = strtolower(pathinfo($itemPath, PATHINFO_EXTENSION)); ?>
             <?php $isPdf = $itemExt === 'pdf'; ?>
+            <?php $isEpub = $itemExt === 'epub'; ?>
             <?php $iosOnlyDownload = !empty($isIos); ?>
             <?php $downloadToken = !empty($downloadTokens[(int)$item['id']]) ? (string)$downloadTokens[(int)$item['id']] : ''; ?>
             <?php if ($isPdf) { $hasPdf = true; } ?>
@@ -80,7 +81,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                             </button>
                         </form>
                         <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <a href="<?= $isPdf ? ($iosOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : base_path('/reader/' . (int)$item['id']) ?>" <?= $isPdf && !$iosOnlyDownload ? 'data-open-pdf' : '' ?> <?= $isPdf && !$iosOnlyDownload ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
+                            <a href="<?= $isPdf ? ($iosOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf && !$iosOnlyDownload ? 'data-open-pdf' : '' ?> <?= $isPdf && !$iosOnlyDownload ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
                                 <?= View::e(str_replace('_', ' ', (string)$item['title'])) ?>
                             </a>
                             <?php if ($isPdf): ?>
@@ -88,6 +89,8 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                                 <?php if ($iosOnlyDownload): ?>
                                     <span class="badge bg-secondary ms-1">Somente download no iOS</span>
                                 <?php endif; ?>
+                            <?php elseif ($isEpub): ?>
+                                <span class="badge bg-info text-dark ms-2">EPUB</span>
                             <?php endif; ?>
                             <?php if (!empty($read) && in_array((int)$item['id'], $read, true)): ?>
                                 <span class="badge bg-success ms-2">Lido</span>

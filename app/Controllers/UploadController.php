@@ -204,7 +204,7 @@ final class UploadController extends Controller
             if ($baseName === '') {
                 $baseName = bin2hex(random_bytes(6));
             }
-            $finalExt = $ext === 'pdf' ? 'pdf' : 'cbz';
+            $finalExt = in_array($ext, ['pdf', 'epub'], true) ? $ext : 'cbz';
             $finalRelPath = $baseName . '_' . bin2hex(random_bytes(4)) . '.' . $finalExt;
             $finalPath = rtrim($libraryRoot, '/') . '/' . $finalRelPath;
 
@@ -226,7 +226,7 @@ final class UploadController extends Controller
                 continue;
             }
 
-            if ($ext === 'pdf') {
+            if ($ext === 'pdf' || $ext === 'epub') {
                 if (!rename($targetPath, $finalPath)) {
                     Logger::error('upload_rename_failed', ['name' => $original, 'from' => $targetPath, 'to' => $finalPath]);
                     $errors[] = trim($original . ': move_final');
@@ -267,7 +267,7 @@ final class UploadController extends Controller
                     'j' => null,
                     'fs' => $size,
                 ]);
-                Audit::log('upload', $_SESSION['user_id'] ?? null, ['file' => $safeName, 'type' => 'pdf']);
+                Audit::log('upload', $_SESSION['user_id'] ?? null, ['file' => $safeName, 'type' => $ext]);
                 $ok++;
                 continue;
             }
@@ -330,7 +330,6 @@ final class UploadController extends Controller
             }
 
             $jobType = match ($ext) {
-                'epub' => 'epub_to_cbz',
                 'zip' => 'zip_to_cbz',
                 'cbr' => 'cbr_to_cbz',
                 default => 'zip_to_cbz',

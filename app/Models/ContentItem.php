@@ -93,11 +93,14 @@ final class ContentItem
     public static function bySeriesAndFormat(int $seriesId, string $format, string $direction = 'asc', int $limit = 100, int $offset = 0): array
     {
         $format = strtolower($format);
-        $isPdf = $format === 'pdf';
         $dir = strtolower($direction) === 'desc' ? 'DESC' : 'ASC';
-        $sql = $isPdf
-            ? "SELECT * FROM content_items WHERE series_id = :s AND LOWER(cbz_path) LIKE '%.pdf' ORDER BY content_order {$dir}, title {$dir}, id {$dir} LIMIT :l OFFSET :o"
-            : "SELECT * FROM content_items WHERE series_id = :s AND (cbz_path IS NULL OR LOWER(cbz_path) NOT LIKE '%.pdf') ORDER BY content_order {$dir}, title {$dir}, id {$dir} LIMIT :l OFFSET :o";
+        if ($format === 'pdf') {
+            $sql = "SELECT * FROM content_items WHERE series_id = :s AND LOWER(cbz_path) LIKE '%.pdf' ORDER BY content_order {$dir}, title {$dir}, id {$dir} LIMIT :l OFFSET :o";
+        } elseif ($format === 'epub') {
+            $sql = "SELECT * FROM content_items WHERE series_id = :s AND LOWER(cbz_path) LIKE '%.epub' ORDER BY content_order {$dir}, title {$dir}, id {$dir} LIMIT :l OFFSET :o";
+        } else {
+            $sql = "SELECT * FROM content_items WHERE series_id = :s AND (cbz_path IS NULL OR (LOWER(cbz_path) NOT LIKE '%.pdf' AND LOWER(cbz_path) NOT LIKE '%.epub')) ORDER BY content_order {$dir}, title {$dir}, id {$dir} LIMIT :l OFFSET :o";
+        }
         $stmt = Database::connection()->prepare($sql);
         $stmt->bindValue('s', $seriesId, \PDO::PARAM_INT);
         $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
@@ -117,10 +120,64 @@ final class ContentItem
     public static function countBySeriesAndFormat(int $seriesId, string $format): int
     {
         $format = strtolower($format);
-        $isPdf = $format === 'pdf';
-        $sql = $isPdf
-            ? "SELECT COUNT(*) AS c FROM content_items WHERE series_id = :s AND LOWER(cbz_path) LIKE '%.pdf'"
-            : "SELECT COUNT(*) AS c FROM content_items WHERE series_id = :s AND (cbz_path IS NULL OR LOWER(cbz_path) NOT LIKE '%.pdf')";
+        if ($format === 'pdf') {
+            $sql = "SELECT COUNT(*) AS c FROM content_items WHERE series_id = :s AND LOWER(cbz_path) LIKE '%.pdf'";
+        } elseif ($format === 'epub') {
+            $sql = "SELECT COUNT(*) AS c FROM content_items WHERE series_id = :s AND LOWER(cbz_path) LIKE '%.epub'";
+        } else {
+            $sql = "SELECT COUNT(*) AS c FROM content_items WHERE series_id = :s AND (cbz_path IS NULL OR (LOWER(cbz_path) NOT LIKE '%.pdf' AND LOWER(cbz_path) NOT LIKE '%.epub'))";
+        }
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute(['s' => $seriesId]);
+        $row = $stmt->fetch();
+        return (int)($row['c'] ?? 0);
+    }
+
+    public static function bySeriesAndTypes(int $seriesId, array $types, string $direction = 'asc', int $limit = 100, int $offset = 0): array
+    {
+        $types = array_values(array_unique(array_map('strtolower', $types)));
+        if (empty($types)) {
+            return [];
+        }
+        $dir = strtolower($direction) === 'desc' ? 'DESC' : 'ASC';
+        $parts = [];
+        if (in_array('pdf', $types, true)) {
+            $parts[] = "LOWER(cbz_path) LIKE '%.pdf'";
+        }
+        if (in_array('epub', $types, true)) {
+            $parts[] = "LOWER(cbz_path) LIKE '%.epub'";
+        }
+        if (in_array('cbz', $types, true)) {
+            $parts[] = "(cbz_path IS NULL OR (LOWER(cbz_path) NOT LIKE '%.pdf' AND LOWER(cbz_path) NOT LIKE '%.epub'))";
+        }
+        $where = implode(' OR ', $parts);
+        $sql = "SELECT * FROM content_items WHERE series_id = :s AND ({$where}) ORDER BY content_order {$dir}, title {$dir}, id {$dir} LIMIT :l OFFSET :o";
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->bindValue('s', $seriesId, \PDO::PARAM_INT);
+        $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue('o', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public static function countBySeriesAndTypes(int $seriesId, array $types): int
+    {
+        $types = array_values(array_unique(array_map('strtolower', $types)));
+        if (empty($types)) {
+            return 0;
+        }
+        $parts = [];
+        if (in_array('pdf', $types, true)) {
+            $parts[] = "LOWER(cbz_path) LIKE '%.pdf'";
+        }
+        if (in_array('epub', $types, true)) {
+            $parts[] = "LOWER(cbz_path) LIKE '%.epub'";
+        }
+        if (in_array('cbz', $types, true)) {
+            $parts[] = "(cbz_path IS NULL OR (LOWER(cbz_path) NOT LIKE '%.pdf' AND LOWER(cbz_path) NOT LIKE '%.epub'))";
+        }
+        $where = implode(' OR ', $parts);
+        $sql = "SELECT COUNT(*) AS c FROM content_items WHERE series_id = :s AND ({$where})";
         $stmt = Database::connection()->prepare($sql);
         $stmt->execute(['s' => $seriesId]);
         $row = $stmt->fetch();
@@ -157,14 +214,15 @@ final class ContentItem
     public static function latestSeriesWithContent(int $limit = 8): array
     {
         $sql = 'SELECT s.id AS series_id, s.name AS series_name,
-                       c.id AS category_id, c.name AS category_name, c.tag_color AS category_tag_color,
-                       MAX(ci.created_at) AS created_at, COUNT(ci.id) AS chapter_count
-                FROM content_items ci
-                INNER JOIN series s ON s.id = ci.series_id
-                INNER JOIN categories c ON c.id = ci.category_id
-                GROUP BY s.id, s.name, c.id, c.name, c.tag_color
-                ORDER BY created_at DESC
-                LIMIT :l';
+                   c.id AS category_id, c.name AS category_name, c.tag_color AS category_tag_color,
+                   MAX(ci.created_at) AS created_at, COUNT(ci.id) AS chapter_count
+            FROM content_items ci
+            INNER JOIN series s ON s.id = ci.series_id
+            INNER JOIN categories c ON c.id = ci.category_id
+            WHERE s.adult_only = 0 AND c.adult_only = 0
+            GROUP BY s.id, s.name, c.id, c.name, c.tag_color
+            ORDER BY created_at DESC
+            LIMIT :l';
         $stmt = Database::connection()->prepare($sql);
         $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
         $stmt->execute();

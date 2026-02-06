@@ -43,7 +43,7 @@ final class LibraryController extends Controller
         if (!($isSubscriber || $isStaff)) {
             $categories = array_values(array_filter($categories, fn ($c) => empty($c['requires_subscription'])));
         }
-        $categories = array_values(array_filter($categories, fn ($c) => !empty($c['content_cbz']) || !empty($c['content_pdf'])));
+        $categories = array_values(array_filter($categories, fn ($c) => !empty($c['content_cbz']) || !empty($c['content_pdf']) || !empty($c['content_epub']) || !empty($c['content_video']) || !empty($c['content_download'])));
         $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user));
 
         echo $this->view('libraries/index', [
@@ -92,7 +92,10 @@ final class LibraryController extends Controller
                 }
                 $allowCbz = !empty($cat['content_cbz']);
                 $allowPdf = !empty($cat['content_pdf']);
-                return $allowCbz || $allowPdf;
+                $allowEpub = !empty($cat['content_epub']);
+                $allowVideo = !empty($cat['content_video']);
+                $allowDownload = !empty($cat['content_download']);
+                return $allowCbz || $allowPdf || $allowEpub || $allowVideo || $allowDownload;
             }));
             SearchLog::create([
                 'uid' => (int)$user['id'],
@@ -192,15 +195,19 @@ final class LibraryController extends Controller
         }
         $allowCbz = !empty($cat['content_cbz']);
         $allowPdf = !empty($cat['content_pdf']);
-        if (!$allowCbz || !$allowPdf) {
-            $seriesAll = array_values(array_map(static function ($s) use ($allowCbz, $allowPdf) {
+        $allowEpub = !empty($cat['content_epub']);
+        if (!$allowCbz || !$allowPdf || !$allowEpub) {
+            $seriesAll = array_values(array_map(static function ($s) use ($allowCbz, $allowPdf, $allowEpub) {
                 if (!$allowCbz) {
                     $s['cbz_count'] = 0;
                 }
                 if (!$allowPdf) {
                     $s['pdf_count'] = 0;
                 }
-                $s['chapter_count'] = (int)($s['cbz_count'] ?? 0) + (int)($s['pdf_count'] ?? 0);
+                if (!$allowEpub) {
+                    $s['epub_count'] = 0;
+                }
+                $s['chapter_count'] = (int)($s['cbz_count'] ?? 0) + (int)($s['pdf_count'] ?? 0) + (int)($s['epub_count'] ?? 0);
                 return $s;
             }, $seriesAll));
         }
@@ -279,40 +286,59 @@ final class LibraryController extends Controller
 
         $page = max(1, (int)($_GET['page'] ?? 1));
         $format = strtolower((string)($request->get['format'] ?? ''));
-        if (!in_array($format, ['pdf', 'cbz'], true)) {
+        if (!in_array($format, ['pdf', 'cbz', 'epub'], true)) {
             $format = '';
         }
         $allowCbz = !empty($cat['content_cbz']);
         $allowPdf = !empty($cat['content_pdf']);
+        $allowEpub = !empty($cat['content_epub']);
         if ($format === 'pdf' && !$allowPdf) {
             $format = '';
         }
         if ($format === 'cbz' && !$allowCbz) {
             $format = '';
         }
-        if ($format === '' && $allowCbz && !$allowPdf) {
+        if ($format === 'epub' && !$allowEpub) {
+            $format = '';
+        }
+        if ($format === '' && $allowCbz && !$allowPdf && !$allowEpub) {
             $format = 'cbz';
         }
-        if ($format === '' && !$allowCbz && $allowPdf) {
+        if ($format === '' && !$allowCbz && $allowPdf && !$allowEpub) {
             $format = 'pdf';
+        }
+        if ($format === '' && !$allowCbz && !$allowPdf && $allowEpub) {
+            $format = 'epub';
         }
         $order = strtolower((string)($request->get['order'] ?? 'desc'));
         if (!in_array($order, ['asc', 'desc'], true)) {
             $order = 'desc';
         }
         $perPage = 40;
-        if (!$allowCbz && !$allowPdf) {
+        $allowedTypes = [];
+        if ($allowCbz) {
+            $allowedTypes[] = 'cbz';
+        }
+        if ($allowPdf) {
+            $allowedTypes[] = 'pdf';
+        }
+        if ($allowEpub) {
+            $allowedTypes[] = 'epub';
+        }
+        if (empty($allowedTypes)) {
             $total = 0;
         } else {
-            $total = $format !== '' ? ContentItem::countBySeriesAndFormat((int)$ser['id'], $format) : ContentItem::countBySeries((int)$ser['id']);
+            $total = $format !== ''
+                ? ContentItem::countBySeriesAndFormat((int)$ser['id'], $format)
+                : ContentItem::countBySeriesAndTypes((int)$ser['id'], $allowedTypes);
         }
         $offset = ($page - 1) * $perPage;
-        if (!$allowCbz && !$allowPdf) {
+        if (empty($allowedTypes)) {
             $items = [];
         } else {
             $items = $format !== ''
                 ? ContentItem::bySeriesAndFormat((int)$ser['id'], $format, $order, $perPage, $offset)
-                : ContentItem::bySeries((int)$ser['id'], $order, $perPage, $offset);
+                : ContentItem::bySeriesAndTypes((int)$ser['id'], $allowedTypes, $order, $perPage, $offset);
         }
         $pending = Upload::pendingBySeries((int)$ser['id']);
 

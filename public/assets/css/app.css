@@ -67,6 +67,23 @@ body.lights-off .reader-frame { background: #000; border-color: #111827; }
 .reader-scroll-top { position: absolute; right: 18px; bottom: 110px; z-index: 60; border-radius: 999px; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
 .reader-scroll-top i { font-size: 1rem; }
 
+/* EPUB reader layout */
+.epub-reader { display: flex; flex-direction: column; height: calc(100vh - 140px); min-height: 520px; }
+.epub-topbar, .epub-bottombar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 12px;
+	border-bottom: 1px solid #ddd;
+	background: #fff;
+}
+.epub-bottombar { border-top: 1px solid #ddd; border-bottom: none; }
+.epub-title { flex: 1; text-align: center; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.epub-main { flex: 1 1 auto; min-height: 0; }
+.epub-viewer { height: 100%; width: 100%; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+.epub-bottombar input[type="range"] { flex: 1; }
+.epub-status { padding: 0 12px 8px; font-size: 0.85rem; }
+
 
 /* Library grid improvements */
 .library-card { color: inherit; }

@@ -25,6 +25,9 @@ ob_start();
 <?php else: ?>
     <?php $orientation = (string)($category['display_orientation'] ?? 'vertical'); ?>
     <?php $listClass = $orientation === 'horizontal' ? 'list-group list-group-horizontal flex-wrap' : 'list-group'; ?>
+    <?php $allowCbz = !empty($category['content_cbz']); ?>
+    <?php $allowPdf = !empty($category['content_pdf']); ?>
+    <?php $allowEpub = !empty($category['content_epub']); ?>
     <div class="<?= $listClass ?>">
         <?php foreach ($series as $s): ?>
             <?php $seriesId = (int)($s['id'] ?? 0); ?>
@@ -33,10 +36,12 @@ ob_start();
             <?php $isFav = !empty($favoriteSeries) && in_array($seriesId, $favoriteSeries, true); ?>
             <?php $cbzCount = (int)($s['cbz_count'] ?? 0); ?>
             <?php $pdfCount = (int)($s['pdf_count'] ?? 0); ?>
+            <?php $epubCount = (int)($s['epub_count'] ?? 0); ?>
             <?php $entries = []; ?>
             <?php $pendingCount = (int)($pendingCounts[$seriesId] ?? 0); ?>
-            <?php if ($cbzCount > 0): $entries[] = ['format' => 'cbz', 'count' => $cbzCount, 'tag' => '']; endif; ?>
-            <?php if ($pdfCount > 0): $entries[] = ['format' => 'pdf', 'count' => $pdfCount, 'tag' => 'PDF']; endif; ?>
+            <?php if ($allowCbz && $cbzCount > 0): $entries[] = ['format' => 'cbz', 'count' => $cbzCount, 'tag' => '']; endif; ?>
+            <?php if ($allowEpub && $epubCount > 0): $entries[] = ['format' => 'epub', 'count' => $epubCount, 'tag' => 'EPUB']; endif; ?>
+            <?php if ($allowPdf && $pdfCount > 0): $entries[] = ['format' => 'pdf', 'count' => $pdfCount, 'tag' => 'PDF']; endif; ?>
             <?php if (empty($entries) && $canPin): ?>
                 <?php if ($pendingCount > 0): ?>
                     <?php $entries[] = ['format' => 'pending', 'count' => 0, 'tag' => '']; ?>
@@ -68,7 +73,7 @@ ob_start();
                                     <span class="badge bg-danger ms-2">18+</span>
                                 <?php endif; ?>
                                 <?php if ($entry['tag'] !== ''): ?>
-                                    <span class="badge bg-warning text-dark ms-2">PDF</span>
+                                    <span class="badge bg-warning text-dark ms-2"><?= View::e($entry['tag']) ?></span>
                                 <?php endif; ?>
                                 <?php if ($isPinned): ?>
                                     <span class="badge bg-primary ms-2">Em destaque</span>

@@ -110,6 +110,7 @@ $router->post('/libraries/series/adult', [new App\Controllers\LibraryController(
 $router->post('/libraries/series/delete', [new App\Controllers\LibraryController(), 'deleteSeries'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 
 $router->get('/reader/{id}', [new App\Controllers\ReaderController(), 'open'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->get('/epub/{id}', [new App\Controllers\ReaderController(), 'epubOpen'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->get('/pdf/{id}', [new App\Controllers\ReaderController(), 'pdfOpen'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->get('/reader/{id}/page/{page}', [new App\Controllers\ReaderController(), 'page'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->get('/download/{id}', [new App\Controllers\ReaderController(), 'download'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);

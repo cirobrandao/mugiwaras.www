@@ -43,6 +43,10 @@ final class ReaderController extends Controller
             echo $this->view('reader/open', ['error' => 'Leitor indisponível para PDF. Faça o download.']);
             return;
         }
+        if ($ext === 'epub') {
+            echo $this->view('reader/open', ['error' => 'Leitor de ePub em desenvolvimento. Faça o download.']);
+            return;
+        }
 
         $cbzMode = 'page';
         $cbzDirection = 'rtl';
@@ -170,8 +174,8 @@ final class ReaderController extends Controller
         Audit::log('download', (int)$user['id'], ['content_id' => (int)$content['id']]);
 
         $ext = strtolower(pathinfo($abs, PATHINFO_EXTENSION));
-        $mime = $ext === 'pdf' ? 'application/pdf' : 'application/zip';
-        $inline = $ext === 'pdf' && (($request->get['inline'] ?? '') === '1');
+        $mime = $ext === 'pdf' ? 'application/pdf' : ($ext === 'epub' ? 'application/epub+zip' : 'application/zip');
+        $inline = in_array($ext, ['pdf', 'epub'], true) && (($request->get['inline'] ?? '') === '1');
         if ($inline && $ext === 'pdf') {
             ContentItem::incrementView((int)$content['id']);
             ContentEvent::log((int)$user['id'], (int)$content['id'], 'read_open', null, (new Request())->ip());
@@ -181,6 +185,42 @@ final class ReaderController extends Controller
         header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment') . '; filename="' . basename($abs) . '"');
         header('Content-Length: ' . filesize($abs));
         readfile($abs);
+    }
+
+    public function epubOpen(Request $request, string $id): void
+    {
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/'));
+        }
+        if ($msg = $this->accessError($user)) {
+            echo $this->view('reader/epub', ['error' => $msg]);
+            return;
+        }
+        $content = ContentItem::find((int)$id);
+        if (!$content) {
+            http_response_code(404);
+            echo $this->view('reader/epub', ['error' => 'Conteúdo não encontrado.']);
+            return;
+        }
+        $path = (string)($content['cbz_path'] ?? '');
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if ($ext !== 'epub') {
+            Response::redirect(base_path('/reader/' . (int)$id));
+            return;
+        }
+
+        ContentItem::incrementView((int)$content['id']);
+        ContentEvent::log((int)$user['id'], (int)$content['id'], 'read_open', null, (new Request())->ip());
+        Audit::log('read_open', (int)$user['id'], ['content_id' => (int)$content['id'], 'type' => 'epub']);
+
+        $token = $this->downloadToken((int)$user['id'], (int)$content['id']);
+        $fileUrl = base_path('/download/' . (int)$id . '?inline=1&token=' . urlencode($token));
+
+        echo $this->view('reader/epub', [
+            'content' => $content,
+            'fileUrl' => $fileUrl,
+        ]);
     }
 
     public function pdfOpen(Request $request, string $id): void

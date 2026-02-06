@@ -287,8 +287,9 @@ final class UploadsController extends Controller
         $ext = strtolower(pathinfo((string)($upload['original_name'] ?? ''), PATHINFO_EXTENSION));
         $isPdf = $ext === 'pdf';
         $isCbz = $ext === 'cbz';
+        $isEpub = $ext === 'epub';
 
-        if ($isPdf || $isCbz) {
+        if ($isPdf || $isCbz || $isEpub) {
             $targetDir = dirname($targetPath);
             if (!is_dir($targetDir)) {
                 mkdir($targetDir, 0777, true);
@@ -325,7 +326,6 @@ final class UploadsController extends Controller
         }
 
         $jobType = match ($ext) {
-            'epub' => 'epub_to_cbz',
             'zip' => 'zip_to_cbz',
             'cbr' => 'cbr_to_cbz',
             default => '',

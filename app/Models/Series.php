@@ -45,13 +45,14 @@ final class Series
     public static function byCategoryWithCountsAndTypes(int $categoryId): array
     {
         $sql = "SELECT s.*, COUNT(ci.id) AS chapter_count,
-                       SUM(CASE WHEN LOWER(ci.cbz_path) LIKE '%.pdf' THEN 1 ELSE 0 END) AS pdf_count,
-                       SUM(CASE WHEN ci.cbz_path IS NOT NULL AND LOWER(ci.cbz_path) NOT LIKE '%.pdf' THEN 1 ELSE 0 END) AS cbz_count
-                FROM series s
-                LEFT JOIN content_items ci ON ci.series_id = s.id
-                WHERE s.category_id = :c
-                GROUP BY s.id
-                ORDER BY s.pin_order DESC, s.name ASC";
+                   SUM(CASE WHEN LOWER(ci.cbz_path) LIKE '%.pdf' THEN 1 ELSE 0 END) AS pdf_count,
+                   SUM(CASE WHEN LOWER(ci.cbz_path) LIKE '%.epub' THEN 1 ELSE 0 END) AS epub_count,
+                   SUM(CASE WHEN ci.cbz_path IS NOT NULL AND LOWER(ci.cbz_path) NOT LIKE '%.pdf' AND LOWER(ci.cbz_path) NOT LIKE '%.epub' THEN 1 ELSE 0 END) AS cbz_count
+            FROM series s
+            LEFT JOIN content_items ci ON ci.series_id = s.id
+            WHERE s.category_id = :c
+            GROUP BY s.id
+            ORDER BY s.pin_order DESC, s.name ASC";
         $stmt = Database::connection()->prepare($sql);
         $stmt->execute(['c' => $categoryId]);
         return $stmt->fetchAll();
@@ -140,17 +141,20 @@ final class Series
 
     public static function mostRead(int $limit = 5): array
     {
-        $sql = "SELECT s.id, s.name, s.category_id, c.name AS category_name, c.tag_color AS category_tag_color, COUNT(DISTINCT ce.user_id) AS read_count,
-                   MAX(CASE WHEN LOWER(ci_all.cbz_path) LIKE '%.pdf' THEN 1 ELSE 0 END) AS has_pdf
-            FROM content_events ce
-            INNER JOIN content_items ci ON ci.id = ce.content_id
-            INNER JOIN series s ON s.id = ci.series_id
-            INNER JOIN categories c ON c.id = s.category_id
-            LEFT JOIN content_items ci_all ON ci_all.series_id = s.id
-            WHERE ce.event = 'read_open' AND ce.user_id IS NOT NULL
-            GROUP BY s.id
-            ORDER BY read_count DESC, s.name ASC
-            LIMIT :l";
+                $sql = "SELECT s.id, s.name, s.category_id, c.name AS category_name, c.tag_color AS category_tag_color, COUNT(DISTINCT ce.user_id) AS read_count,
+                                     MAX(CASE WHEN LOWER(ci_all.cbz_path) LIKE '%.pdf' THEN 1 ELSE 0 END) AS has_pdf
+                        FROM content_events ce
+                        INNER JOIN content_items ci ON ci.id = ce.content_id
+                        INNER JOIN series s ON s.id = ci.series_id
+                        INNER JOIN categories c ON c.id = s.category_id
+                        LEFT JOIN content_items ci_all ON ci_all.series_id = s.id
+                        WHERE ce.event = 'read_open'
+                            AND ce.user_id IS NOT NULL
+                            AND s.adult_only = 0
+                            AND c.adult_only = 0
+                        GROUP BY s.id
+                        ORDER BY read_count DESC, s.name ASC
+                        LIMIT :l";
         $stmt = Database::connection()->prepare($sql);
         $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
         $stmt->execute();
