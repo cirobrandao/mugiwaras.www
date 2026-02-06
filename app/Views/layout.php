@@ -128,6 +128,7 @@ if (!function_exists('time_ago_compact')) {
                 <?php $recentUsers = \App\Core\Auth::isAdmin($currentUser) ? \App\Models\User::recentLogins(10) : []; ?>
                 <?php $pendingPayments = \App\Core\Auth::isAdmin($currentUser) ? \App\Models\Payment::countPending() : 0; ?>
                 <?php $pendingSupport = \App\Core\Auth::isSupportStaff($currentUser) ? \App\Models\SupportMessage::countOpenForStaff() : 0; ?>
+                <?php $pendingUploads = (\App\Core\Auth::isAdmin($currentUser) || \App\Core\Auth::isUploader($currentUser) || \App\Core\Auth::isModerator($currentUser)) ? \App\Models\Upload::countPending() : 0; ?>
             <?php endif; ?>
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <?php if (isset($_SESSION['user_id'])): ?>
@@ -190,6 +191,12 @@ if (!function_exists('time_ago_compact')) {
                     <div class="list-group">
                         <a class="list-group-item list-group-item-action" href="<?= base_path('/admin') ?>">Dashboard</a>
                         <a class="list-group-item list-group-item-action" href="<?= base_path('/admin/users') ?>">Usuários</a>
+                        <a class="list-group-item list-group-item-action d-flex align-items-center" href="<?= base_path('/admin/uploads') ?>">
+                            <span>Gerenciador de Arquivos</span>
+                            <?php if (!empty($pendingUploads)): ?>
+                                <span class="badge bg-danger ms-auto"><?= (int)$pendingUploads ?></span>
+                            <?php endif; ?>
+                        </a>
                     </div>
                 </div>
             <?php endif; ?>
@@ -218,7 +225,7 @@ if (!function_exists('time_ago_compact')) {
                 </div>
             <?php endif; ?>
 
-            <?php if (\App\Core\Auth::isUploader($currentUser)): ?>
+            <?php if (\App\Core\Auth::isUploader($currentUser) || \App\Core\Auth::isAdmin($currentUser)): ?>
                 <div class="mb-3">
                     <div class="text-muted small mb-2">Uploader</div>
                     <div class="list-group">

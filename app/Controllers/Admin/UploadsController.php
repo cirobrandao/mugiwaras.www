@@ -92,13 +92,33 @@ final class UploadsController extends Controller
 
         $categoryId = (int)($request->post['category_id'] ?? 0);
         $seriesId = (int)($request->post['series_id'] ?? 0);
+        $newSeriesName = trim((string)($request->post['series_new'] ?? ''));
+
+        if ($newSeriesName !== '') {
+            if ($categoryId <= 0) {
+                $categoryId = (int)($upload['category_id'] ?? 0);
+            }
+            if ($categoryId <= 0) {
+                Response::redirect(base_path('/admin/uploads'));
+            }
+            $existing = Series::findByName($categoryId, $newSeriesName);
+            if ($existing) {
+                $seriesId = (int)($existing['id'] ?? 0);
+            } else {
+                $seriesId = Series::create($categoryId, $newSeriesName);
+            }
+        }
+
         $series = null;
         if ($seriesId > 0) {
             $series = Series::findById($seriesId);
             if (!$series) {
                 Response::redirect(base_path('/admin/uploads'));
             }
-            $categoryId = (int)($series['category_id'] ?? $categoryId);
+            $seriesCategory = (int)($series['category_id'] ?? 0);
+            if ($seriesCategory > 0) {
+                $categoryId = $seriesCategory;
+            }
         }
 
         if ($categoryId <= 0) {

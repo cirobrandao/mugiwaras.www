@@ -110,7 +110,7 @@ if (!function_exists('time_ago')) {
                             <div class="list-group-item d-flex align-items-center justify-content-between gap-2 py-1">
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                     <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode($mrCategory) . '/' . rawurlencode($mrName)) ?>">
-                                        <?= View::e($mrName) ?>
+                                        <?= View::e(mb_strimwidth($mrName, 0, 25, '...')) ?>
                                     </a>
                                     <?php
                                     $badgeClass = $mrCatId > 0 ? 'cat-badge-' . $mrCatId : 'bg-secondary';
@@ -147,10 +147,10 @@ if (!function_exists('time_ago')) {
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                     <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
                                         <a class="text-decoration-none fw-semibold" href="<?= base_path('/libraries/' . rawurlencode($rcCategory) . '/' . rawurlencode($rcSeries)) ?>">
-                                            <?= View::e($rcSeriesLabel) ?>
+                                            <?= View::e(mb_strimwidth($rcSeriesLabel, 0, 25, '...')) ?>
                                         </a>
                                     <?php else: ?>
-                                        <span class="fw-semibold"><?= View::e($rcTitleLabel) ?></span>
+                                        <span class="fw-semibold"><?= View::e(mb_strimwidth($rcTitleLabel, 0, 25, '...')) ?></span>
                                     <?php endif; ?>
                                     <?php if ($rcCategory !== ''): ?>
                                         <?php

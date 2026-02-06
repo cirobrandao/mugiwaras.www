@@ -259,6 +259,22 @@ final class Upload
         return (int)($row['s'] ?? 0);
     }
 
+    public static function countPending(): int
+    {
+        $sql = "SELECT COUNT(*) AS c
+                FROM uploads u
+                LEFT JOIN jobs j ON j.id = u.job_id
+                WHERE u.status IN ('pending','queued','processing')
+                   OR j.status IN ('pending','queued','processing')";
+        try {
+            $stmt = Database::connection()->query($sql);
+            $row = $stmt->fetch();
+            return (int)($row['c'] ?? 0);
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+
     public static function pendingBySeries(int $seriesId, int $limit = 100): array
     {
         $stmt = Database::connection()->prepare('SELECT * FROM uploads WHERE series_id = :s AND status = :st ORDER BY id DESC LIMIT :l');

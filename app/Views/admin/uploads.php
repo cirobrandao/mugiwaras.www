@@ -8,9 +8,42 @@ $categoryMap = [];
 foreach (($categories ?? []) as $c) {
     $categoryMap[(int)$c['id']] = (string)$c['name'];
 }
+
+$midEllipsis = static function (string $text, int $max = 32, int $tail = 7): string {
+    $text = trim($text);
+    if ($text === '') {
+        return '';
+    }
+    if (mb_strlen($text) <= $max) {
+        return $text;
+    }
+    $head = max(0, $max - $tail - 3);
+    if ($head <= 0) {
+        return mb_substr($text, 0, $max - 3) . '...';
+    }
+    return mb_substr($text, 0, $head) . '...' . mb_substr($text, -$tail);
+};
+
+$shortFileName = static function (string $name) use ($midEllipsis): string {
+    $name = trim($name);
+    if ($name === '') {
+        return '';
+    }
+    $pos = strrpos($name, '.');
+    if ($pos === false || $pos === 0) {
+        return $midEllipsis($name, 32, 7);
+    }
+    $base = substr($name, 0, $pos);
+    $ext = substr($name, $pos + 1);
+    $extPart = $ext !== '' ? '.' . $ext : '';
+    $max = 32;
+    $tail = 6;
+    $trimmedBase = $midEllipsis($base, $max - mb_strlen($extPart), $tail);
+    return $trimmedBase . $extPart;
+};
 ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h4 mb-0">Gerenciador de Arquivos enviados</h1>
+    <h1 class="h4 mb-0">Gerenciador de Arquivos</h1>
     <?php if (!empty($total)): ?>
         <div class="ms-3 small text-muted text-end">
             <span>Total uploads: <?= (int)$total ?></span><br>
@@ -20,20 +53,32 @@ foreach (($categories ?? []) as $c) {
 </div>
 <style>
     .uploads-action-btn {
-        width: 32px;
-        height: 30px;
+        width: 34px;
+        height: 34px;
         padding: 0;
         display: inline-flex;
         align-items: center;
         justify-content: center;
     }
     .uploads-truncate {
-        max-width: 200px;
+        max-width: 180px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         display: inline-block;
         vertical-align: bottom;
+    }
+    .uploads-pill {
+        display: inline-block;
+        max-width: 180px;
+        padding: 2px 8px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        background: #f8f9fa;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
     }
 </style>
 <form method="get" action="<?= base_path('/admin/uploads') ?>" class="row g-2 align-items-end mb-3">
@@ -141,8 +186,11 @@ foreach (($categories ?? []) as $c) {
                     ?>
                     <i class="fa-solid <?= $icon ?> <?= $cls ?>" title="<?= View::e($st) ?>"></i>
                 </td>
-                <td class="text-truncate" style="max-width: 220px;">
-                    <?= View::e($u['original_name']) ?>
+                <td>
+                    <?php $fileName = (string)($u['original_name'] ?? ''); ?>
+                    <span class="uploads-pill" style="display:inline-block;max-width:180px;padding:2px 8px;border:1px solid #dee2e6;border-radius:6px;background:#f8f9fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= View::e($fileName) ?>">
+                        <?= View::e($shortFileName($fileName)) ?>
+                    </span>
                 </td>
                 <td>
                     <?php
@@ -158,9 +206,13 @@ foreach (($categories ?? []) as $c) {
                     $seriesId = (int)($u['series_id'] ?? 0);
                     $seriesLabel = $seriesName !== '' ? $seriesName : ($seriesId > 0 ? ('#' . $seriesId) : '—');
                     ?>
-                    <span class="uploads-truncate" title="<?= View::e($seriesLabel) ?>"><?= View::e($seriesLabel) ?></span>
+                    <span class="uploads-pill" style="display:inline-block;max-width:180px;padding:2px 8px;border:1px solid #dee2e6;border-radius:6px;background:#f8f9fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= View::e($seriesLabel) ?>">
+                        <?= View::e($midEllipsis($seriesLabel, 28, 6)) ?>
+                    </span>
                 </td>
-                <td><?= View::e((string)$u['created_at']) ?></td>
+                <td class="text-nowrap" style="width: 150px;">
+                    <?= View::e((string)$u['created_at']) ?>
+                </td>
                 <td>
                     <?php $userLabel = $u['username_display'] ?? ('#' . (int)$u['user_id']); ?>
                     <span class="uploads-truncate" title="<?= View::e((string)$userLabel) ?>"><?= View::e((string)$userLabel) ?></span>
@@ -239,6 +291,10 @@ foreach (($categories ?? []) as $c) {
                                                 </optgroup>
                                             <?php endforeach; ?>
                                         </select>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">Nova série (opcional)</label>
+                                        <input class="form-control" type="text" name="series_new" placeholder="Digite para criar nova série">
                                     </div>
                                 </div>
                             </div>
