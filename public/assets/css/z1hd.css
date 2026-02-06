@@ -267,7 +267,7 @@ body.app-body {
   padding: 20px;
   box-shadow: var(--shadow);
   position: relative;
-  z-index: 0;
+  z-index: auto;
 }
 
 .news-card {
@@ -540,15 +540,19 @@ body.app-body {
 }
 
 .modal-backdrop {
-  z-index: 2000;
+  background-color: rgba(11, 15, 26, 0.65);
+}
+
+.modal-backdrop.show {
+  opacity: 1;
+}
+
+.modal-content {
+  box-shadow: 0 24px 60px rgba(11, 15, 26, 0.35);
 }
 
 .modal {
-  z-index: 2010;
-}
-
-.app-sidebar {
-  z-index: 100;
+  z-index: 2000;
 }
 
 .auth-hero h1 {
