@@ -132,6 +132,8 @@ body.app-body {
   align-items: center;
   box-shadow: var(--shadow);
   backdrop-filter: blur(12px);
+  position: relative;
+  z-index: 1500;
 }
 
 .topbar-left {
@@ -144,6 +146,10 @@ body.app-body {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.app-topbar .dropdown-menu {
+  z-index: 2000;
 }
 
 .topbar-logo {
