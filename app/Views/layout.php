@@ -194,7 +194,7 @@ $activePage = $activePage ?? '';
                     <?php if ($isAdmin || $isUploader || $isModerator): ?>
                         <a class="nav-link" href="<?= base_path('/admin/uploads') ?>">
                             <i class="bi bi-upload"></i>
-                            <span>Uploads</span>
+                            <span>Gerenciar upload</span>
                             <?php if (!empty($pendingUploads)): ?>
                                 <span class="badge bg-danger ms-auto"><?= (int)$pendingUploads ?></span>
                             <?php endif; ?>
@@ -204,12 +204,6 @@ $activePage = $activePage ?? '';
                             <span>Enviar arquivo</span>
                         </a>
                     <?php endif; ?>
-                    <?php if ($isModerator): ?>
-                        <a class="nav-link" href="<?= base_path('/admin/categories') ?>">
-                            <i class="bi bi-tags"></i>
-                            <span>Categorias</span>
-                        </a>
-                    <?php endif; ?>
                     <?php if ($isSupportStaff): ?>
                         <a class="nav-link" href="<?= base_path('/admin/support') ?>">
                             <i class="bi bi-headset"></i>
@@ -217,6 +211,12 @@ $activePage = $activePage ?? '';
                             <?php if (!empty($pendingSupport)): ?>
                                 <span class="badge bg-danger ms-auto"><?= (int)$pendingSupport ?></span>
                             <?php endif; ?>
+                        </a>
+                    <?php endif; ?>
+                    <?php if ($isAdmin): ?>
+                        <a class="nav-link" href="<?= base_path('/admin/news') ?>">
+                            <i class="bi bi-megaphone"></i>
+                            <span>Publicar noticia</span>
                         </a>
                     <?php endif; ?>
                 <?php endif; ?>
