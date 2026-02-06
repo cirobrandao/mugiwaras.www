@@ -193,6 +193,10 @@ $activePage = $activePage ?? '';
                                 <span class="badge bg-danger ms-auto"><?= (int)$pendingUploads ?></span>
                             <?php endif; ?>
                         </a>
+                        <a class="nav-link" href="<?= base_path('/upload') ?>">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            <span>Enviar arquivo</span>
+                        </a>
                     <?php endif; ?>
                     <?php if ($isModerator): ?>
                         <a class="nav-link" href="<?= base_path('/admin/categories') ?>">
