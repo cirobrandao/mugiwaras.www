@@ -1,6 +1,7 @@
 <?php
 use App\Core\View;
 ob_start();
+$seriesCount = is_array($series ?? null) ? count($series) : 0;
 ?>
 <nav aria-label="breadcrumb" class="mb-2">
     <ol class="breadcrumb">
@@ -15,11 +16,21 @@ ob_start();
     <div class="alert alert-secondary">Nenhuma série encontrada.</div>
 <?php else: ?>
     <?php $orientation = (string)($category['display_orientation'] ?? 'vertical'); ?>
-    <?php $listClass = $orientation === 'horizontal' ? 'list-group list-group-horizontal flex-wrap' : 'list-group'; ?>
+    <?php $listClass = $orientation === 'horizontal' ? 'list-group list-group-horizontal flex-wrap list-group-flush' : 'list-group list-group-flush'; ?>
     <?php $allowCbz = !empty($category['content_cbz']); ?>
     <?php $allowPdf = !empty($category['content_pdf']); ?>
     <?php $allowEpub = !empty($category['content_epub']); ?>
-    <div class="<?= $listClass ?>">
+    <section class="section-card">
+        <div class="news-title-box">
+            <div class="section-title"><?= View::e((string)($category['name'] ?? 'Categoria')) ?></div>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <span class="badge bg-light text-dark"><?= (int)$seriesCount ?> série(s)</span>
+            <?php if ($allowCbz): ?><span class="badge bg-secondary">CBZ</span><?php endif; ?>
+            <?php if ($allowEpub): ?><span class="badge bg-info text-dark">EPUB</span><?php endif; ?>
+            <?php if ($allowPdf): ?><span class="badge bg-warning text-dark">PDF</span><?php endif; ?>
+        </div>
+        <div class="<?= $listClass ?>">
         <?php foreach ($series as $s): ?>
             <?php $seriesId = (int)($s['id'] ?? 0); ?>
             <?php $canPin = !empty($user) && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user)); ?>
@@ -42,7 +53,7 @@ ob_start();
             <?php endif; ?>
             <?php foreach ($entries as $entry): ?>
             <?php $isPinned = (int)($s['pin_order'] ?? 0) > 0; ?>
-            <div class="list-group-item<?= $isPinned ? ' bg-warning-subtle' : '' ?>">
+            <div class="list-group-item py-3<?= $isPinned ? ' bg-warning-subtle' : '' ?>">
                 <div class="d-flex justify-content-between align-items-center gap-3">
                     <div class="d-flex align-items-center gap-2 flex-wrap">
                     <form method="post" action="<?= base_path('/libraries/series/favorite') ?>">
@@ -165,7 +176,8 @@ ob_start();
             </div>
             <?php endforeach; ?>
         <?php endforeach; ?>
-    </div>
+        </div>
+    </section>
 <?php endif; ?>
 <?php
 $content = ob_get_clean();

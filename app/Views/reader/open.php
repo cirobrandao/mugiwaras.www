@@ -77,7 +77,7 @@ ob_start();
 						<button class="btn btn-sm <?= $favBtnClass ?>" type="submit" title="Favoritar" data-favorited="<?= !empty($isFavorite) ? '1' : '0' ?>" aria-label="Favoritar"><i class="<?= $favIconClass ?> fa-star"></i></button>
 					</form>
 					<?php if (!empty($downloadToken)): ?>
-						<div class="btn-group">
+						<div class="btn-group reader-download">
 							<button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Download" aria-label="Download">
 								<i class="fa-solid fa-download"></i>
 							</button>

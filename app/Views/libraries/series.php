@@ -1,6 +1,7 @@
 <?php
 use App\Core\View;
 ob_start();
+$itemCount = is_array($items ?? null) ? count($items) : 0;
 ?>
 <nav aria-label="breadcrumb" class="mb-2">
     <ol class="breadcrumb">
@@ -36,15 +37,27 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
 <?php if (!empty($error)): ?>
     <div class="alert alert-warning"><?= View::e($error) ?></div>
 <?php endif; ?>
-<div class="d-flex align-items-center justify-content-between mb-2">
-    <div class="small text-muted">Ordem dos capítulos: <strong><?= View::e($orderLabel) ?></strong></div>
-    <a class="btn btn-sm btn-outline-secondary" href="<?= $orderUrl ?>"> <?= View::e($orderBtnLabel) ?></a>
-</div>
+
+<section class="section-card mb-3">
+    <div class="news-title-box">
+        <div class="section-title"><?= View::e((string)($series['name'] ?? 'Série')) ?></div>
+    </div>
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="badge bg-secondary"><?= View::e((string)($category['name'] ?? '')) ?></span>
+            <?php if (!empty($series['adult_only'])): ?>
+                <span class="badge bg-danger">18+</span>
+            <?php endif; ?>
+            <span class="badge bg-light text-dark"><?= (int)$itemCount ?> capítulo(s)</span>
+        </div>
+    </div>
+</section>
 <?php if (!empty($pending)): ?>
-    <div class="card mb-3">
-        <div class="card-body">
-            <h2 class="h6 mb-2">Aguardando conversão</h2>
-            <ul class="list-group">
+    <section class="section-card mb-3">
+        <div class="news-title-box">
+            <div class="section-title">Aguardando conversão</div>
+        </div>
+            <ul class="list-group list-group-flush">
                 <?php foreach ($pending as $p): ?>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span><?= View::e((string)($p['title'] ?? $p['original_name'] ?? 'Arquivo')) ?></span>
@@ -52,14 +65,20 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                     </li>
                 <?php endforeach; ?>
             </ul>
-        </div>
-    </div>
+    </section>
 <?php endif; ?>
 <?php if (empty($items)): ?>
     <div class="alert alert-secondary">Nenhum arquivo encontrado.</div>
 <?php else: ?>
     <?php $hasPdf = false; ?>
-    <div class="list-group">
+    <section class="section-card">
+        <div class="news-title-box d-flex align-items-center justify-content-between gap-2">
+            <div class="section-title">Capítulos</div>
+            <a class="btn btn-sm btn-outline-secondary" href="<?= $orderUrl ?>" title="<?= View::e($orderBtnLabel) ?>" aria-label="<?= View::e($orderBtnLabel) ?>">
+                <i class="fa-solid fa-arrow-up-short-wide"></i>
+            </a>
+        </div>
+        <div class="list-group list-group-flush">
         <?php foreach ($items as $item): ?>
             <?php $itemPath = (string)($item['cbz_path'] ?? ''); ?>
             <?php $itemExt = strtolower(pathinfo($itemPath, PATHINFO_EXTENSION)); ?>
@@ -68,7 +87,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php $iosOnlyDownload = !empty($isIos); ?>
             <?php $downloadToken = !empty($downloadTokens[(int)$item['id']]) ? (string)$downloadTokens[(int)$item['id']] : ''; ?>
             <?php if ($isPdf) { $hasPdf = true; } ?>
-            <div class="list-group-item" data-series-title="<?= View::e((string)($series['name'] ?? '')) ?>" data-item-title="<?= View::e((string)($item['title'] ?? '')) ?>">
+            <div class="list-group-item py-3" data-series-title="<?= View::e((string)($series['name'] ?? '')) ?>" data-item-title="<?= View::e((string)($item['title'] ?? '')) ?>">
                 <div class="d-flex justify-content-between align-items-center gap-3">
                     <div class="d-flex align-items-center gap-2 flex-wrap">
                         <form method="post" action="<?= base_path('/libraries/favorite') ?>">
@@ -173,7 +192,8 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
-    </div>
+        </div>
+    </section>
     <?php if ($hasPdf): ?>
         <div id="pdfViewerModal" class="pdf-viewer-modal">
                 <div id="pdfViewerDialog" class="pdf-viewer-dialog">
