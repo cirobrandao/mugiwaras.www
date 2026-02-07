@@ -28,15 +28,15 @@ foreach ($messages ?? [] as $m) {
 <?php else: ?>
     <h2 class="h6 mb-2">Abertos / Em andamento</h2>
     <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle">
-            <thead>
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
             <tr>
-                <th>ID</th>
-                <th style="width: 180px;">Usuário</th>
-                <th>Assunto</th>
-                <th style="width: 140px;">Status</th>
-                <th style="width: 220px;">Nota admin</th>
-                <th class="text-end" style="width: 180px;">Ações</th>
+                <th scope="col" style="width: 110px;">Codigo</th>
+                <th scope="col" style="width: 180px;">Usuário</th>
+                <th scope="col">Assunto</th>
+                <th scope="col" style="width: 220px;">Nota admin</th>
+                <th scope="col" style="width: 130px;" class="text-center">Status</th>
+                <th scope="col" class="text-end" style="width: 170px;">Ações</th>
             </tr>
             </thead>
             <tbody>
@@ -45,7 +45,7 @@ foreach ($messages ?? [] as $m) {
             <?php endif; ?>
             <?php foreach ($openMessages as $m): ?>
                 <tr class="<?= ($m['status'] ?? 'open') === 'in_progress' ? 'table-warning' : 'table-secondary' ?>">
-                    <td><?= (int)$m['id'] ?></td>
+                    <td><?= str_pad((string)(int)$m['id'], 4, '0', STR_PAD_LEFT) ?></td>
                     <td>
                         <?php if (!empty($m['username'])): ?>
                             <?= View::e((string)$m['username']) ?>
@@ -60,12 +60,12 @@ foreach ($messages ?? [] as $m) {
                             <?= View::e(mb_strimwidth((string)$m['subject'], 0, 50, '…')) ?>
                         </a>
                     </td>
-                    <td>
+                    <td><?= View::e((string)($m['admin_note'] ?? '')) ?></td>
+                    <td class="text-center">
                         <span class="badge <?= $badgeMap[$m['status'] ?? 'open'] ?? 'bg-secondary' ?>">
                             <?= View::e($labelMap[$m['status'] ?? 'open'] ?? 'Aberto') ?>
                         </span>
                     </td>
-                    <td><?= View::e((string)($m['admin_note'] ?? '')) ?></td>
                     <td class="text-end">
                         <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/admin/support/' . (int)$m['id']) ?>" title="Ver">
                             <i class="fa-solid fa-eye"></i>
@@ -95,15 +95,15 @@ foreach ($messages ?? [] as $m) {
 
     <h2 class="h6 mt-4 mb-2">Fechados</h2>
     <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle">
-            <thead>
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
             <tr>
-                <th>ID</th>
-                <th style="width: 180px;">Usuário</th>
-                <th>Assunto</th>
-                <th style="width: 140px;">Status</th>
-                <th style="width: 220px;">Nota admin</th>
-                <th class="text-end" style="width: 180px;">Ações</th>
+                <th scope="col" style="width: 110px;">Codigo</th>
+                <th scope="col" style="width: 180px;">Usuário</th>
+                <th scope="col">Assunto</th>
+                <th scope="col" style="width: 220px;">Nota admin</th>
+                <th scope="col" style="width: 130px;" class="text-center">Status</th>
+                <th scope="col" class="text-end" style="width: 170px;">Ações</th>
             </tr>
             </thead>
             <tbody>
@@ -112,7 +112,7 @@ foreach ($messages ?? [] as $m) {
             <?php endif; ?>
             <?php foreach ($closedMessages as $m): ?>
                 <tr class="table-light">
-                    <td><?= (int)$m['id'] ?></td>
+                    <td><?= str_pad((string)(int)$m['id'], 4, '0', STR_PAD_LEFT) ?></td>
                     <td>
                         <?php if (!empty($m['username'])): ?>
                             <?= View::e((string)$m['username']) ?>
@@ -127,12 +127,12 @@ foreach ($messages ?? [] as $m) {
                             <?= View::e(mb_strimwidth((string)$m['subject'], 0, 50, '…')) ?>
                         </a>
                     </td>
-                    <td>
+                    <td><?= View::e((string)($m['admin_note'] ?? '')) ?></td>
+                    <td class="text-center">
                         <span class="badge <?= $badgeMap[$m['status'] ?? 'closed'] ?? 'bg-success' ?>">
                             <?= View::e($labelMap[$m['status'] ?? 'closed'] ?? 'Fechado') ?>
                         </span>
                     </td>
-                    <td><?= View::e((string)($m['admin_note'] ?? '')) ?></td>
                     <td class="text-end">
                         <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/admin/support/' . (int)$m['id']) ?>" title="Ver">
                             <i class="fa-solid fa-eye"></i>

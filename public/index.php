@@ -77,6 +77,8 @@ $router->post('/support/{id}/reply', [new App\Controllers\SupportController(), '
 
 $router->get('/dashboard', [new App\Controllers\DashboardController(), 'index'], [App\Core\Auth::requireRole(['user','admin','equipe','superadmin']), App\Core\Middleware::requireActiveAccess()]);
 
+$router->get('/news/{id}', [new App\Controllers\NewsController(), 'show'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+
 $router->get('/loja', [new App\Controllers\PaymentController(), 'packages']);
 $router->get('/loja/checkout/{id}', [new App\Controllers\PaymentController(), 'checkout']);
 $router->post('/loja/request', [new App\Controllers\PaymentController(), 'requestPayment']);

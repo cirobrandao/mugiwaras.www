@@ -29,7 +29,7 @@ ob_start();
     <div class="alert alert-secondary">Nenhum pacote disponível.</div>
 <?php else: ?>
     <?php $catList = $categories ?? []; ?>
-    <div class="row">
+    <div class="row g-3">
         <?php foreach ($packages as $p): ?>
             <?php
             $pkgCats = $packageCategories[(int)$p['id']] ?? [];
@@ -44,13 +44,13 @@ ob_start();
                 }
             }
             ?>
-                <div class="col-md-4">
-                    <div class="card mb-3 h-100">
-                        <div class="card-body d-flex flex-column">
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
                         <h5 class="card-title"><?= View::e($p['title']) ?></h5>
-                        <p class="card-text text-muted small mb-2"><?= View::e($p['description']) ?></p>
+                        <p class="card-text text-muted small mb-3"><?= View::e($p['description']) ?></p>
                         <?php if (!empty($catList)): ?>
-                            <ul class="list-unstyled small mb-2">
+                            <ul class="list-unstyled small mb-3">
                                 <?php foreach ($activeCats as $c): ?>
                                     <li><span class="me-1">›</span><?= View::e((string)$c['name']) ?></li>
                                 <?php endforeach; ?>
@@ -59,22 +59,22 @@ ob_start();
                                 <?php endforeach; ?>
                             </ul>
                         <?php endif; ?>
-                            <form class="mt-auto" method="get" action="<?= base_path('/loja/checkout/' . (int)$p['id']) ?>">
-                                <div class="fw-semibold mb-2">
-                                    R$ <?= number_format((float)($p['price'] ?? 0), 2, ',', '.') ?> / mês
+                        <form class="mt-auto" method="get" action="<?= base_path('/loja/checkout/' . (int)$p['id']) ?>">
+                            <div class="fw-semibold mb-2">
+                                R$ <?= number_format((float)($p['price'] ?? 0), 2, ',', '.') ?> / mês
+                            </div>
+                            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+                                <label class="small text-muted mb-0">Deseja assinar quantos meses?</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <select class="form-select form-select-sm w-auto pkg-months" name="months">
+                                        <?php for ($m = 1; $m <= 12; $m++): ?>
+                                            <option value="<?= $m ?>" <?= $m === 1 ? 'selected' : '' ?>><?= $m ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                    <button class="btn btn-primary" type="submit">Assinar</button>
                                 </div>
-                                <div class="d-flex align-items-center justify-content-between gap-2">
-                                    <label class="small text-muted mb-0">Deseja assinar quantos meses?</label>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <select class="form-select form-select-sm w-auto pkg-months" name="months">
-                                            <?php for ($m = 1; $m <= 12; $m++): ?>
-                                                <option value="<?= $m ?>" <?= $m === 1 ? 'selected' : '' ?>><?= $m ?></option>
-                                            <?php endfor; ?>
-                                        </select>
-                                        <button class="btn btn-primary" type="submit">Assinar</button>
-                                    </div>
-                                </div>
-                            </form>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

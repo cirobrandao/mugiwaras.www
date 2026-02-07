@@ -44,12 +44,15 @@ body.app-body {
   flex-direction: column;
   gap: 22px;
   box-shadow: var(--shadow);
+  overflow-y: auto;
 }
 
 .sidebar-brand {
   display: flex;
   align-items: center;
   gap: 12px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .brand-mark {
@@ -133,7 +136,7 @@ body.app-body {
   box-shadow: var(--shadow);
   backdrop-filter: blur(12px);
   position: relative;
-  z-index: 1500;
+  z-index: 200;
 }
 
 .topbar-left {
@@ -149,7 +152,7 @@ body.app-body {
 }
 
 .app-topbar .dropdown-menu {
-  z-index: 2000;
+  z-index: 1200;
 }
 
 .topbar-logo {
@@ -196,8 +199,28 @@ body.app-body {
 }
 
 @media (max-width: 576px) {
+  .app-topbar.search-focused {
+    justify-content: center;
+  }
+
+  .app-topbar.search-focused .topbar-left {
+    display: none;
+  }
+
+  .app-topbar.search-focused .topbar-right {
+    width: 100%;
+    justify-content: center;
+  }
+
   .topbar-search {
     width: 38px;
+    height: 38px;
+    border: 1px solid #e3e6f0;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
   }
 
   .topbar-search input {
@@ -206,16 +229,29 @@ body.app-body {
     padding-left: 30px;
     border-radius: 999px;
     cursor: pointer;
+    background: transparent;
+    border: none;
+    color: transparent;
+    caret-color: transparent;
   }
 
   .topbar-search input:focus {
     width: 100%;
     min-width: 220px;
     cursor: text;
+    color: inherit;
+    caret-color: auto;
   }
 
   .topbar-search:focus-within {
     width: 220px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e3e6f0;
+  }
+
+  .topbar-search:focus-within ~ .dropdown {
+    display: none;
   }
 }
 
@@ -518,11 +554,11 @@ body.app-body {
 
 .library-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
 }
 
 .library-card {
@@ -615,6 +651,7 @@ body.app-body {
     transform: translateX(-110%);
     transition: transform 0.3s ease;
     z-index: 20;
+    max-height: calc(100vh - 24px);
   }
 
   .app-shell.sidebar-open .app-sidebar {

@@ -10,26 +10,24 @@ $canManageSupport = $isAdmin;
 $canManageUploaders = $isAdmin || $isModerator;
 $canManageModerators = $isAdmin;
 ?>
-<h1 class="h4 mb-3">Equipe</h1>
-
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <div class="text-muted small">Gerencie equipe e permissões.</div>
-    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addTeamMemberModal">
+    <h1 class="h4 mb-0">Gerenciar Equipe</h1>
+    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addTeamMemberModal">
         Adicionar membro
     </button>
 </div>
 
 <div class="table-responsive">
-    <table class="table table-sm">
-        <thead>
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
         <tr>
-            <th>Usuário</th>
-            <th>Email</th>
-            <th>Cargo</th>
-            <th class="text-center">Suporte</th>
-            <th class="text-center">Uploader</th>
-            <th class="text-center">Moderador</th>
-            <th class="text-end">Ações</th>
+            <th scope="col">Usuário</th>
+            <th scope="col">Email</th>
+            <th scope="col" style="width: 220px;">Cargo</th>
+            <th scope="col" class="text-center" style="width: 110px;">Suporte</th>
+            <th scope="col" class="text-center" style="width: 110px;">Uploader</th>
+            <th scope="col" class="text-center" style="width: 120px;">Moderador</th>
+            <th scope="col" class="text-end" style="width: 140px;">Ações</th>
         </tr>
         </thead>
         <tbody>
@@ -42,7 +40,7 @@ $canManageModerators = $isAdmin;
                     <form method="post" action="<?= base_path('/admin/team/update') ?>" class="d-flex gap-2">
                         <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
                         <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
-                        <select name="role" class="form-select form-select-sm" <?= $canManageAdmins ? '' : 'disabled' ?> <?= $isRowSuper ? 'disabled' : '' ?>>
+                        <select name="role" class="form-select" <?= $canManageAdmins ? '' : 'disabled' ?> <?= $isRowSuper ? 'disabled' : '' ?>>
                             <option value="user" <?= ($u['role'] ?? '') === 'user' ? 'selected' : '' ?>>usuário</option>
                             <option value="equipe" <?= ($u['role'] ?? '') === 'equipe' ? 'selected' : '' ?>>equipe</option>
                             <?php if ($canManageAdmins): ?>
@@ -54,13 +52,13 @@ $canManageModerators = $isAdmin;
                         </select>
                 </td>
                 <td class="text-center">
-                        <input type="checkbox" name="support_agent" value="1" <?= !empty($u['support_agent']) ? 'checked' : '' ?> <?= $canManageSupport && !$isRowSuper ? '' : 'disabled' ?>>
+                        <input class="form-check-input" type="checkbox" name="support_agent" value="1" <?= !empty($u['support_agent']) ? 'checked' : '' ?> <?= $canManageSupport && !$isRowSuper ? '' : 'disabled' ?>>
                 </td>
                 <td class="text-center">
-                        <input type="checkbox" name="uploader_agent" value="1" <?= !empty($u['uploader_agent']) ? 'checked' : '' ?> <?= $canManageUploaders && !$isRowSuper ? '' : 'disabled' ?>>
+                        <input class="form-check-input" type="checkbox" name="uploader_agent" value="1" <?= !empty($u['uploader_agent']) ? 'checked' : '' ?> <?= $canManageUploaders && !$isRowSuper ? '' : 'disabled' ?>>
                 </td>
                 <td class="text-center">
-                        <input type="checkbox" name="moderator_agent" value="1" <?= !empty($u['moderator_agent']) ? 'checked' : '' ?> <?= $canManageModerators && !$isRowSuper ? '' : 'disabled' ?>>
+                        <input class="form-check-input" type="checkbox" name="moderator_agent" value="1" <?= !empty($u['moderator_agent']) ? 'checked' : '' ?> <?= $canManageModerators && !$isRowSuper ? '' : 'disabled' ?>>
                 </td>
                 <td class="text-end">
                         <button class="btn btn-sm btn-primary" type="submit" <?= $isRowSuper ? 'disabled' : '' ?>>Salvar</button>

@@ -81,14 +81,14 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
         vertical-align: middle;
     }
 </style>
-<form method="get" action="<?= base_path('/admin/uploads') ?>" class="row g-2 align-items-end mb-3">
+<form method="get" action="<?= base_path('/admin/uploads') ?>" class="row g-3 align-items-end mb-3">
     <div class="col-sm-4 col-md-3">
         <label class="form-label">Usuário (ID ou nome)</label>
-        <input class="form-control form-control-sm" type="text" name="user" value="<?= View::e((string)($filterUser ?? '')) ?>" placeholder="ex: 42 ou joao">
+        <input class="form-control" type="text" name="user" value="<?= View::e((string)($filterUser ?? '')) ?>" placeholder="ex: 42 ou joao">
     </div>
     <div class="col-sm-4 col-md-3">
         <label class="form-label">Categoria</label>
-        <select class="form-select form-select-sm" name="category">
+        <select class="form-select" name="category">
             <option value="0">Todas</option>
             <?php foreach (($categories ?? []) as $c): ?>
                 <option value="<?= (int)$c['id'] ?>" <?= ((int)($filterCategory ?? 0) === (int)$c['id']) ? 'selected' : '' ?>>
@@ -99,7 +99,7 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
     </div>
     <div class="col-sm-4 col-md-4">
         <label class="form-label">Série</label>
-        <select class="form-select form-select-sm" name="series">
+        <select class="form-select" name="series">
             <option value="0">Todas</option>
             <?php foreach (($seriesByCategory ?? []) as $catId => $seriesList): ?>
                 <?php $catLabel = $categoryMap[(int)$catId] ?? ('Categoria #' . (int)$catId); ?>
@@ -115,7 +115,7 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
     </div>
     <div class="col-sm-4 col-md-2">
         <label class="form-label">Status</label>
-        <select class="form-select form-select-sm" name="status">
+        <select class="form-select" name="status">
             <option value="">Todos</option>
             <option value="pending" <?= ($filterStatus ?? '') === 'pending' ? 'selected' : '' ?>>Pendentes</option>
             <option value="queued" <?= ($filterStatus ?? '') === 'queued' ? 'selected' : '' ?>>Na fila</option>
@@ -126,8 +126,8 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
     </div>
     <div class="col-sm-12 col-md-2 d-flex gap-2">
         <input type="hidden" name="perPage" value="<?= (int)($perPage ?? 50) ?>">
-        <button class="btn btn-sm btn-primary" type="submit">Filtrar</button>
-        <a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/admin/uploads') ?>">Limpar</a>
+        <button class="btn btn-primary" type="submit">Filtrar</button>
+        <a class="btn btn-outline-secondary" href="<?= base_path('/admin/uploads') ?>">Limpar</a>
     </div>
     <div class="col-sm-12 col-md-3 d-flex gap-2 justify-content-md-end"></div>
 </form>
@@ -147,19 +147,19 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
     </div>
 </form>
 <div class="table-responsive">
-    <table class="table table-sm" style="table-layout: fixed;">
-        <thead>
+    <table class="table table-hover align-middle" style="table-layout: fixed;">
+        <thead class="table-light">
         <tr>
-            <th style="width: 32px;">
+            <th scope="col" style="width: 32px;">
                 <input class="form-check-input" type="checkbox" id="selectAllPending" aria-label="Selecionar todos os pendentes">
             </th>
-            <th style="width: 40px;"></th>
-            <th style="width: 220px;">Arquivo</th>
-            <th style="width: 160px;">Categoria</th>
-            <th style="width: 200px;">Série</th>
-            <th style="width: 150px;">Data</th>
-            <th style="width: 140px;">Usuário</th>
-            <th class="text-end" style="width: 140px;">Ações</th>
+            <th scope="col" style="width: 40px;"></th>
+            <th scope="col" style="width: 220px;">Arquivo</th>
+            <th scope="col" style="width: 160px;">Categoria</th>
+            <th scope="col" style="width: 200px;">Série</th>
+            <th scope="col" style="width: 150px;">Data</th>
+            <th scope="col" style="width: 140px;">Usuário</th>
+            <th scope="col" class="text-end" style="width: 140px;">Ações</th>
         </tr>
         </thead>
         <tbody>

@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 	const toggles = document.querySelectorAll('[data-sidebar-toggle]');
 	const shell = document.querySelector('.app-shell');
+	const sidebar = document.querySelector('.app-sidebar');
 	if (toggles.length && shell) {
 		toggles.forEach((btn) => {
 			btn.addEventListener('click', () => {
@@ -125,11 +126,31 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		});
 	}
+	if (shell && sidebar) {
+		document.addEventListener('pointerdown', (event) => {
+			if (!shell.classList.contains('sidebar-open')) return;
+			const target = event.target;
+			if (sidebar.contains(target)) return;
+			if (target && target.closest('[data-sidebar-toggle]')) return;
+			shell.classList.remove('sidebar-open');
+		}, true);
+	}
 
 	const sync = document.querySelector('[data-last-sync]');
 	if (sync) {
 		const now = new Date();
 		sync.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+	}
+
+	const topbar = document.querySelector('.app-topbar');
+	const searchInput = document.querySelector('.topbar-search input');
+	if (topbar && searchInput) {
+		searchInput.addEventListener('focus', () => {
+			topbar.classList.add('search-focused');
+		});
+		searchInput.addEventListener('blur', () => {
+			topbar.classList.remove('search-focused');
+		});
 	}
 });
 

@@ -1,29 +1,43 @@
 <?php
 use App\Core\View;
 ob_start();
+
+$statusMap = [
+	'pending' => ['label' => 'Pendente', 'class' => 'bg-warning text-dark'],
+	'approved' => ['label' => 'Aprovado', 'class' => 'bg-success'],
+	'rejected' => ['label' => 'Rejeitado', 'class' => 'bg-danger'],
+];
 ?>
 <h1 class="h4 mb-3">Pagamentos</h1>
 
 <div class="table-responsive">
-	<table class="table table-sm">
-		<thead>
+	<table class="table table-hover align-middle">
+		<thead class="table-light">
 		<tr>
-			<th>Usuário</th>
-			<th>Pacote</th>
-			<th>Meses</th>
-			<th>Status</th>
-			<th>Comprovante</th>
-			<th>Criado</th>
-			<th class="text-end">Ações</th>
+			<th scope="col">Usuário</th>
+			<th scope="col">Pacote</th>
+			<th scope="col" style="width: 90px;">Meses</th>
+			<th scope="col" style="width: 140px;">Status</th>
+			<th scope="col" style="width: 140px;">Comprovante</th>
+			<th scope="col" style="width: 170px;">Criado</th>
+			<th scope="col" class="text-end" style="width: 180px;">Ações</th>
 		</tr>
 		</thead>
 		<tbody>
 		<?php foreach (($payments ?? []) as $p): ?>
+			<?php
+			$st = (string)($p['status'] ?? '');
+			$stMeta = $statusMap[$st] ?? ['label' => $st !== '' ? $st : '-', 'class' => 'bg-secondary'];
+			?>
 			<tr>
 				<td><?= View::e((string)($p['user_name'] ?? ('#' . (int)$p['user_id']))) ?></td>
 				<td><?= View::e((string)($p['package_name'] ?? ('#' . (int)$p['package_id']))) ?></td>
 				<td><?= (int)($p['months'] ?? 1) ?></td>
-				<td><?= View::e($p['status']) ?></td>
+				<td>
+					<span class="badge <?= View::e($stMeta['class']) ?>">
+						<?= View::e($stMeta['label']) ?>
+					</span>
+				</td>
 				<td>
 					<?php if (!empty($p['proof_path'])): ?>
 						<a href="<?= base_path('/admin/payments/proof/' . (int)$p['id']) ?>" target="_blank">Ver</a>

@@ -48,6 +48,14 @@ final class News
         return $row ?: null;
     }
 
+    public static function findPublished(int $id): ?array
+    {
+        $stmt = Database::connection()->prepare('SELECT n.*, nc.name AS category_name FROM news n LEFT JOIN news_categories nc ON nc.id = n.category_id WHERE n.id = :id AND n.is_published = 1 AND (n.published_at IS NULL OR n.published_at <= NOW())');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
     public static function create(string $title, string $body, int $categoryId, bool $published, ?string $publishedAt): void
     {
         $stmt = Database::connection()->prepare('INSERT INTO news (title, body, category_id, is_published, published_at, created_at) VALUES (:t,:b,:c,:p,:pa,NOW())');

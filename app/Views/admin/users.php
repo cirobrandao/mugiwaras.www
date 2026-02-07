@@ -68,16 +68,7 @@ foreach (($users ?? []) as $u) {
 ?>
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
 	<h1 class="h4 mb-0">Gerenciamento de Usuarios</h1>
-	<div class="small text-muted" style="border:1px solid #ced4da; border-radius:6px; padding:6px 10px;">
-		<?php foreach ($tiersInUse as $tier => $_): ?>
-			<?php
-			$label = $tierLabels[$tier] ?? $tier;
-			$color = $tierColors[$tier] ?? '#6c757d';
-			?>
-			<span class="legend-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color: <?= View::e($color) ?>; border:1px solid <?= View::e($color) ?>; margin-right:4px;"></span>
-			<span class="me-2"><?= View::e($label) ?></span>
-		<?php endforeach; ?>
-	</div>
+	<a class="btn btn-outline-primary" href="<?= base_path('/admin/team') ?>">Gerenciar Equipes</a>
 </div>
 
 <?php if (!empty($resetToken) && !empty($resetUserId)): ?>
@@ -103,17 +94,17 @@ $page = min($page, $pages);
 
 
 <div class="table-responsive">
-	<table class="table table-sm admin-users-table">
-		<thead>
+	<table class="table table-hover align-middle admin-users-table">
+		<thead class="table-light">
 		<tr>
-			<th></th>
-			<th>Usuário</th>
-			<th>Telefone</th>
-			<th>Observações</th>
-			<th>Último login</th>
-			<th>Assinatura</th>
-			<th>Acesso por categoria</th>
-			<th class="text-end">Ações</th>
+			<th scope="col" style="width: 24px;"></th>
+			<th scope="col">Usuário</th>
+			<th scope="col" style="width: 160px;">Telefone</th>
+			<th scope="col" style="width: 200px;">Observações</th>
+			<th scope="col" style="width: 130px;">Último login</th>
+			<th scope="col" style="width: 110px;">Assinatura</th>
+			<th scope="col">Acesso por categoria</th>
+			<th scope="col" class="text-end" style="width: 190px;">Ações</th>
 		</tr>
 		</thead>
 		<tbody>

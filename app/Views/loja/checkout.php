@@ -4,7 +4,7 @@ ob_start();
 ?>
 <div class="d-flex align-items-center justify-content-between mb-3">
     <h1 class="h4 mb-0">Confirmar compra</h1>
-    <span class="badge bg-light text-dark">Pagamento</span>
+    <span class="badge bg-secondary">Pagamento</span>
 </div>
 
 <div class="row g-3 mb-3">
@@ -60,24 +60,24 @@ ob_start();
         </div>
     </div>
 </div>
- 
-	<div class="card shadow-sm">
-     <div class="card-body">
-		<h2 class="h6">Enviar comprovante</h2>
-		<div class="small text-muted mb-3">Formatos aceitos: JPG, PNG ou PDF. Tamanho máximo: 4MB.</div>
-                <form method="post" action="<?= base_path('/loja/request') ?>" enctype="multipart/form-data" id="proofForm">
-             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-             <input type="hidden" name="package_id" value="<?= (int)$package['id'] ?>">
-                    <input type="hidden" name="months" value="<?= (int)($months ?? 1) ?>">
-             <div class="mb-3">
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h6">Enviar comprovante</h2>
+        <div class="form-text mb-3">Formatos aceitos: JPG, PNG ou PDF. Tamanho máximo: 4MB.</div>
+        <form method="post" action="<?= base_path('/loja/request') ?>" enctype="multipart/form-data" id="proofForm">
+            <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+            <input type="hidden" name="package_id" value="<?= (int)$package['id'] ?>">
+            <input type="hidden" name="months" value="<?= (int)($months ?? 1) ?>">
+            <div class="mb-3">
                 <label class="form-label">Comprovante</label>
-               <input type="file" name="proof" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>
-             </div>
+                <input type="file" name="proof" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>
+            </div>
             <div class="small text-danger mb-2" id="proofError" style="display:none"></div>
             <button class="btn btn-primary" type="submit" id="proofSubmit">Enviar para aprovação</button>
-         </form>
-     </div>
- </div>
+        </form>
+    </div>
+</div>
 <script>
 (() => {
     const input = document.querySelector('#proofForm input[type="file"]');

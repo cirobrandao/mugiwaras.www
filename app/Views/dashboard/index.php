@@ -211,7 +211,7 @@ if (!function_exists('time_ago')) {
                     <?php foreach ($newsBelowMostRead as $n): ?>
                         <div class="list-group-item news-item">
                             <div class="news-row">
-                                <strong><?= View::e($n['title']) ?></strong>
+                                <a class="fw-semibold" href="<?= base_path('/news/' . (int)$n['id']) ?>"><?= View::e($n['title']) ?></a>
                                 <?php if (!empty($n['category_name'])): ?>
                                     <span class="badge bg-secondary"><?= View::e((string)$n['category_name']) ?></span>
                                 <?php endif; ?>
@@ -280,7 +280,7 @@ if (!function_exists('time_ago')) {
                     <?php foreach ($news as $n): ?>
                         <li class="list-group-item news-item">
                             <div class="news-row">
-                                <strong><?= View::e($n['title']) ?></strong>
+                                <a class="fw-semibold" href="<?= base_path('/news/' . (int)$n['id']) ?>"><?= View::e($n['title']) ?></a>
                                 <?php if (!empty($n['category_name'])): ?>
                                     <span class="badge bg-secondary"><?= View::e((string)$n['category_name']) ?></span>
                                 <?php endif; ?>

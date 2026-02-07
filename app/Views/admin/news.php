@@ -39,7 +39,7 @@ $modals = [];
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
-                <form method="post" action="<?= base_path('/admin/news/category/create') ?>" class="row g-2">
+                <form method="post" action="<?= base_path('/admin/news/category/create') ?>" class="row g-3">
                     <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
                     <div class="col-md-6">
                         <label class="form-label">Nome</label>
@@ -63,19 +63,19 @@ $modals = [];
                 </form>
 
                 <div class="table-responsive mt-3">
-                    <table class="table table-sm">
-                        <thead>
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
                         <tr>
-                            <th>Nome</th>
-                            <th>Exibição</th>
-                            <th class="text-end">Ações</th>
+                            <th scope="col">Nome</th>
+                            <th scope="col" style="width: 220px;">Exibição</th>
+                            <th scope="col" class="text-end" style="width: 220px;">Ações</th>
                         </tr>
                         </thead>
                         <tbody>
                         <?php foreach (($categories ?? []) as $cat): ?>
                             <tr>
                                 <td>
-                                    <input class="form-control form-control-sm" form="cat-<?= (int)$cat['id'] ?>" name="name" value="<?= View::e((string)$cat['name']) ?>">
+                                    <input class="form-control" form="cat-<?= (int)$cat['id'] ?>" name="name" value="<?= View::e((string)$cat['name']) ?>">
                                 </td>
                                 <td class="small">
                                     <?php if (!empty($cat['show_sidebar'])): ?><span class="badge bg-secondary me-1">Lateral</span><?php endif; ?>
@@ -123,7 +123,7 @@ $modals = [];
             <div class="modal-body">
                 <form method="post" action="<?= base_path('/admin/news/create') ?>">
                     <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-                    <div class="mb-2">
+                    <div class="mb-3">
                         <label class="form-label">Categoria</label>
                         <select class="form-select" name="category_id" required>
                             <option value="">Selecionar</option>
@@ -132,15 +132,15 @@ $modals = [];
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="mb-2">
+                    <div class="mb-3">
                         <label class="form-label">Título</label>
                         <input class="form-control" type="text" name="title" required>
                     </div>
-                    <div class="mb-2">
+                    <div class="mb-3">
                         <label class="form-label">Conteúdo</label>
                         <textarea class="form-control" name="body" rows="4" required></textarea>
                     </div>
-                    <div class="mb-2">
+                    <div class="mb-3">
                         <label class="form-label">Publicado em (opcional)</label>
                         <input class="form-control" type="datetime-local" name="published_at">
                     </div>
@@ -160,14 +160,14 @@ $modals = [];
 </div>
 
 <div class="table-responsive">
-    <table class="table table-sm">
-        <thead>
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
         <tr>
-            <th>Título</th>
-            <th>Categoria</th>
-            <th>Status</th>
-            <th>Publicação</th>
-            <th class="text-end">Ações</th>
+            <th scope="col">Título</th>
+            <th scope="col" style="width: 200px;">Categoria</th>
+            <th scope="col" style="width: 140px;">Status</th>
+            <th scope="col" style="width: 180px;">Publicação</th>
+            <th scope="col" class="text-end" style="width: 180px;">Ações</th>
         </tr>
         </thead>
         <tbody>
@@ -175,7 +175,13 @@ $modals = [];
             <tr>
                 <td><?= View::e($n['title']) ?></td>
                 <td><?= View::e((string)($n['category_name'] ?? '-')) ?></td>
-                <td><?= !empty($n['is_published']) ? 'Publicado' : 'Rascunho' ?></td>
+                <td>
+                    <?php if (!empty($n['is_published'])): ?>
+                        <span class="badge bg-success">Publicado</span>
+                    <?php else: ?>
+                        <span class="badge bg-secondary">Rascunho</span>
+                    <?php endif; ?>
+                </td>
                 <td><?= View::e((string)($n['published_at'] ?? '')) ?></td>
                 <td class="text-end">
                     <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#editNews<?= (int)$n['id'] ?>">Editar</button>
@@ -200,7 +206,7 @@ $modals = [];
                             <form method="post" action="<?= base_path('/admin/news/update') ?>">
                                 <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
                                 <input type="hidden" name="id" value="<?= (int)$n['id'] ?>">
-                                <div class="mb-2">
+                                <div class="mb-3">
                                     <label class="form-label">Categoria</label>
                                     <select class="form-select" name="category_id" required>
                                         <?php foreach (($categories ?? []) as $cat): ?>
@@ -208,15 +214,15 @@ $modals = [];
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                <div class="mb-2">
+                                <div class="mb-3">
                                     <label class="form-label">Título</label>
                                     <input class="form-control" type="text" name="title" value="<?= View::e($n['title']) ?>" required>
                                 </div>
-                                <div class="mb-2">
+                                <div class="mb-3">
                                     <label class="form-label">Conteúdo</label>
                                     <textarea class="form-control" name="body" rows="4" required><?= View::e($n['body']) ?></textarea>
                                 </div>
-                                <div class="mb-2">
+                                <div class="mb-3">
                                     <label class="form-label">Publicado em</label>
                                     <input class="form-control" type="datetime-local" name="published_at" value="<?= View::e((string)($n['published_at'] ?? '')) ?>">
                                 </div>

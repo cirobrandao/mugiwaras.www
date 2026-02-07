@@ -32,44 +32,49 @@ ob_start();
     <div class="alert alert-warning">Nenhuma categoria cadastrada. Crie uma categoria no painel administrativo.</div>
 <?php endif; ?>
 <div id="uploadResult"></div>
-<div class="mb-3">
-    <div class="progress" style="height: 6px;">
-        <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>
-    </div>
-    <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="5368709120" data-max-files="50">0 B / 5 GB · 0 / 50 arquivos</div>
-</div>
-<form method="post" action="<?= base_path('/upload') ?>" enctype="multipart/form-data">
-    <input type="hidden" name="_csrf" value="<?= \App\Core\View::e($csrf ?? '') ?>">
-    <div class="row g-3">
-        <div class="col-md-6">
-            <label class="form-label">Categoria</label>
-            <select name="category" class="form-select" required <?= !empty($noCategories) ? 'disabled' : '' ?>>
-                <option value="" selected disabled>Selecione uma categoria</option>
-                <?php foreach (($categories ?? []) as $cat): ?>
-                    <option value="<?= \App\Core\View::e((string)$cat['name']) ?>"><?= \App\Core\View::e((string)$cat['name']) ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Série</label>
-            <input type="text" name="series" class="form-control" placeholder="Ex: One Piece" required>
-        </div>
+<section class="section-card mb-3">
+    <div class="news-title-box">
+        <div class="section-title">Enviar arquivos</div>
     </div>
     <div class="mb-3">
-        <label class="form-label">Arquivos</label>
-        <input type="file" name="file[]" class="form-control" multiple required data-max-bytes="5368709120" data-max-files="50">
-        <div class="small text-muted mt-1">Formatos aceitos: *.epub, *.cbr, *.cbz, *.zip (imagens).</div>
-        <div class="small text-muted">PDF: sem leitor, apenas download (aparece sinalizado na biblioteca).</div>
-    </div>
-    <div class="mb-3 d-none" id="uploadProgressWrap">
-        <label class="form-label">Progresso</label>
-        <div class="progress">
-            <div class="progress-bar" id="uploadBar" role="progressbar" style="width: 0%">0%</div>
+        <div class="progress" style="height: 6px;">
+            <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>
         </div>
-        <div class="small text-muted mt-2 d-none" id="uploadWait">Aguarde... finalizando o upload.</div>
+        <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="5368709120" data-max-files="50">0 B / 5 GB · 0 / 50 arquivos</div>
     </div>
-    <button class="btn btn-primary" type="submit" id="uploadSubmit" <?= !empty($noCategories) ? 'disabled' : '' ?>>Enviar</button>
-</form>
+    <form method="post" action="<?= base_path('/upload') ?>" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<?= \App\Core\View::e($csrf ?? '') ?>">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Categoria</label>
+                <select name="category" class="form-select" required <?= !empty($noCategories) ? 'disabled' : '' ?>>
+                    <option value="" selected disabled>Selecione uma categoria</option>
+                    <?php foreach (($categories ?? []) as $cat): ?>
+                        <option value="<?= \App\Core\View::e((string)$cat['name']) ?>"><?= \App\Core\View::e((string)$cat['name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Série</label>
+                <input type="text" name="series" class="form-control" placeholder="Ex: One Piece" required>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Arquivos</label>
+            <input type="file" name="file[]" class="form-control" multiple required data-max-bytes="5368709120" data-max-files="50">
+            <div class="form-text">Formatos aceitos: *.epub, *.cbr, *.cbz, *.zip (imagens).</div>
+            <div class="form-text">PDF: sem leitor, apenas download (aparece sinalizado na biblioteca).</div>
+        </div>
+        <div class="mb-3 d-none" id="uploadProgressWrap">
+            <label class="form-label">Progresso</label>
+            <div class="progress">
+                <div class="progress-bar" id="uploadBar" role="progressbar" style="width: 0%">0%</div>
+            </div>
+            <div class="small text-muted mt-2 d-none" id="uploadWait">Aguarde... finalizando o upload.</div>
+        </div>
+        <button class="btn btn-primary" type="submit" id="uploadSubmit" <?= !empty($noCategories) ? 'disabled' : '' ?>>Enviar</button>
+    </form>
+</section>
 <hr class="my-4">
 
 <?php
@@ -79,6 +84,15 @@ $formatBytes = function (int $bytes): string {
     if ($bytes >= 1024) return number_format($bytes / 1024, 2) . ' KB';
     return $bytes . ' B';
 };
+
+$statusBadgeMap = [
+    'pending' => 'bg-warning text-dark',
+    'queued' => 'bg-secondary',
+    'processing' => 'bg-info text-dark',
+    'done' => 'bg-success',
+    'completed' => 'bg-success',
+    'failed' => 'bg-danger',
+];
 ?>
 
 <div id="uploadHistory">
@@ -96,13 +110,13 @@ $formatBytes = function (int $bytes): string {
         <div class="alert alert-secondary">Nenhum upload encontrado.</div>
     <?php else: ?>
         <div class="table-responsive">
-            <table class="table table-sm">
-                <thead>
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
                 <tr>
-                    <th>Data</th>
-                    <th>Arquivo</th>
-                    <th>Status</th>
-                    <th class="text-end">Tamanho</th>
+                    <th scope="col">Data</th>
+                    <th scope="col">Arquivo</th>
+                    <th scope="col" style="width: 190px;">Status</th>
+                    <th scope="col" class="text-end" style="width: 120px;">Tamanho</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -121,8 +135,11 @@ $formatBytes = function (int $bytes): string {
                                 'failed' => 'Falhou',
                                 default => $st,
                             };
+                            $badgeClass = $statusBadgeMap[$st] ?? 'bg-secondary';
                             ?>
-                            <?= \App\Core\View::e($label) ?>
+                            <span class="badge <?= \App\Core\View::e($badgeClass) ?>">
+                                <?= \App\Core\View::e($label) ?>
+                            </span>
                         </td>
                         <td class="text-end"><?= $formatBytes((int)($u['file_size'] ?? 0)) ?></td>
                     </tr>

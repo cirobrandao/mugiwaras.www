@@ -117,7 +117,7 @@ $activePage = $activePage ?? '';
 <?php else: ?>
     <div class="app-shell">
         <aside class="app-sidebar">
-            <div class="sidebar-brand">
+            <a class="sidebar-brand" href="<?= base_path('/dashboard') ?>">
                 <div class="brand-mark">
                     <?php if (!empty($systemFavicon)): ?>
                         <img src="<?= base_path('/' . ltrim((string)$systemFavicon, '/')) ?>" alt="Favicon" class="brand-icon">
@@ -129,17 +129,9 @@ $activePage = $activePage ?? '';
                     <div class="brand-title"><?= View::e($systemName) ?></div>
                     <div class="brand-sub">Biblioteca digital</div>
                 </div>
-            </div>
-            <button class="btn btn-sm btn-ghost w-100 d-lg-none" data-sidebar-toggle>
-                <i class="bi bi-layout-text-sidebar-reverse"></i>
-                Menu
-            </button>
+            </a>
             <nav class="sidebar-nav">
                 <?php if ($isLoggedIn): ?>
-                    <a class="nav-link <?= $activePage === 'dashboard' ? 'active' : '' ?>" href="<?= base_path('/dashboard') ?>">
-                        <i class="bi bi-speedometer2"></i>
-                        <span>Dashboard</span>
-                    </a>
                     <a class="nav-link <?= $activePage === 'libraries' ? 'active' : '' ?>" href="<?= base_path('/libraries') ?>">
                         <i class="bi bi-collection"></i>
                         <span>Bibliotecas</span>
@@ -177,7 +169,7 @@ $activePage = $activePage ?? '';
                     <?php if ($isAdmin): ?>
                         <a class="nav-link" href="<?= base_path('/admin') ?>">
                             <i class="bi bi-grid"></i>
-                            <span>Admin</span>
+                            <span>Painel Administrativo</span>
                         </a>
                         <a class="nav-link" href="<?= base_path('/admin/users') ?>">
                             <i class="bi bi-people"></i>
@@ -194,7 +186,7 @@ $activePage = $activePage ?? '';
                     <?php if ($isAdmin || $isUploader || $isModerator): ?>
                         <a class="nav-link" href="<?= base_path('/admin/uploads') ?>">
                             <i class="bi bi-upload"></i>
-                            <span>Gerenciar upload</span>
+                            <span>Upload Manager</span>
                             <?php if (!empty($pendingUploads)): ?>
                                 <span class="badge bg-danger ms-auto"><?= (int)$pendingUploads ?></span>
                             <?php endif; ?>
@@ -216,7 +208,7 @@ $activePage = $activePage ?? '';
                     <?php if ($isAdmin): ?>
                         <a class="nav-link" href="<?= base_path('/admin/news') ?>">
                             <i class="bi bi-megaphone"></i>
-                            <span>Publicar noticia</span>
+                            <span>Gerenciar Noticias</span>
                         </a>
                     <?php endif; ?>
                 <?php endif; ?>

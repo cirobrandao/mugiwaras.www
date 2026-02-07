@@ -87,11 +87,11 @@ body.lights-off .reader-frame { background: #000; border-color: #111827; }
 
 /* Library grid improvements */
 .library-card { color: inherit; }
-.library-card .card-img-wrap { position: relative; width: 100%; padding-top: 62%; background: #1f2937; border-top-left-radius: .5rem; border-top-right-radius: .5rem; overflow: hidden; }
+.library-card .card-img-wrap { position: relative; width: 100%; padding-top: 72%; background: #1f2937; border-top-left-radius: .5rem; border-top-right-radius: .5rem; overflow: hidden; }
 .library-card .card-img-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .28s ease, filter .28s ease; display: block; }
 .library-card:hover .card-img-wrap img { transform: scale(1.03); filter: brightness(1.04) contrast(1.04) saturate(1.02); }
 .library-card .card-img-wrap img { box-shadow: 0 1px 6px rgba(0,0,0,0.12); filter: brightness(1.02) saturate(1.02); }
-.library-card .card-body { min-height: 56px; display: flex; align-items: center; justify-content: center; }
+.library-card .card-body { min-height: 72px; display: flex; align-items: center; justify-content: center; }
 
 /* Admin category thumbnail */
 .admin-banner-thumb { width: 160px; height: 90px; object-fit: cover; object-position: center; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.18); filter: brightness(1.06) saturate(1.03); display: block; }
