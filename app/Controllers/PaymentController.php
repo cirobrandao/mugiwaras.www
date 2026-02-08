@@ -27,7 +27,9 @@ final class PaymentController extends Controller
             Response::redirect(base_path('/'));
         }
         $packages = Package::all();
-        $categories = Category::all();
+        $categories = array_values(array_filter(Category::all(), static function ($c) {
+            return empty($c['hide_from_store']);
+        }));
         $packageIds = array_map(static fn ($p) => (int)($p['id'] ?? 0), $packages);
         $packageCategories = Package::categoriesMap($packageIds);
         echo $this->view('loja/packages', [

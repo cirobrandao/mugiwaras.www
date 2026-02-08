@@ -14,6 +14,7 @@ use App\Core\Validation;
 use App\Core\Audit;
 use App\Core\Logger;
 use App\Models\EmailBlocklist;
+use App\Models\UsernameBlocklist;
 use App\Models\User;
 use App\Models\PasswordReset;
 use App\Models\Setting;
@@ -49,6 +50,10 @@ final class AuthController extends Controller
         }
 
         Audit::log('login_success', (int)$_SESSION['user_id'], ['ip' => $request->ip()]);
+        $user = Auth::user();
+        if ($user && Auth::needsProfileUpdate($user)) {
+            Response::redirect(base_path('/perfil/editar?force=1'));
+        }
         Response::redirect(base_path('/dashboard'));
     }
 
@@ -116,6 +121,9 @@ final class AuthController extends Controller
         }
         if (EmailBlocklist::isBlocked($data['email'])) {
             $errors[] = 'Provedor de email bloqueado.';
+        }
+        if (UsernameBlocklist::isBlocked($data['username'])) {
+            $errors[] = 'Nome de usuario bloqueado.';
         }
         if (!Validation::phone($data['phone'])) {
             $errors[] = 'Telefone inválido.';

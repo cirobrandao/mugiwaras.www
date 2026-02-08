@@ -123,8 +123,12 @@ $router->get('/reader/file/page/{page}', [new App\Controllers\ReaderController()
 
 $router->get('/admin', [new App\Controllers\Admin\DashboardController(), 'index'], [App\Core\Auth::requireTeamAccess()]);
 $router->get('/admin/users', [new App\Controllers\Admin\UsersController(), 'index'], [App\Core\Auth::requireAdmin()]);
+$router->get('/admin/users/import', [new App\Controllers\Admin\UsersController(), 'importPage'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/users/update', [new App\Controllers\Admin\UsersController(), 'update'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/users/restrict', [new App\Controllers\Admin\UsersController(), 'restrict'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/users/assign-package', [new App\Controllers\Admin\UsersController(), 'assignPackage'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/users/import-preview', [new App\Controllers\Admin\UsersController(), 'importPreview'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/users/import-apply', [new App\Controllers\Admin\UsersController(), 'importApply'], [App\Core\Auth::requireAdmin()]);
 $router->get('/admin/team', [new App\Controllers\Admin\UsersController(), 'team'], [App\Core\Auth::requireTeamAccess()]);
 $router->post('/admin/team/update', [new App\Controllers\Admin\UsersController(), 'teamUpdate'], [App\Core\Auth::requireTeamAccess()]);
 $router->post('/admin/users/lock', [new App\Controllers\Admin\UsersController(), 'lock'], [App\Core\Auth::requireAdmin()]);
@@ -150,12 +154,18 @@ $router->post('/admin/support/status', [new App\Controllers\Admin\SupportControl
 $router->post('/admin/support/note', [new App\Controllers\Admin\SupportController(), 'note'], [App\Core\Auth::requireSupportStaff()]);
 $router->post('/admin/support/{id}/reply', [new App\Controllers\Admin\SupportController(), 'reply'], [App\Core\Auth::requireSupportStaff()]);
 $router->get('/admin/security/email-blocklist', [new App\Controllers\Admin\SecurityController(), 'emailBlocklist'], [App\Core\Auth::requireAdmin()]);
+$router->get('/admin/security/user-blocklist', [new App\Controllers\Admin\SecurityController(), 'userBlocklist'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/security/email-blocklist/add', [new App\Controllers\Admin\SecurityController(), 'emailAdd'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/security/email-blocklist/remove', [new App\Controllers\Admin\SecurityController(), 'emailRemove'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/security/user-blocklist/add', [new App\Controllers\Admin\SecurityController(), 'userBlockAdd'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/security/user-blocklist/remove', [new App\Controllers\Admin\SecurityController(), 'userBlockRemove'], [App\Core\Auth::requireAdmin()]);
 $router->get('/admin/settings', [new App\Controllers\Admin\SettingsController(), 'index'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/settings/save', [new App\Controllers\Admin\SettingsController(), 'save'], [App\Core\Auth::requireAdmin()]);
+
+$router->get('/admin/avatar-gallery', [new App\Controllers\Admin\AvatarGalleryController(), 'index'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/avatar-gallery/upload', [new App\Controllers\Admin\AvatarGalleryController(), 'upload'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/avatar-gallery/update', [new App\Controllers\Admin\AvatarGalleryController(), 'update'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/avatar-gallery/delete', [new App\Controllers\Admin\AvatarGalleryController(), 'delete'], [App\Core\Auth::requireAdmin()]);
 
 $router->get('/admin/vouchers', [new App\Controllers\Admin\VouchersController(), 'index'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/vouchers/save', [new App\Controllers\Admin\VouchersController(), 'save'], [App\Core\Auth::requireAdmin()]);
@@ -179,6 +189,8 @@ $router->post('/reset', [new App\Controllers\AuthController(), 'resetSubmit']);
 
 $router->get('/perfil', [new App\Controllers\ProfileController(), 'show'], [App\Core\Middleware::requireAuth()]);
 $router->get('/perfil/editar', [new App\Controllers\ProfileController(), 'editForm'], [App\Core\Middleware::requireAuth()]);
+$router->post('/perfil/editar', [new App\Controllers\ProfileController(), 'editUpdate'], [App\Core\Middleware::requireAuth()]);
 $router->get('/perfil/senha', [new App\Controllers\ProfileController(), 'passwordForm'], [App\Core\Middleware::requireAuth()]);
+$router->post('/perfil/senha', [new App\Controllers\ProfileController(), 'passwordUpdate'], [App\Core\Middleware::requireAuth()]);
 
 $router->dispatch($request);

@@ -14,6 +14,8 @@ use App\Models\Upload;
 use App\Models\UserFavorite;
 use App\Models\UserContentStatus;
 use App\Models\UserSeriesFavorite;
+use App\Models\Payment;
+use App\Models\Package;
 use App\Core\Csrf;
 use App\Core\Audit;
 use App\Models\SearchLog;
@@ -32,16 +34,21 @@ final class LibraryController extends Controller
             return;
         }
         $categories = Category::all();
-        $isSubscriber = ($user['access_tier'] ?? '') === 'vitalicio';
-        if (!$isSubscriber && !empty($user['subscription_expires_at'])) {
-            $expires = strtotime((string)$user['subscription_expires_at']);
-            if ($expires !== false && $expires >= time()) {
-                $isSubscriber = true;
-            }
-        }
+        $isVitalicio = ($user['access_tier'] ?? '') === 'vitalicio';
+        $restrictedIds = [4, 5, 6];
+        $allowedIds = $isVitalicio ? [] : $this->allowedCategoryIds($user);
+        $allowedSet = array_flip($allowedIds);
         $isStaff = \App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user);
-        if (!($isSubscriber || $isStaff)) {
-            $categories = array_values(array_filter($categories, fn ($c) => empty($c['requires_subscription'])));
+        if (!$isStaff && !$isVitalicio) {
+            $categories = array_values(array_filter($categories, function ($c) use ($allowedSet, $restrictedIds) {
+                $cid = (int)($c['id'] ?? 0);
+                $requires = !empty($c['requires_subscription']);
+                $isRestricted = in_array($cid, $restrictedIds, true);
+                if ($requires || $isRestricted) {
+                    return !empty($allowedSet) && isset($allowedSet[$cid]);
+                }
+                return true;
+            }));
         }
         $categories = array_values(array_filter($categories, fn ($c) => !empty($c['content_cbz']) || !empty($c['content_pdf']) || !empty($c['content_epub']) || !empty($c['content_video']) || !empty($c['content_download'])));
         $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user));
@@ -73,22 +80,25 @@ final class LibraryController extends Controller
             foreach ($categories as $c) {
                 $categoryMap[(int)$c['id']] = $c;
             }
-            $isSubscriber = ($user['access_tier'] ?? '') === 'vitalicio';
-            if (!$isSubscriber && !empty($user['subscription_expires_at'])) {
-                $expires = strtotime((string)$user['subscription_expires_at']);
-                if ($expires !== false && $expires >= time()) {
-                    $isSubscriber = true;
-                }
-            }
+            $isVitalicio = ($user['access_tier'] ?? '') === 'vitalicio';
+            $restrictedIds = [4, 5, 6];
+            $allowedIds = $isVitalicio ? [] : $this->allowedCategoryIds($user);
+            $allowedSet = array_flip($allowedIds);
             $isStaff = \App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user);
-            $seriesResults = array_values(array_filter($seriesResults, function ($s) use ($categoryMap, $isSubscriber, $isStaff) {
+            $seriesResults = array_values(array_filter($seriesResults, function ($s) use ($categoryMap, $isVitalicio, $isStaff, $allowedSet, $restrictedIds) {
                 $cid = (int)($s['category_id'] ?? 0);
                 $cat = $categoryMap[$cid] ?? null;
                 if (!$cat) {
                     return false;
                 }
-                if (!($isSubscriber || $isStaff) && !empty($cat['requires_subscription'])) {
-                    return false;
+                if (!$isStaff && !$isVitalicio) {
+                    $requires = !empty($cat['requires_subscription']);
+                    $isRestricted = in_array($cid, $restrictedIds, true);
+                    if ($requires || $isRestricted) {
+                        if (empty($allowedSet) || !isset($allowedSet[$cid])) {
+                            return false;
+                        }
+                    }
                 }
                 $allowCbz = !empty($cat['content_cbz']);
                 $allowPdf = !empty($cat['content_pdf']);
@@ -173,16 +183,19 @@ final class LibraryController extends Controller
             echo $this->view('libraries/category', ['error' => 'Categoria não encontrada.', 'category' => ['name' => '']]);
             return;
         }
-        $isSubscriber = ($user['access_tier'] ?? '') === 'vitalicio';
-        if (!$isSubscriber && !empty($user['subscription_expires_at'])) {
-            $expires = strtotime((string)$user['subscription_expires_at']);
-            if ($expires !== false && $expires >= time()) {
-                $isSubscriber = true;
-            }
-        }
+        $isVitalicio = ($user['access_tier'] ?? '') === 'vitalicio';
+        $restrictedIds = [4, 5, 6];
+        $allowedIds = $isVitalicio ? [] : $this->allowedCategoryIds($user);
+        $allowedSet = array_flip($allowedIds);
         $isStaff = \App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user);
-        if (!($isSubscriber || $isStaff) && !empty($cat['requires_subscription'])) {
-            Response::redirect(base_path('/loja'));
+        if (!$isStaff && !$isVitalicio) {
+            $requires = !empty($cat['requires_subscription']);
+            $isRestricted = in_array((int)($cat['id'] ?? 0), $restrictedIds, true);
+            if ($requires || $isRestricted) {
+                if (empty($allowedSet) || !isset($allowedSet[(int)($cat['id'] ?? 0)])) {
+                    Response::redirect(base_path('/loja'));
+                }
+            }
         }
         $seriesAll = Series::byCategoryWithCountsAndTypes((int)$cat['id']);
         $isAdultUser = $this->isAdultUser($user);
@@ -260,16 +273,19 @@ final class LibraryController extends Controller
             echo $this->view('libraries/series', ['error' => 'Categoria não encontrada.']);
             return;
         }
-        $isSubscriber = ($user['access_tier'] ?? '') === 'vitalicio';
-        if (!$isSubscriber && !empty($user['subscription_expires_at'])) {
-            $expires = strtotime((string)$user['subscription_expires_at']);
-            if ($expires !== false && $expires >= time()) {
-                $isSubscriber = true;
-            }
-        }
+        $isVitalicio = ($user['access_tier'] ?? '') === 'vitalicio';
+        $restrictedIds = [4, 5, 6];
+        $allowedIds = $isVitalicio ? [] : $this->allowedCategoryIds($user);
+        $allowedSet = array_flip($allowedIds);
         $isStaff = \App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user);
-        if (!($isSubscriber || $isStaff) && !empty($cat['requires_subscription'])) {
-            Response::redirect(base_path('/loja'));
+        if (!$isStaff && !$isVitalicio) {
+            $requires = !empty($cat['requires_subscription']);
+            $isRestricted = in_array((int)($cat['id'] ?? 0), $restrictedIds, true);
+            if ($requires || $isRestricted) {
+                if (empty($allowedSet) || !isset($allowedSet[(int)($cat['id'] ?? 0)])) {
+                    Response::redirect(base_path('/loja'));
+                }
+            }
         }
         $ser = Series::findByName((int)$cat['id'], $seriesName);
         if (!$ser) {

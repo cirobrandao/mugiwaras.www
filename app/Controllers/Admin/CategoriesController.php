@@ -41,6 +41,7 @@ final class CategoriesController extends Controller
         $cbzDirection = (string)($request->post['cbz_direction'] ?? 'rtl');
         $cbzMode = (string)($request->post['cbz_mode'] ?? 'page');
         $epubMode = (string)($request->post['epub_mode'] ?? 'text');
+            $hideFromStore = !empty($request->post['hide_from_store']) ? 1 : 0;
         $contentVideo = !empty($request->post['content_video']) ? 1 : 0;
         $contentCbz = !empty($request->post['content_cbz']) ? 1 : 0;
         $contentPdf = !empty($request->post['content_pdf']) ? 1 : 0;
@@ -68,6 +69,7 @@ final class CategoriesController extends Controller
                 $cbzDirection,
                 $cbzMode,
                 $epubMode,
+                    $hideFromStore,
                 $contentVideo,
                 $contentCbz,
                 $contentPdf,
@@ -94,6 +96,7 @@ final class CategoriesController extends Controller
         $cbzDirection = (string)($request->post['cbz_direction'] ?? 'rtl');
         $cbzMode = (string)($request->post['cbz_mode'] ?? 'page');
         $epubMode = (string)($request->post['epub_mode'] ?? 'text');
+            $hideFromStore = !empty($request->post['hide_from_store']) ? 1 : 0;
         $contentVideo = !empty($request->post['content_video']) ? 1 : 0;
         $contentCbz = !empty($request->post['content_cbz']) ? 1 : 0;
         $contentPdf = !empty($request->post['content_pdf']) ? 1 : 0;
@@ -116,6 +119,7 @@ final class CategoriesController extends Controller
             $cbzDirection,
             $cbzMode,
             $epubMode,
+                $hideFromStore,
             $contentVideo,
             $contentCbz,
             $contentPdf,

@@ -59,6 +59,137 @@ final class User
         return $stmt->fetchAll();
     }
 
+    public static function countFiltered(array $filters): int
+    {
+        $sql = 'SELECT COUNT(*) AS c FROM users u';
+        $params = [];
+        $conditions = [];
+        $join = '';
+
+        $package = trim((string)($filters['package'] ?? ''));
+        if ($package !== '') {
+            $join = " LEFT JOIN (SELECT user_id, MAX(id) AS id FROM payments WHERE status = 'approved' GROUP BY user_id) lp ON lp.user_id = u.id";
+            $join .= ' LEFT JOIN payments p ON p.id = lp.id';
+            if ($package === 'none') {
+                $conditions[] = 'p.id IS NULL';
+            } else {
+                $pid = (int)$package;
+                if ($pid > 0) {
+                    $conditions[] = 'p.package_id = :pid';
+                    $params['pid'] = $pid;
+                }
+            }
+        }
+
+        $q = trim((string)($filters['q'] ?? ''));
+        if ($q !== '') {
+            $like = '%' . $q . '%';
+            $parts = ['u.username LIKE :q1', 'u.email LIKE :q2', 'u.phone LIKE :q3'];
+            $params['q1'] = $like;
+            $params['q2'] = $like;
+            $params['q3'] = $like;
+            if (ctype_digit($q)) {
+                $parts[] = 'u.id = :qid';
+                $params['qid'] = (int)$q;
+            }
+            $conditions[] = '(' . implode(' OR ', $parts) . ')';
+        }
+
+        $tier = trim((string)($filters['tier'] ?? ''));
+        if ($tier !== '' && in_array($tier, ['user','trial','assinante','restrito','vitalicio'], true)) {
+            $conditions[] = 'u.access_tier = :tier';
+            $params['tier'] = $tier;
+        }
+
+        $status = trim((string)($filters['status'] ?? ''));
+        if ($status === 'locked') {
+            $conditions[] = 'u.lock_until IS NOT NULL AND u.lock_until > NOW()';
+        } elseif ($status === 'active') {
+            $conditions[] = '(u.lock_until IS NULL OR u.lock_until <= NOW())';
+        }
+
+        if (!empty($conditions)) {
+            $sql .= $join . ' WHERE ' . implode(' AND ', $conditions);
+        } else {
+            $sql .= $join;
+        }
+
+        $stmt = Database::connection()->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+        $stmt->execute();
+        $row = $stmt->fetch();
+        return (int)($row['c'] ?? 0);
+    }
+
+    public static function pagedFiltered(int $page, int $perPage, array $filters): array
+    {
+        $offset = max(0, ($page - 1) * $perPage);
+        $sql = 'SELECT u.* FROM users u';
+        $params = [];
+        $conditions = [];
+        $join = '';
+
+        $package = trim((string)($filters['package'] ?? ''));
+        if ($package !== '') {
+            $join = " LEFT JOIN (SELECT user_id, MAX(id) AS id FROM payments WHERE status = 'approved' GROUP BY user_id) lp ON lp.user_id = u.id";
+            $join .= ' LEFT JOIN payments p ON p.id = lp.id';
+            if ($package === 'none') {
+                $conditions[] = 'p.id IS NULL';
+            } else {
+                $pid = (int)$package;
+                if ($pid > 0) {
+                    $conditions[] = 'p.package_id = :pid';
+                    $params['pid'] = $pid;
+                }
+            }
+        }
+
+        $q = trim((string)($filters['q'] ?? ''));
+        if ($q !== '') {
+            $like = '%' . $q . '%';
+            $parts = ['u.username LIKE :q1', 'u.email LIKE :q2', 'u.phone LIKE :q3'];
+            $params['q1'] = $like;
+            $params['q2'] = $like;
+            $params['q3'] = $like;
+            if (ctype_digit($q)) {
+                $parts[] = 'u.id = :qid';
+                $params['qid'] = (int)$q;
+            }
+            $conditions[] = '(' . implode(' OR ', $parts) . ')';
+        }
+
+        $tier = trim((string)($filters['tier'] ?? ''));
+        if ($tier !== '' && in_array($tier, ['user','trial','assinante','restrito','vitalicio'], true)) {
+            $conditions[] = 'u.access_tier = :tier';
+            $params['tier'] = $tier;
+        }
+
+        $status = trim((string)($filters['status'] ?? ''));
+        if ($status === 'locked') {
+            $conditions[] = 'u.lock_until IS NOT NULL AND u.lock_until > NOW()';
+        } elseif ($status === 'active') {
+            $conditions[] = '(u.lock_until IS NULL OR u.lock_until <= NOW())';
+        }
+
+        if (!empty($conditions)) {
+            $sql .= $join . ' WHERE ' . implode(' AND ', $conditions);
+        } else {
+            $sql .= $join;
+        }
+
+        $sql .= ' ORDER BY u.id DESC LIMIT :l OFFSET :o';
+        $stmt = Database::connection()->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+        $stmt->bindValue('l', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue('o', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
     public static function byRole(string $role, int $limit = 500): array
     {
         $stmt = Database::connection()->prepare('SELECT * FROM users WHERE role = :r ORDER BY id DESC LIMIT :l');
@@ -177,6 +308,22 @@ final class User
             'birth_date' => $data['birth_date'],
             'observations' => $data['observations'],
             'access_tier' => $data['access_tier'],
+            'id' => $id,
+        ]);
+    }
+
+    public static function updateProfileSelf(int $id, array $data): void
+    {
+        $sql = 'UPDATE users SET username = :username, email = :email, phone = :phone, phone_country = :phone_country, phone_has_whatsapp = :phone_has_whatsapp, birth_date = :birth_date, avatar_path = :avatar_path WHERE id = :id';
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute([
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'phone' => $data['phone'],
+            'phone_country' => $data['phone_country'],
+            'phone_has_whatsapp' => $data['phone_has_whatsapp'],
+            'birth_date' => $data['birth_date'],
+            'avatar_path' => $data['avatar_path'],
             'id' => $id,
         ]);
     }

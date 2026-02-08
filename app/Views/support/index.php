@@ -45,7 +45,7 @@ $labelMap = [
 <?php if (empty($messages)): ?>
     <div class="alert alert-secondary">Você ainda não abriu chamados.</div>
 <?php else: ?>
-    <div class="table-responsive">
+    <div class="d-none d-md-block table-responsive">
         <table class="table table-sm">
             <thead>
             <tr>
@@ -78,6 +78,34 @@ $labelMap = [
             <?php endforeach; ?>
             </tbody>
         </table>
+    </div>
+
+    <div class="d-md-none d-flex flex-column gap-2">
+        <?php foreach ($messages as $m): ?>
+            <?php $mId = (int)($m['id'] ?? 0); ?>
+            <?php $status = (string)($m['status'] ?? 'open'); ?>
+            <?php $attention = !empty($needsAttention[$mId]); ?>
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="fw-semibold">#<?= (int)$m['id'] ?></div>
+                        <span class="badge <?= $status === 'open' ? 'bg-danger' : ($status === 'in_progress' ? 'bg-warning text-dark' : 'bg-success') ?>">
+                            <?= View::e($labelMap[$status] ?? 'Aberto') ?>
+                        </span>
+                    </div>
+                    <div class="mb-1">
+                        <?= View::e((string)($m['subject'] ?? '')) ?>
+                        <?php if ($attention): ?>
+                            <span class="badge bg-danger ms-2">Nova resposta</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="text-muted small">Atualizado: <?= View::e((string)($m['updated_at'] ?? $m['created_at'] ?? '')) ?></div>
+                    <div class="mt-2 d-grid">
+                        <a class="btn btn-outline-primary" href="<?= base_path('/support/' . (int)$m['id']) ?>">Ver chamado</a>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
     </div>
 <?php endif; ?>
 <?php

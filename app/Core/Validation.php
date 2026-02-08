@@ -10,7 +10,7 @@ final class Validation
 {
     public static function username(string $value): bool
     {
-        return (bool)preg_match('/^[a-zA-Z0-9_.]{6,20}$/', $value);
+        return (bool)preg_match('/^[a-zA-Z0-9_.]{5,20}$/', $value);
     }
 
     public static function password(string $value): bool

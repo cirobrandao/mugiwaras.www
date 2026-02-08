@@ -162,8 +162,9 @@ body.app-body {
   display: block;
 }
 
-@media (max-width: 991px) {
-  .topbar-logo[data-sidebar-toggle] {
+@media (max-width: 1365px), (max-height: 767px) {
+  .topbar-logo[data-sidebar-toggle],
+  .crumb-title[data-sidebar-toggle] {
     cursor: pointer;
   }
 }
@@ -640,7 +641,7 @@ body.app-body {
   font-size: 0.85rem;
 }
 
-@media (max-width: 991px) {
+@media (max-width: 1365px), (max-height: 767px) {
   .app-shell {
     padding: 12px;
   }

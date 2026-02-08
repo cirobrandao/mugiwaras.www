@@ -56,6 +56,12 @@ ob_start();
                             <span class="form-check-label">Categoria 18+</span>
                         </label>
                     </div>
+                    <div class="mb-2">
+                        <label class="form-check">
+                            <input class="form-check-input" type="checkbox" name="hide_from_store" value="1">
+                            <span class="form-check-label">Nao listar nos pacotes da loja</span>
+                        </label>
+                    </div>
                     <div class="row g-2 mb-2">
                         <div class="col-md-4">
                             <label class="form-label">Exibição na biblioteca</label>
@@ -138,6 +144,7 @@ ob_start();
             <th>Tipos</th>
             <th>Assinantes</th>
             <th>18+</th>
+            <th>Loja</th>
             <th class="text-end">Ações</th>
         </tr>
         </thead>
@@ -185,6 +192,13 @@ ob_start();
                         <span class="text-muted">-</span>
                     <?php endif; ?>
                 </td>
+                <td class="small">
+                    <?php if (!empty($c['hide_from_store'])): ?>
+                        <span class="badge bg-secondary">Oculto</span>
+                    <?php else: ?>
+                        <span class="text-muted">Exibir</span>
+                    <?php endif; ?>
+                </td>
                 <td class="text-end">
                     <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#editCategory<?= (int)$c['id'] ?>">Editar</button>
                     <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteCategory<?= (int)$c['id'] ?>">Excluir</button>
@@ -222,6 +236,12 @@ ob_start();
                                     <label class="form-check">
                                         <input class="form-check-input" type="checkbox" name="adult_only" value="1" <?= !empty($c['adult_only']) ? 'checked' : '' ?>>
                                         <span class="form-check-label">Categoria 18+</span>
+                                    </label>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="hide_from_store" value="1" <?= !empty($c['hide_from_store']) ? 'checked' : '' ?>>
+                                        <span class="form-check-label">Nao listar nos pacotes da loja</span>
                                     </label>
                                 </div>
                                 <div class="row g-2 mb-2">

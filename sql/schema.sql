@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     phone_country VARCHAR(8) NOT NULL,
     phone_has_whatsapp TINYINT(1) NOT NULL DEFAULT 1,
     birth_date VARCHAR(10) NOT NULL,
+    avatar_path VARCHAR(255) NULL,
     observations TEXT NULL,
     password_hash VARCHAR(255) NOT NULL,
     access_tier ENUM('user','trial','assinante','restrito','vitalicio') NOT NULL DEFAULT 'user',
@@ -76,6 +77,12 @@ CREATE TABLE IF NOT EXISTS support_replies (
 CREATE TABLE IF NOT EXISTS email_blocklist (
     id INT AUTO_INCREMENT PRIMARY KEY,
     domain VARCHAR(190) NOT NULL UNIQUE,
+    created_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS username_blocklist (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(60) NOT NULL UNIQUE,
     created_at DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -155,6 +162,26 @@ CREATE TABLE IF NOT EXISTS audit_log (
     INDEX (event)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS login_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    ip_address VARCHAR(45) NOT NULL,
+    user_agent VARCHAR(255) NULL,
+    logged_at DATETIME NOT NULL,
+    INDEX (user_id),
+    INDEX (logged_at),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS avatar_gallery (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(120) NULL,
+    file_path VARCHAR(255) NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS settings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     `key` VARCHAR(100) NOT NULL UNIQUE,
@@ -177,6 +204,7 @@ CREATE TABLE IF NOT EXISTS categories (
     cbz_direction ENUM('rtl','ltr') NOT NULL DEFAULT 'rtl',
     cbz_mode ENUM('page','scroll') NOT NULL DEFAULT 'page',
     epub_mode ENUM('text','comic') NOT NULL DEFAULT 'text',
+    hide_from_store TINYINT(1) NOT NULL DEFAULT 0,
     content_video TINYINT(1) NOT NULL DEFAULT 0,
     content_cbz TINYINT(1) NOT NULL DEFAULT 1,
     content_pdf TINYINT(1) NOT NULL DEFAULT 1,

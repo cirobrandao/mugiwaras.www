@@ -64,6 +64,7 @@ $isModerator = $currentUser ? \App\Core\Auth::isModerator($currentUser) : false;
 $isUploader = $currentUser ? \App\Core\Auth::isUploader($currentUser) : false;
 $isSupportStaff = $currentUser ? \App\Core\Auth::isSupportStaff($currentUser) : false;
 $isEquipe = $currentUser ? \App\Core\Auth::isEquipe($currentUser) : false;
+$isRestricted = $currentUser && ($currentUser['access_tier'] ?? '') === 'restrito';
 $canUseSideMenu = $isAdmin || $isModerator || $isUploader || $isSupportStaff;
 
 $supportUrl = base_path('/support');
@@ -91,6 +92,7 @@ if ($isLoggedIn && !empty($currentUser)) {
 
 $displayName = (string)($currentUser['username'] ?? 'Usuário');
 $initial = $displayName !== '' ? mb_strtoupper(mb_substr($displayName, 0, 1)) : 'U';
+$userAvatar = (string)($currentUser['avatar_path'] ?? '');
 $activePage = $activePage ?? '';
 ?>
 
@@ -132,14 +134,21 @@ $activePage = $activePage ?? '';
             </a>
             <nav class="sidebar-nav">
                 <?php if ($isLoggedIn): ?>
-                    <a class="nav-link <?= $activePage === 'libraries' ? 'active' : '' ?>" href="<?= base_path('/libraries') ?>">
-                        <i class="bi bi-collection"></i>
-                        <span>Bibliotecas</span>
+                    <div class="nav-section">Navegacao</div>
+                    <a class="nav-link <?= $activePage === 'dashboard' ? 'active' : '' ?>" href="<?= base_path('/dashboard') ?>">
+                        <i class="bi bi-house"></i>
+                        <span>Inicio</span>
                     </a>
-                    <a class="nav-link <?= $activePage === 'loja' ? 'active' : '' ?>" href="<?= base_path('/loja') ?>">
-                        <i class="bi bi-bag"></i>
-                        <span>Loja</span>
-                    </a>
+                    <?php if (!$isRestricted): ?>
+                        <a class="nav-link <?= $activePage === 'libraries' ? 'active' : '' ?>" href="<?= base_path('/libraries') ?>">
+                            <i class="bi bi-collection"></i>
+                            <span>Bibliotecas</span>
+                        </a>
+                        <a class="nav-link <?= $activePage === 'loja' ? 'active' : '' ?>" href="<?= base_path('/loja') ?>">
+                            <i class="bi bi-bag"></i>
+                            <span>Loja</span>
+                        </a>
+                    <?php endif; ?>
                     <?php if (!$isAdmin && !$isEquipe && !$isSupportStaff && !$isUploader && !$isModerator): ?>
                         <a class="nav-link" href="<?= $supportUrl ?>">
                             <i class="bi bi-life-preserver"></i>
@@ -169,12 +178,19 @@ $activePage = $activePage ?? '';
                     <?php if ($isAdmin): ?>
                         <a class="nav-link" href="<?= base_path('/admin') ?>">
                             <i class="bi bi-grid"></i>
-                            <span>Painel Administrativo</span>
+                            <span>Painel</span>
                         </a>
-                        <a class="nav-link" href="<?= base_path('/admin/users') ?>">
-                            <i class="bi bi-people"></i>
-                            <span>Usuarios</span>
+                    <?php endif; ?>
+                    <?php if ($isSupportStaff): ?>
+                        <a class="nav-link" href="<?= base_path('/admin/support') ?>">
+                            <i class="bi bi-headset"></i>
+                            <span>Suporte</span>
+                            <?php if (!empty($pendingSupport)): ?>
+                                <span class="badge bg-danger ms-auto"><?= (int)$pendingSupport ?></span>
+                            <?php endif; ?>
                         </a>
+                    <?php endif; ?>
+                    <?php if ($isAdmin): ?>
                         <a class="nav-link" href="<?= base_path('/admin/payments') ?>">
                             <i class="bi bi-cash-coin"></i>
                             <span>Pagamentos</span>
@@ -196,19 +212,10 @@ $activePage = $activePage ?? '';
                             <span>Enviar arquivo</span>
                         </a>
                     <?php endif; ?>
-                    <?php if ($isSupportStaff): ?>
-                        <a class="nav-link" href="<?= base_path('/admin/support') ?>">
-                            <i class="bi bi-headset"></i>
-                            <span>Suporte</span>
-                            <?php if (!empty($pendingSupport)): ?>
-                                <span class="badge bg-danger ms-auto"><?= (int)$pendingSupport ?></span>
-                            <?php endif; ?>
-                        </a>
-                    <?php endif; ?>
                     <?php if ($isAdmin): ?>
                         <a class="nav-link" href="<?= base_path('/admin/news') ?>">
                             <i class="bi bi-megaphone"></i>
-                            <span>Gerenciar Noticias</span>
+                            <span>Noticias</span>
                         </a>
                     <?php endif; ?>
                 <?php endif; ?>
@@ -245,11 +252,16 @@ $activePage = $activePage ?? '';
                             <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar nas bibliotecas">
                         </form>
                         <div class="dropdown">
-                            <button class="btn btn-ghost dropdown-toggle" data-bs-toggle="dropdown">
+                            <button class="btn btn-ghost dropdown-toggle d-inline-flex align-items-center gap-2" data-bs-toggle="dropdown">
+                                <?php if ($userAvatar !== ''): ?>
+                                    <img src="<?= base_path('/' . ltrim($userAvatar, '/')) ?>" alt="Avatar" class="topbar-avatar">
+                                <?php else: ?>
+                                    <span class="topbar-avatar-placeholder"><?= View::e($initial) ?></span>
+                                <?php endif; ?>
                                 <span class="d-none d-md-inline"><?= View::e($displayName) ?></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="<?= base_path('/perfil') ?>">Atualizar conta</a></li>
+                                <li><a class="dropdown-item" href="<?= base_path('/perfil') ?>">Meu perfil</a></li>
                                 <li><a class="dropdown-item" href="<?= base_path('/perfil/senha') ?>">Mudar senha</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="<?= base_path('/logout') ?>">Sair</a></li>

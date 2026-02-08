@@ -35,6 +35,14 @@ final class Payment
         return $stmt->fetchAll();
     }
 
+    public static function byUserAll(int $userId): array
+    {
+        $stmt = Database::connection()->prepare('SELECT * FROM payments WHERE user_id = :u ORDER BY id DESC');
+        $stmt->bindValue('u', $userId, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
     public static function find(int $id): ?array
     {
         $stmt = Database::connection()->prepare('SELECT * FROM payments WHERE id = :id');

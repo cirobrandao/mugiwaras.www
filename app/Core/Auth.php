@@ -6,7 +6,8 @@ namespace App\Core;
 
 use App\Models\User;
 use App\Models\UserToken;
-use App\Models\UserBlocklist;
+use App\Models\LoginHistory;
+use App\Core\Validation;
 
 final class Auth
 {
@@ -53,13 +54,40 @@ final class Auth
     {
         if (isset($_SESSION['user_id'])) {
             $user = User::findById((int)$_SESSION['user_id']);
-            if ($user && UserBlocklist::isBlocked((int)$user['id'])) {
-                self::logout();
-                return null;
-            }
             return $user;
         }
         return null;
+    }
+
+    public static function needsProfileUpdate(array $user): bool
+    {
+        $username = (string)($user['username'] ?? '');
+        if (mb_strlen($username) < 5) {
+            return true;
+        }
+        $phone = trim((string)($user['phone'] ?? ''));
+        if ($phone === '' || !Validation::phone($phone)) {
+            return true;
+        }
+        $birth = trim((string)($user['birth_date'] ?? ''));
+        if ($birth === '' || $birth === '0000-00-00' || !Validation::birthDate($birth)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static function enforceProfileComplete(Request $request, ?array $user): void
+    {
+        if (!$user) {
+            return;
+        }
+        if (self::needsProfileUpdate($user)) {
+            $path = parse_url($request->uri, PHP_URL_PATH) ?: '/';
+            $allow = ['/perfil/editar', '/logout'];
+            if (!in_array($path, $allow, true)) {
+                Response::redirect(base_path('/perfil/editar?force=1'));
+            }
+        }
     }
 
     public static function attempt(string $username, string $password, bool $remember, Request $request): bool
@@ -76,12 +104,9 @@ final class Auth
             return false;
         }
 
-        if (UserBlocklist::isBlocked((int)$user['id'])) {
-            return false;
-        }
-
         User::resetFailedLogins((int)$user['id']);
         User::updateLastLogin((int)$user['id'], $request->ip(), $request->userAgent());
+        LoginHistory::record((int)$user['id'], $request->ip(), $request->userAgent());
         $_SESSION['user_id'] = $user['id'];
 
         if ($remember) {
@@ -130,6 +155,7 @@ final class Auth
             if (!$user || !in_array($user['role'], $roles, true)) {
                 Response::redirect(base_path('/'));
             }
+            self::enforceProfileComplete($request, $user);
         };
     }
 
@@ -140,6 +166,7 @@ final class Auth
             if (!self::isAdmin($user)) {
                 Response::redirect(base_path('/'));
             }
+            self::enforceProfileComplete($request, $user);
         };
     }
 
@@ -150,6 +177,7 @@ final class Auth
             if (!self::isAdmin($user) && !self::isModerator($user)) {
                 Response::redirect(base_path('/'));
             }
+            self::enforceProfileComplete($request, $user);
         };
     }
 
@@ -160,6 +188,7 @@ final class Auth
             if (!self::canUpload($user)) {
                 Response::redirect(base_path('/'));
             }
+            self::enforceProfileComplete($request, $user);
         };
     }
 
@@ -170,6 +199,7 @@ final class Auth
             if (!self::isSupportStaff($user)) {
                 Response::redirect(base_path('/'));
             }
+            self::enforceProfileComplete($request, $user);
         };
     }
 }

@@ -17,6 +17,8 @@ use App\Models\Category;
 use App\Models\Series;
 use App\Models\UserFavorite;
 use App\Models\UserContentStatus;
+use App\Models\Payment;
+use App\Models\Package;
 use App\Core\Csrf;
 
 final class ReaderController extends Controller
@@ -35,6 +37,11 @@ final class ReaderController extends Controller
         if (!$content) {
             http_response_code(404);
             echo 'Conteúdo não encontrado.';
+            return;
+        }
+        if (!$this->canAccessCategory($user, (int)($content['category_id'] ?? 0))) {
+            http_response_code(403);
+            echo $this->view('reader/open', ['error' => 'Acesso indisponível para esta categoria.']);
             return;
         }
         $path = (string)($content['cbz_path'] ?? '');
@@ -151,6 +158,11 @@ final class ReaderController extends Controller
             echo 'Conteúdo não encontrado.';
             return;
         }
+        if (!$this->canAccessCategory($user, (int)($content['category_id'] ?? 0))) {
+            http_response_code(403);
+            echo 'Acesso indisponível para esta categoria.';
+            return;
+        }
 
         $limitDownloads = (int)Setting::get('trial_downloads_per_day', '0');
         if ($user['access_tier'] === 'trial' && $limitDownloads > 0) {
@@ -203,6 +215,11 @@ final class ReaderController extends Controller
             echo $this->view('reader/epub', ['error' => 'Conteúdo não encontrado.']);
             return;
         }
+        if (!$this->canAccessCategory($user, (int)($content['category_id'] ?? 0))) {
+            http_response_code(403);
+            echo $this->view('reader/epub', ['error' => 'Acesso indisponível para esta categoria.']);
+            return;
+        }
         $path = (string)($content['cbz_path'] ?? '');
         $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         if ($ext !== 'epub') {
@@ -237,6 +254,11 @@ final class ReaderController extends Controller
         if (!$content) {
             http_response_code(404);
             echo $this->view('reader/pdf', ['error' => 'Conteúdo não encontrado.']);
+            return;
+        }
+        if (!$this->canAccessCategory($user, (int)($content['category_id'] ?? 0))) {
+            http_response_code(403);
+            echo $this->view('reader/pdf', ['error' => 'Acesso indisponível para esta categoria.']);
             return;
         }
         $path = (string)($content['cbz_path'] ?? '');
@@ -292,6 +314,10 @@ final class ReaderController extends Controller
         $content = ContentItem::find((int)$id);
         if (!$content) {
             http_response_code(404);
+            return;
+        }
+        if (!$this->canAccessCategory($user, (int)($content['category_id'] ?? 0))) {
+            http_response_code(403);
             return;
         }
         $path = (string)($content['cbz_path'] ?? '');
@@ -614,5 +640,51 @@ final class ReaderController extends Controller
             return 'Você precisa adquirir o acesso para continuar.';
         }
         return null;
+    }
+
+    private function canAccessCategory(array $user, int $categoryId): bool
+    {
+        if ($categoryId <= 0) {
+            return true;
+        }
+        if (Auth::isAdmin($user) || Auth::isModerator($user) || Auth::isEquipe($user)) {
+            return true;
+        }
+        if (($user['access_tier'] ?? '') === 'vitalicio') {
+            return true;
+        }
+        $cat = Category::findById($categoryId);
+        if (!$cat) {
+            return false;
+        }
+        $restrictedIds = [4, 5, 6];
+        $requires = !empty($cat['requires_subscription']);
+        $isRestricted = in_array($categoryId, $restrictedIds, true);
+        if (!$requires && !$isRestricted) {
+            return true;
+        }
+        $allowedIds = $this->allowedCategoryIds($user);
+        if (empty($allowedIds)) {
+            return false;
+        }
+        $allowedSet = array_flip($allowedIds);
+        return isset($allowedSet[$categoryId]);
+    }
+
+    private function allowedCategoryIds(array $user): array
+    {
+        if (($user['access_tier'] ?? '') === 'vitalicio') {
+            return [];
+        }
+        $payment = Payment::latestApprovedByUser((int)($user['id'] ?? 0));
+        if (!$payment) {
+            return [];
+        }
+        $packageId = (int)($payment['package_id'] ?? 0);
+        if ($packageId <= 0) {
+            return [];
+        }
+        $map = Package::categoriesMap([$packageId]);
+        return array_values(array_map('intval', $map[$packageId] ?? []));
     }
 }

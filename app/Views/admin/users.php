@@ -68,8 +68,69 @@ foreach (($users ?? []) as $u) {
 ?>
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
 	<h1 class="h4 mb-0">Gerenciamento de Usuarios</h1>
-	<a class="btn btn-outline-primary" href="<?= base_path('/admin/team') ?>">Gerenciar Equipes</a>
+	<div class="d-flex flex-wrap gap-2">
+		<a class="btn btn-outline-secondary" href="<?= base_path('/admin/users/import') ?>">Importar JSON</a>
+		<a class="btn btn-outline-primary" href="<?= base_path('/admin/team') ?>">Gerenciar Equipes</a>
+	</div>
 </div>
+
+<?php
+$filters = (array)($filters ?? []);
+$filterQ = (string)($filters['q'] ?? '');
+$filterTier = (string)($filters['tier'] ?? '');
+$filterStatus = (string)($filters['status'] ?? '');
+$filterPackage = (string)($filters['package'] ?? '');
+$pages = (int)max(1, ($pages ?? 1));
+$page = (int)max(1, ($page ?? 1));
+$perPage = (int)max(10, ($perPage ?? 25));
+$page = min($page, $pages);
+?>
+
+<form method="get" action="<?= base_path('/admin/users') ?>" class="row g-2 align-items-end mb-3">
+	<div class="col-md-4">
+		<label class="form-label">Buscar</label>
+		<input class="form-control" name="q" value="<?= View::e($filterQ) ?>" placeholder="ID, usuario, email ou telefone">
+	</div>
+	<div class="col-md-2">
+		<label class="form-label">Tier</label>
+		<select class="form-select" name="tier">
+			<option value="">Todos</option>
+			<?php foreach (['user','trial','assinante','restrito','vitalicio'] as $tier): ?>
+				<option value="<?= $tier ?>" <?= $filterTier === $tier ? 'selected' : '' ?>><?= $tier ?></option>
+			<?php endforeach; ?>
+		</select>
+	</div>
+	<div class="col-md-2">
+		<label class="form-label">Status</label>
+		<select class="form-select" name="status">
+			<option value="">Todos</option>
+			<option value="active" <?= $filterStatus === 'active' ? 'selected' : '' ?>>Ativo</option>
+			<option value="locked" <?= $filterStatus === 'locked' ? 'selected' : '' ?>>Bloqueado</option>
+		</select>
+	</div>
+	<div class="col-md-3">
+		<label class="form-label">Pacote</label>
+		<select class="form-select" name="package">
+			<option value="">Todos</option>
+			<option value="none" <?= $filterPackage === 'none' ? 'selected' : '' ?>>Sem pacote</option>
+			<?php foreach (($packages ?? []) as $pkg): ?>
+				<option value="<?= (int)$pkg['id'] ?>" <?= (string)($pkg['id'] ?? '') === $filterPackage ? 'selected' : '' ?>><?= View::e((string)($pkg['title'] ?? '')) ?></option>
+			<?php endforeach; ?>
+		</select>
+	</div>
+	<div class="col-md-1">
+		<label class="form-label">Por pagina</label>
+		<select class="form-select" name="perPage">
+			<?php foreach ([10,25,50,100,200] as $pp): ?>
+				<option value="<?= $pp ?>" <?= (int)$perPage === $pp ? 'selected' : '' ?>><?= $pp ?></option>
+			<?php endforeach; ?>
+		</select>
+	</div>
+	<div class="col-12 d-flex gap-2">
+		<button class="btn btn-primary" type="submit">Filtrar</button>
+		<a class="btn btn-outline-secondary" href="<?= base_path('/admin/users') ?>">Limpar</a>
+	</div>
+</form>
 
 <?php if (!empty($resetToken) && !empty($resetUserId)): ?>
 	<?php
@@ -84,14 +145,6 @@ foreach (($users ?? []) as $u) {
 		</div>
 	</div>
 <?php endif; ?>
-
-<?php
-$pages = (int)max(1, ($pages ?? 1));
-$page = (int)max(1, ($page ?? 1));
-$perPage = (int)max(10, ($perPage ?? 50));
-$page = min($page, $pages);
-?>
-
 
 <div class="table-responsive">
 	<table class="table table-hover align-middle admin-users-table">
@@ -178,6 +231,16 @@ $page = min($page, $pages);
 					<button class="btn btn-sm btn-outline-secondary px-2" type="button" data-bs-toggle="modal" data-bs-target="#editUserModal<?= (int)$u['id'] ?>" title="Editar">
 						<i class="fa-solid fa-pen-to-square"></i>
 						<span class="visually-hidden">Editar</span>
+					</button>
+
+					<button class="btn btn-sm btn-outline-info px-2" type="button" data-bs-toggle="modal" data-bs-target="#loginHistoryModal<?= (int)$u['id'] ?>" title="Historico de login">
+						<i class="fa-solid fa-clock-rotate-left"></i>
+						<span class="visually-hidden">Historico de login</span>
+					</button>
+
+					<button class="btn btn-sm btn-outline-success px-2" type="button" data-bs-toggle="modal" data-bs-target="#assignPackageModal<?= (int)$u['id'] ?>" title="Definir pacote" <?= $isSuper ? 'disabled' : '' ?>>
+						<i class="fa-solid fa-box"></i>
+						<span class="visually-hidden">Definir pacote</span>
 					</button>
 
 					<button class="btn btn-sm btn-outline-primary px-2" type="button" <?= $isSuper ? 'disabled' : '' ?> title="Trocar senha" data-bs-toggle="modal" data-bs-target="#resetUserModal<?= (int)$u['id'] ?>">
@@ -286,6 +349,113 @@ $page = min($page, $pages);
 			$modals[] = ob_get_clean();
 			ob_start();
 			?>
+			<div class="modal fade" id="assignPackageModal<?= (int)$u['id'] ?>" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Definir pacote</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+						</div>
+						<form method="post" action="<?= base_path('/admin/users/assign-package') ?>">
+							<div class="modal-body">
+								<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+								<input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+								<div class="mb-2">
+									<strong><?= View::e((string)$u['username']) ?></strong>
+								</div>
+								<?php
+								$currentPayment = $latestPayments[(int)$u['id']] ?? null;
+								$currentPkgId = (int)($currentPayment['package_id'] ?? 0);
+								$currentPkg = $packageMap[$currentPkgId] ?? null;
+								?>
+								<div class="text-muted small mb-2">
+									Atual: <?= $currentPkg ? View::e((string)($currentPkg['title'] ?? '')) : 'Sem pacote ativo' ?>
+								</div>
+								<div class="mb-3">
+									<label class="form-label">Pacote</label>
+									<select class="form-select" name="package_id" required>
+										<option value="">Selecione</option>
+										<?php foreach (($packages ?? []) as $pkg): ?>
+											<option value="<?= (int)$pkg['id'] ?>"><?= View::e((string)($pkg['title'] ?? '')) ?></option>
+										<?php endforeach; ?>
+									</select>
+								</div>
+								<div class="mb-3">
+									<label class="form-label">Meses</label>
+									<input class="form-control" type="number" name="months" min="1" max="12" value="1" required>
+									<div class="form-text">Gera pagamento aprovado e estende a assinatura.</div>
+								</div>
+								<div class="form-check mb-2">
+									<input class="form-check-input" type="checkbox" name="assign_only" id="assignOnly<?= (int)$u['id'] ?>" value="1">
+									<label class="form-check-label" for="assignOnly<?= (int)$u['id'] ?>">
+										Somente definir acesso ao pacote (nao altera assinatura/creditos)
+									</label>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+								<button class="btn btn-success" type="submit">Aplicar pacote</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			<?php
+			$modals[] = ob_get_clean();
+			ob_start();
+			?>
+			<div class="modal fade" id="loginHistoryModal<?= (int)$u['id'] ?>" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered modal-lg">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Historico de login</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+						</div>
+						<div class="modal-body">
+							<div class="mb-2"><strong><?= View::e((string)$u['username']) ?></strong></div>
+							<?php
+							$logs = $loginHistory[(int)$u['id']] ?? [];
+							?>
+							<?php if (empty($logs)): ?>
+								<div class="text-muted">Sem registros de login.</div>
+							<?php else: ?>
+								<div class="table-responsive">
+									<table class="table table-sm align-middle mb-0">
+										<thead class="table-light">
+										<tr>
+											<th scope="col" style="width: 170px;">Data</th>
+											<th scope="col" style="width: 140px;">Hora</th>
+											<th scope="col">IP</th>
+										</tr>
+										</thead>
+										<tbody>
+										<?php foreach ($logs as $log): ?>
+											<?php
+												$dt = (string)($log['logged_at'] ?? '');
+												$date = $dt !== '' ? date('Y-m-d', strtotime($dt)) : '-';
+												$time = $dt !== '' ? date('H:i:s', strtotime($dt)) : '-';
+											?>
+											<tr>
+												<td><?= View::e($date) ?></td>
+												<td><?= View::e($time) ?></td>
+												<td><?= View::e((string)($log['ip_address'] ?? '-')) ?></td>
+											</tr>
+										<?php endforeach; ?>
+										</tbody>
+									</table>
+								</div>
+							<?php endif; ?>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<?php
+			$modals[] = ob_get_clean();
+			ob_start();
+			?>
 			<div class="modal fade" id="resetUserModal<?= (int)$u['id'] ?>" tabindex="-1" aria-hidden="true">
 				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
@@ -321,7 +491,20 @@ $curr = (int)($page ?? 1);
 $curr = min(max(1, $curr), $pages);
 $start = max(1, $curr - 2);
 $end = min($pages, $curr + 2);
-$base = '/admin/users?perPage=' . (int)($perPage ?? 50) . '&page=';
+$baseParams = [
+	'q' => $filterQ,
+	'tier' => $filterTier,
+	'status' => $filterStatus,
+	'package' => $filterPackage,
+	'perPage' => (int)($perPage ?? 25),
+];
+$baseParams = array_filter($baseParams, static fn ($v) => $v !== '' && $v !== null);
+$base = '/admin/users';
+if (!empty($baseParams)) {
+	$base .= '?' . http_build_query($baseParams) . '&page=';
+} else {
+	$base .= '?page=';
+}
 ?>
 <?php if ($pages > 1): ?>
 	<nav class="d-flex justify-content-end">

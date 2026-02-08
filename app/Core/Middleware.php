@@ -12,6 +12,17 @@ final class Middleware
             if (!Auth::user()) {
                 Response::redirect(base_path('/'));
             }
+            $user = Auth::user();
+            if (!$user) {
+                Response::redirect(base_path('/'));
+            }
+            if (Auth::needsProfileUpdate($user)) {
+                $path = parse_url($request->uri, PHP_URL_PATH) ?: '/';
+                $allow = ['/perfil/editar', '/logout'];
+                if (!in_array($path, $allow, true)) {
+                    Response::redirect(base_path('/perfil/editar?force=1'));
+                }
+            }
         };
     }
 

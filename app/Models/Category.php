@@ -48,6 +48,7 @@ final class Category
         string $cbzDirection = 'rtl',
         string $cbzMode = 'page',
         string $epubMode = 'text',
+        int $hideFromStore = 0,
         int $contentVideo = 0,
         int $contentCbz = 1,
         int $contentPdf = 1,
@@ -58,7 +59,7 @@ final class Category
         int $adultOnly = 0
     ): int
     {
-        $stmt = Database::connection()->prepare('INSERT INTO categories (name, banner_path, tag_color, display_orientation, cbz_direction, cbz_mode, epub_mode, content_video, content_cbz, content_pdf, content_epub, content_download, sort_order, requires_subscription, adult_only, created_at) VALUES (:n, :b, :t, :o, :d, :m, :e, :v, :cbz, :pdf, :epub, :dl, :so, :rs, :ao, NOW())');
+        $stmt = Database::connection()->prepare('INSERT INTO categories (name, banner_path, tag_color, display_orientation, cbz_direction, cbz_mode, epub_mode, hide_from_store, content_video, content_cbz, content_pdf, content_epub, content_download, sort_order, requires_subscription, adult_only, created_at) VALUES (:n, :b, :t, :o, :d, :m, :e, :hfs, :v, :cbz, :pdf, :epub, :dl, :so, :rs, :ao, NOW())');
         $stmt->execute([
             'n' => $name,
             'b' => $bannerPath,
@@ -67,6 +68,7 @@ final class Category
             'd' => $cbzDirection,
             'm' => $cbzMode,
             'e' => $epubMode,
+            'hfs' => $hideFromStore,
             'v' => $contentVideo,
             'cbz' => $contentCbz,
             'pdf' => $contentPdf,
@@ -103,6 +105,7 @@ final class Category
         string $cbzDirection,
         string $cbzMode,
         string $epubMode,
+        int $hideFromStore,
         int $contentVideo,
         int $contentCbz,
         int $contentPdf,
@@ -113,12 +116,13 @@ final class Category
         int $adultOnly
     ): void
     {
-        $stmt = Database::connection()->prepare('UPDATE categories SET display_orientation = :o, cbz_direction = :d, cbz_mode = :m, epub_mode = :e, content_video = :v, content_cbz = :cbz, content_pdf = :pdf, content_epub = :epub, content_download = :dl, sort_order = :so, requires_subscription = :rs, adult_only = :ao WHERE id = :id');
+        $stmt = Database::connection()->prepare('UPDATE categories SET display_orientation = :o, cbz_direction = :d, cbz_mode = :m, epub_mode = :e, hide_from_store = :hfs, content_video = :v, content_cbz = :cbz, content_pdf = :pdf, content_epub = :epub, content_download = :dl, sort_order = :so, requires_subscription = :rs, adult_only = :ao WHERE id = :id');
         $stmt->execute([
             'o' => $displayOrientation,
             'd' => $cbzDirection,
             'm' => $cbzMode,
             'e' => $epubMode,
+            'hfs' => $hideFromStore,
             'v' => $contentVideo,
             'cbz' => $contentCbz,
             'pdf' => $contentPdf,
