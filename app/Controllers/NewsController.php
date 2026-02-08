@@ -26,9 +26,7 @@ final class NewsController extends Controller
         $newsId = (int)$id;
         $newsItem = $newsId > 0 ? News::findPublished($newsId) : null;
         if (!$newsItem) {
-            http_response_code(404);
-            echo $this->view('errors/404');
-            return;
+            Response::abort404('Noticia nao encontrada.');
         }
 
         $accessInfo = [

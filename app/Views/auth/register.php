@@ -1,11 +1,12 @@
 <?php
 use App\Core\View;
 $hideHeader = true;
+$isTermsStage = ($stage ?? 'terms') === 'terms';
 ob_start();
 ?>
-<div class="row justify-content-center">
-    <div class="col-md-7">
-        <h1 class="h4 mb-3">Registrar</h1>
+<div class="row">
+    <div class="col-12">
+        <h1 class="h4 mb-3"><?= $isTermsStage ? 'Termo de uso' : 'Registrar' ?></h1>
         <?php if (!empty($errors)): ?>
             <div class="alert alert-danger">
                 <ul class="mb-0">
@@ -15,12 +16,11 @@ ob_start();
                 </ul>
             </div>
         <?php endif; ?>
-        <?php if (($stage ?? 'terms') === 'terms'): ?>
+        <?php if ($isTermsStage): ?>
             <?php if (!empty($terms)): ?>
                 <div class="card mb-3">
                     <div class="card-body">
-                        <h2 class="h6">Termo de uso</h2>
-                        <div class="small text-muted" style="max-height: 260px; overflow:auto;">
+                        <div class="terms-scroll small text-muted">
                             <?= nl2br(View::e((string)$terms)) ?>
                         </div>
                     </div>

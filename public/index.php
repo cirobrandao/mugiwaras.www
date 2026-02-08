@@ -75,6 +75,8 @@ $router->post('/support/track/{token}/reply', [new App\Controllers\SupportContro
 $router->get('/support/{id}', [new App\Controllers\SupportController(), 'show']);
 $router->post('/support/{id}/reply', [new App\Controllers\SupportController(), 'reply']);
 
+$router->get('/avatar-gallery', [new App\Controllers\AvatarGalleryController(), 'index']);
+
 $router->get('/dashboard', [new App\Controllers\DashboardController(), 'index'], [App\Core\Auth::requireRole(['user','admin','equipe','superadmin']), App\Core\Middleware::requireActiveAccess()]);
 
 $router->get('/news/{id}', [new App\Controllers\NewsController(), 'show'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
@@ -188,9 +190,10 @@ $router->get('/reset', [new App\Controllers\AuthController(), 'resetForm']);
 $router->post('/reset', [new App\Controllers\AuthController(), 'resetSubmit']);
 
 $router->get('/perfil', [new App\Controllers\ProfileController(), 'show'], [App\Core\Middleware::requireAuth()]);
-$router->get('/perfil/editar', [new App\Controllers\ProfileController(), 'editForm'], [App\Core\Middleware::requireAuth()]);
-$router->post('/perfil/editar', [new App\Controllers\ProfileController(), 'editUpdate'], [App\Core\Middleware::requireAuth()]);
+$router->get('/user/editar', [new App\Controllers\ProfileController(), 'editForm'], [App\Core\Middleware::requireAuth()]);
+$router->post('/user/editar', [new App\Controllers\ProfileController(), 'editUpdate'], [App\Core\Middleware::requireAuth()]);
 $router->get('/perfil/senha', [new App\Controllers\ProfileController(), 'passwordForm'], [App\Core\Middleware::requireAuth()]);
 $router->post('/perfil/senha', [new App\Controllers\ProfileController(), 'passwordUpdate'], [App\Core\Middleware::requireAuth()]);
+$router->get('/perfil/{usuario}', [new App\Controllers\ProfileController(), 'showByUsername'], [App\Core\Auth::requireAdmin()]);
 
 $router->dispatch($request);

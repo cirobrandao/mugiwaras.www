@@ -753,7 +753,7 @@ body.theme-dark .reader-shell .reader-toolbar {
 .auth-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(320px, 480px);
+  grid-template-columns: minmax(320px, 1fr) minmax(380px, 620px);
   gap: 20px;
   padding: 32px;
 }
@@ -765,6 +765,12 @@ body.theme-dark .reader-shell .reader-toolbar {
   box-shadow: var(--shadow);
 }
 
+.terms-scroll {
+  max-height: 45vh;
+  overflow: auto;
+  padding-right: 6px;
+}
+
 .auth-hero {
   border-radius: var(--radius-lg);
   background: linear-gradient(145deg, #d7e3f1 0%, #eef3f8 50%, #e3edf6 100%);
@@ -772,6 +778,22 @@ body.theme-dark .reader-shell .reader-toolbar {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+@media (min-width: 1400px) {
+  .auth-shell {
+    grid-template-columns: minmax(380px, 1fr) minmax(520px, 720px);
+    padding: 48px;
+    gap: 28px;
+  }
+
+  .auth-panel {
+    padding: 40px;
+  }
+
+  .terms-scroll {
+    max-height: 55vh;
+  }
 }
 
 .modal-backdrop {

@@ -10,17 +10,17 @@ final class Middleware
     {
         return function (Request $request): void {
             if (!Auth::user()) {
-                Response::redirect(base_path('/'));
+                Response::abort404('Voce nao tem acesso a esta pagina.');
             }
             $user = Auth::user();
             if (!$user) {
-                Response::redirect(base_path('/'));
+                Response::abort404('Voce nao tem acesso a esta pagina.');
             }
             if (Auth::needsProfileUpdate($user)) {
                 $path = parse_url($request->uri, PHP_URL_PATH) ?: '/';
-                $allow = ['/perfil/editar', '/logout'];
+                $allow = ['/user/editar', '/logout'];
                 if (!in_array($path, $allow, true)) {
-                    Response::redirect(base_path('/perfil/editar?force=1'));
+                    Response::redirect(base_path('/user/editar?force=1'));
                 }
             }
         };
@@ -31,7 +31,7 @@ final class Middleware
         return function (Request $request): void {
             $user = Auth::user();
             if (!$user) {
-                Response::redirect(base_path('/'));
+                Response::abort404('Voce nao tem acesso a esta pagina.');
             }
             $isAdmin = in_array($user['role'], ['admin', 'superadmin'], true);
             $isEquipe = ($user['role'] ?? '') === 'equipe';
@@ -39,7 +39,7 @@ final class Middleware
                 return;
             }
             if (($user['access_tier'] ?? '') === 'restrito') {
-                Response::redirect(base_path('/support?restricted=1'));
+                Response::abort404('Voce nao tem acesso a esta pagina.');
             }
             if ($user['access_tier'] === 'vitalicio') {
                 return;
@@ -47,7 +47,7 @@ final class Middleware
             if (!empty($user['subscription_expires_at'])) {
                 $expires = strtotime((string)$user['subscription_expires_at']);
                 if ($expires !== false && $expires < time()) {
-                    Response::redirect(base_path('/loja?expired=1'));
+                    Response::abort404('Voce nao tem acesso a esta pagina.');
                 }
             }
         };

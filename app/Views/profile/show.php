@@ -1,8 +1,11 @@
 <?php
 use App\Core\View;
 ob_start();
+$profileTitle = $profileTitle ?? 'Meu perfil';
+$profileBase = $profileBase ?? '/perfil';
+$canEditProfile = $canEditProfile ?? (($user['access_tier'] ?? '') !== 'restrito');
 ?>
-<h1 class="h4 mb-3">Meu perfil</h1>
+<h1 class="h4 mb-3"><?= View::e($profileTitle) ?></h1>
 <div class="card">
     <div class="card-body">
         <div class="row g-3 align-items-start">
@@ -22,8 +25,8 @@ ob_start();
                         <div class="fw-semibold fs-5"><?= View::e((string)($user['username'] ?? '')) ?></div>
                         <div class="text-body-secondary small">Perfil do usuario</div>
                     </div>
-                    <?php if (($user['access_tier'] ?? '') !== 'restrito'): ?>
-                        <a class="btn btn-outline-primary btn-sm" href="<?= base_path('/perfil/editar') ?>">Editor de perfil</a>
+                    <?php if (!empty($canEditProfile)): ?>
+                        <a class="btn btn-outline-primary btn-sm" href="<?= base_path('/user/editar') ?>">Editor de perfil</a>
                     <?php endif; ?>
                 </div>
                 <div class="row g-2">
@@ -122,6 +125,7 @@ ob_start();
                             <tr>
                                 <th scope="col" style="width: 140px;">Data</th>
                                 <th scope="col" class="text-end" style="width: 110px;">Hora</th>
+                                <th scope="col" class="text-end" style="width: 120px;">Status</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -134,11 +138,45 @@ ob_start();
                                 <tr>
                                     <td><?= View::e($date) ?></td>
                                     <td class="text-end"><?= View::e($time) ?></td>
+                                    <td class="text-end"><span class="badge bg-success">Sucesso</span></td>
                                 </tr>
                             <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
+                    <?php if (!empty($loginFails ?? [])): ?>
+                        <div class="mt-3">
+                            <div class="text-muted small mb-2">Tentativas de acesso indevido</div>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0 small">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th scope="col" style="width: 140px;">Data</th>
+                                        <th scope="col" style="width: 110px;" class="text-end">Hora</th>
+                                        <th scope="col">IP</th>
+                                        <th scope="col" style="width: 120px;" class="text-end">Status</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <?php foreach ($loginFails as $fail): ?>
+                                        <?php
+                                        $dt = (string)($fail['created_at'] ?? '');
+                                        $date = $dt !== '' ? date('Y-m-d', strtotime($dt)) : '-';
+                                        $time = $dt !== '' ? date('H:i:s', strtotime($dt)) : '-';
+                                        $ip = (string)($fail['ip'] ?? '');
+                                        ?>
+                                        <tr>
+                                            <td><?= View::e($date) ?></td>
+                                            <td class="text-end"><?= View::e($time) ?></td>
+                                            <td><?= View::e($ip !== '' ? $ip : '-') ?></td>
+                                            <td class="text-end"><span class="badge bg-danger">Falhou</span></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>
@@ -192,17 +230,17 @@ ob_start();
                         <nav class="mt-3" aria-label="Paginacao de leitura">
                             <ul class="pagination pagination-sm mb-0">
                                 <li class="page-item <?= $hasPrev ? '' : 'disabled' ?>">
-                                    <a class="page-link" href="<?= base_path('/perfil?reads_page=' . max(1, $readPage - 1)) ?>" aria-label="Anterior">
+                                    <a class="page-link" href="<?= base_path($profileBase . '?reads_page=' . max(1, $readPage - 1)) ?>" aria-label="Anterior">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
                                 <?php for ($p = 1; $p <= $readPages; $p++): ?>
                                     <li class="page-item <?= $p === $readPage ? 'active' : '' ?>">
-                                        <a class="page-link" href="<?= base_path('/perfil?reads_page=' . $p) ?>"><?= $p ?></a>
+                                        <a class="page-link" href="<?= base_path($profileBase . '?reads_page=' . $p) ?>"><?= $p ?></a>
                                     </li>
                                 <?php endfor; ?>
                                 <li class="page-item <?= $hasNext ? '' : 'disabled' ?>">
-                                    <a class="page-link" href="<?= base_path('/perfil?reads_page=' . min($readPages, $readPage + 1)) ?>" aria-label="Proxima">
+                                    <a class="page-link" href="<?= base_path($profileBase . '?reads_page=' . min($readPages, $readPage + 1)) ?>" aria-label="Proxima">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>

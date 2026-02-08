@@ -28,15 +28,15 @@ foreach ($messages ?? [] as $m) {
 <?php else: ?>
     <h2 class="h6 mb-2">Abertos / Em andamento</h2>
     <div class="table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="table table-sm align-middle admin-support-table small">
             <thead class="table-light">
             <tr>
-                <th scope="col" style="width: 110px;">Codigo</th>
-                <th scope="col" style="width: 180px;">Usuário</th>
+                <th scope="col" style="width: 90px;">Codigo</th>
+                <th scope="col" style="width: 160px;">Usuário</th>
                 <th scope="col">Assunto</th>
                 <th scope="col" style="width: 220px;">Nota admin</th>
-                <th scope="col" style="width: 130px;" class="text-center">Status</th>
-                <th scope="col" class="text-end" style="width: 170px;">Ações</th>
+                <th scope="col" style="width: 120px;" class="text-center">Status</th>
+                <th scope="col" class="text-end" style="width: 150px;">Ações</th>
             </tr>
             </thead>
             <tbody>
@@ -95,15 +95,15 @@ foreach ($messages ?? [] as $m) {
 
     <h2 class="h6 mt-4 mb-2">Fechados</h2>
     <div class="table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="table table-sm align-middle admin-support-table small">
             <thead class="table-light">
             <tr>
-                <th scope="col" style="width: 110px;">Codigo</th>
-                <th scope="col" style="width: 180px;">Usuário</th>
+                <th scope="col" style="width: 90px;">Codigo</th>
+                <th scope="col" style="width: 160px;">Usuário</th>
                 <th scope="col">Assunto</th>
                 <th scope="col" style="width: 220px;">Nota admin</th>
-                <th scope="col" style="width: 130px;" class="text-center">Status</th>
-                <th scope="col" class="text-end" style="width: 170px;">Ações</th>
+                <th scope="col" style="width: 120px;" class="text-center">Status</th>
+                <th scope="col" class="text-end" style="width: 150px;">Ações</th>
             </tr>
             </thead>
             <tbody>

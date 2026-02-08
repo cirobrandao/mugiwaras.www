@@ -23,7 +23,7 @@ if ($birthDate === '0000-00-00') {
 <?php endif; ?>
 <div class="card">
 	<div class="card-body">
-		<form method="post" action="<?= base_path('/perfil/editar') ?>" enctype="multipart/form-data">
+		<form method="post" action="<?= base_path('/user/editar') ?>" enctype="multipart/form-data">
 			<input type="hidden" name="_csrf" value="<?= View::e((string)($csrf ?? '')) ?>">
 			<div class="row g-3 align-items-center mb-3">
 				<div class="col-md-3">

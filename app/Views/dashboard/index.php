@@ -248,27 +248,6 @@ if (!function_exists('time_ago')) {
             <?php endif; ?>
         </section>
 
-        <?php
-        $dashUser = Auth::user();
-        $recentUsers = !empty($dashUser) && Auth::isAdmin($dashUser) ? User::recentLogins(10) : [];
-        ?>
-        <?php if (!empty($recentUsers)): ?>
-            <section class="section-card mt-3">
-                <div class="news-title-box">
-                    <div class="section-title">Ultimos usuarios conectados</div>
-                </div>
-                <div class="list-group list-group-flush small">
-                    <?php foreach ($recentUsers as $ru): ?>
-                        <div class="list-group-item d-flex align-items-center justify-content-between py-2">
-                            <span><?= View::e((string)($ru['username'] ?? '')) ?></span>
-                            <?php $lastLogin = $ru['data_ultimo_login'] ?? $ru['data_registro'] ?? null; ?>
-                            <span class="small text-muted"><?= View::e(time_ago(is_string($lastLogin) ? $lastLogin : null)) ?></span>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </section>
-        <?php endif; ?>
-
         <section class="section-card mt-3 news-card">
             <div class="news-title-box">
                 <div class="section-title news-title">Novidades</div>

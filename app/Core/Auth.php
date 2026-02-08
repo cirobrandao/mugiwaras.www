@@ -83,9 +83,9 @@ final class Auth
         }
         if (self::needsProfileUpdate($user)) {
             $path = parse_url($request->uri, PHP_URL_PATH) ?: '/';
-            $allow = ['/perfil/editar', '/logout'];
+            $allow = ['/user/editar', '/logout'];
             if (!in_array($path, $allow, true)) {
-                Response::redirect(base_path('/perfil/editar?force=1'));
+                Response::redirect(base_path('/user/editar?force=1'));
             }
         }
     }
@@ -153,7 +153,7 @@ final class Auth
         return function (Request $request) use ($roles): void {
             $user = self::user();
             if (!$user || !in_array($user['role'], $roles, true)) {
-                Response::redirect(base_path('/'));
+                Response::abort404('Voce nao tem acesso a esta pagina.');
             }
             self::enforceProfileComplete($request, $user);
         };
@@ -164,7 +164,7 @@ final class Auth
         return function (Request $request): void {
             $user = self::user();
             if (!self::isAdmin($user)) {
-                Response::redirect(base_path('/'));
+                Response::abort404('Voce nao tem acesso a esta pagina.');
             }
             self::enforceProfileComplete($request, $user);
         };
@@ -175,7 +175,7 @@ final class Auth
         return function (Request $request): void {
             $user = self::user();
             if (!self::isAdmin($user) && !self::isModerator($user)) {
-                Response::redirect(base_path('/'));
+                Response::abort404('Voce nao tem acesso a esta pagina.');
             }
             self::enforceProfileComplete($request, $user);
         };
@@ -186,7 +186,7 @@ final class Auth
         return function (Request $request): void {
             $user = self::user();
             if (!self::canUpload($user)) {
-                Response::redirect(base_path('/'));
+                Response::abort404('Voce nao tem acesso a esta pagina.');
             }
             self::enforceProfileComplete($request, $user);
         };
@@ -197,7 +197,7 @@ final class Auth
         return function (Request $request): void {
             $user = self::user();
             if (!self::isSupportStaff($user)) {
-                Response::redirect(base_path('/'));
+                Response::abort404('Voce nao tem acesso a esta pagina.');
             }
             self::enforceProfileComplete($request, $user);
         };

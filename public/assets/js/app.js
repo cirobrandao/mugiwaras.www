@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		const isDark = theme === 'dark';
 		body.classList.toggle('theme-dark', isDark);
 		if (icon) {
-			icon.className = isDark ? 'bi bi-sun' : 'bi bi-moon-stars';
+			icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
 		}
 		if (toggle) toggle.setAttribute('aria-pressed', String(isDark));
 	};

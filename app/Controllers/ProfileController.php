@@ -17,6 +17,7 @@ use App\Models\LoginHistory;
 use App\Models\ContentEvent;
 use App\Models\User;
 use App\Models\AvatarGallery;
+use App\Models\AuditLog;
 
 final class ProfileController extends Controller
 {
@@ -26,39 +27,34 @@ final class ProfileController extends Controller
         if (!$user) {
             Response::redirect(base_path('/'));
         }
-        $readPage = isset($_GET['reads_page']) ? (int)$_GET['reads_page'] : 1;
-        $readPerPage = 10;
+        $data = $this->profileViewData($user);
+        $data['profileTitle'] = 'Meu perfil';
+        $data['profileBase'] = '/perfil';
+        $data['canEditProfile'] = ($user['access_tier'] ?? '') !== 'restrito';
+        $data['isAdminView'] = false;
+        echo $this->view('profile/show', $data);
+    }
 
-        $paymentsAll = Payment::byUserAll((int)$user['id']);
-        $paymentsPreview = array_slice($paymentsAll, 0, 10);
-        $paymentsMore = array_slice($paymentsAll, 10);
-        $packages = Package::all();
-        $packageMap = [];
-        foreach ($packages as $pkg) {
-            $pid = (int)($pkg['id'] ?? 0);
-            if ($pid > 0) {
-                $packageMap[$pid] = $pkg;
-            }
+    public function showByUsername(Request $request, string $usuario): void
+    {
+        $viewer = Auth::user();
+        if (!$viewer || !Auth::isAdmin($viewer)) {
+            Response::redirect(base_path('/'));
         }
-        $loginHistoryAll = LoginHistory::forUserAll((int)$user['id']);
-        $loginHistoryPreview = array_slice($loginHistoryAll, 0, 10);
-        $loginHistoryMore = array_slice($loginHistoryAll, 10);
-
-        $readsTotal = ContentEvent::countReadsForUser((int)$user['id']);
-        $readPages = (int)max(1, (int)ceil($readsTotal / $readPerPage));
-        $readPage = max(1, min($readPage, $readPages));
-        $readingHistory = ContentEvent::pagedReadsForUser((int)$user['id'], $readPage, $readPerPage);
-        echo $this->view('profile/show', [
-            'user' => $user,
-            'payments' => $paymentsPreview,
-            'paymentsMore' => $paymentsMore,
-            'packageMap' => $packageMap,
-            'loginHistory' => $loginHistoryPreview,
-            'loginHistoryMore' => $loginHistoryMore,
-            'readingHistory' => $readingHistory,
-            'readPage' => $readPage,
-            'readPages' => $readPages,
-        ]);
+        $username = trim(rawurldecode($usuario));
+        if ($username === '') {
+            Response::redirect(base_path('/admin/users'));
+        }
+        $target = User::findByUsername($username);
+        if (!$target) {
+            Response::redirect(base_path('/admin/users'));
+        }
+        $data = $this->profileViewData($target);
+        $data['profileTitle'] = 'Perfil do usuario';
+        $data['profileBase'] = '/perfil/' . rawurlencode((string)($target['username'] ?? ''));
+        $data['canEditProfile'] = false;
+        $data['isAdminView'] = true;
+        echo $this->view('profile/show', $data);
     }
 
     public function editForm(): void
@@ -76,7 +72,7 @@ final class ProfileController extends Controller
     public function editUpdate(Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/perfil/editar'));
+            Response::redirect(base_path('/user/editar'));
         }
 
         $user = Auth::user();
@@ -244,6 +240,46 @@ final class ProfileController extends Controller
             'form' => $form,
             'error' => $error,
             'success' => $success,
+        ];
+    }
+
+    private function profileViewData(array $user): array
+    {
+        $readPage = isset($_GET['reads_page']) ? (int)$_GET['reads_page'] : 1;
+        $readPerPage = 10;
+
+        $paymentsAll = Payment::byUserAll((int)$user['id']);
+        $paymentsPreview = array_slice($paymentsAll, 0, 10);
+        $paymentsMore = array_slice($paymentsAll, 10);
+        $packages = Package::all();
+        $packageMap = [];
+        foreach ($packages as $pkg) {
+            $pid = (int)($pkg['id'] ?? 0);
+            if ($pid > 0) {
+                $packageMap[$pid] = $pkg;
+            }
+        }
+        $loginHistoryAll = LoginHistory::forUserAll((int)$user['id']);
+        $loginHistoryPreview = array_slice($loginHistoryAll, 0, 10);
+        $loginHistoryMore = array_slice($loginHistoryAll, 10);
+        $loginFails = AuditLog::loginFailsForUsername((string)($user['username'] ?? ''), 10);
+
+        $readsTotal = ContentEvent::countReadsForUser((int)$user['id']);
+        $readPages = (int)max(1, (int)ceil($readsTotal / $readPerPage));
+        $readPage = max(1, min($readPage, $readPages));
+        $readingHistory = ContentEvent::pagedReadsForUser((int)$user['id'], $readPage, $readPerPage);
+
+        return [
+            'user' => $user,
+            'payments' => $paymentsPreview,
+            'paymentsMore' => $paymentsMore,
+            'packageMap' => $packageMap,
+            'loginHistory' => $loginHistoryPreview,
+            'loginHistoryMore' => $loginHistoryMore,
+            'loginFails' => $loginFails,
+            'readingHistory' => $readingHistory,
+            'readPage' => $readPage,
+            'readPages' => $readPages,
         ];
     }
 

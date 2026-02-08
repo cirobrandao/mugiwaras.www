@@ -247,13 +247,13 @@ $activePage = $activePage ?? '';
                 </div>
                 <div class="topbar-right">
                     <?php if ($isLoggedIn): ?>
-                        <button class="btn btn-ghost btn-icon" type="button" data-theme-toggle aria-label="Alternar tema">
-                            <i class="bi bi-moon-stars"></i>
-                        </button>
                         <form class="topbar-search" method="get" action="<?= base_path('/libraries/search') ?>">
                             <i class="bi bi-search"></i>
                             <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar nas bibliotecas">
                         </form>
+                        <button class="btn btn-icon theme-toggle-btn" type="button" data-theme-toggle aria-label="Alternar tema">
+                            <i class="fa-solid fa-moon"></i>
+                        </button>
                         <div class="dropdown">
                             <button class="btn btn-ghost dropdown-toggle d-inline-flex align-items-center gap-2" data-bs-toggle="dropdown">
                                 <?php if ($userAvatar !== ''): ?>
@@ -271,8 +271,8 @@ $activePage = $activePage ?? '';
                             </ul>
                         </div>
                     <?php else: ?>
-                        <button class="btn btn-ghost btn-icon" type="button" data-theme-toggle aria-label="Alternar tema">
-                            <i class="bi bi-moon-stars"></i>
+                        <button class="btn btn-icon theme-toggle-btn" type="button" data-theme-toggle aria-label="Alternar tema">
+                            <i class="fa-solid fa-moon"></i>
                         </button>
                         <a class="btn btn-ghost" href="<?= base_path('/') ?>">Login</a>
                         <a class="btn btn-dark" href="<?= base_path('/register') ?>">Registrar</a>

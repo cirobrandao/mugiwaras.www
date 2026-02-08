@@ -147,7 +147,7 @@ $page = min($page, $pages);
 <?php endif; ?>
 
 <div class="table-responsive">
-	<table class="table table-hover align-middle admin-users-table">
+	<table class="table table-sm table-hover align-middle admin-users-table small">
 		<thead class="table-light">
 		<tr>
 			<th scope="col" style="width: 24px;"></th>
@@ -176,7 +176,11 @@ $page = min($page, $pages);
 				<td>
 					<span class="tier-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color: <?= View::e($tierColor) ?>; border:1px solid <?= View::e($tierColor) ?>;" title="<?= View::e($tierLabels[$tier] ?? $tier) ?>"></span>
 				</td>
-				<td><?= View::e($u['username']) ?></td>
+				<td>
+					<a class="text-decoration-none" href="<?= base_path('/perfil/' . rawurlencode((string)($u['username'] ?? ''))) ?>">
+						<?= View::e((string)($u['username'] ?? '')) ?>
+					</a>
+				</td>
 				<td>
 					<?php
 					$phone = (string)($u['phone'] ?? '');

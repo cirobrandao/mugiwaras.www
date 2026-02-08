@@ -12,6 +12,7 @@ use App\Models\Upload;
 use App\Models\SupportMessage;
 use App\Models\Category;
 use App\Models\Package;
+use App\Models\AuditLog;
 
 final class DashboardController extends Controller
 {
@@ -49,12 +50,14 @@ final class DashboardController extends Controller
         ];
 
         $dbInfo = $this->databaseInfo();
+        $loginFailAttempts = AuditLog::recentLoginFails(10);
 
         echo $this->view('admin/dashboard', [
             'stats' => $stats,
             'server' => $server,
             'charts' => $charts,
             'dbInfo' => $dbInfo,
+            'loginFailAttempts' => $loginFailAttempts,
         ]);
     }
 

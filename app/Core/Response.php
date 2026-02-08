@@ -6,6 +6,13 @@ namespace App\Core;
 
 final class Response
 {
+    public static function abort404(?string $message = null): void
+    {
+        http_response_code(404);
+        echo View::render('errors/404', ['message' => $message]);
+        exit;
+    }
+
     public static function redirect(string $path): void
     {
         header('Location: ' . $path);

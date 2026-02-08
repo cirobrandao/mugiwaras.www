@@ -12,9 +12,12 @@ $canManageModerators = $isAdmin;
 ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h4 mb-0">Gerenciar Equipe</h1>
-    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addTeamMemberModal">
-        Adicionar membro
-    </button>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="<?= base_path('/admin/users') ?>">Gerenciar usuarios</a>
+        <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#addTeamMemberModal">
+            Adicionar membro
+        </button>
+    </div>
 </div>
 
 <div class="table-responsive">
@@ -140,12 +143,34 @@ $canManageModerators = $isAdmin;
         var input = document.getElementById('teamUserSearch');
         var select = document.getElementById('teamUserSelect');
         if (!input || !select) return;
-        input.addEventListener('input', function () {
-            var term = input.value.toLowerCase();
-            Array.prototype.slice.call(select.options).forEach(function (opt) {
-                var text = opt.text.toLowerCase();
-                opt.hidden = term && text.indexOf(term) === -1;
+        var originalOptions = Array.prototype.slice.call(select.options).map(function (opt) {
+            return { value: opt.value, text: opt.text };
+        });
+        var renderOptions = function (list) {
+            select.innerHTML = '';
+            if (list.length === 0) {
+                var emptyOpt = document.createElement('option');
+                emptyOpt.textContent = 'Sem resultados';
+                emptyOpt.disabled = true;
+                select.appendChild(emptyOpt);
+                return;
+            }
+            list.forEach(function (opt) {
+                var option = document.createElement('option');
+                option.value = opt.value;
+                option.textContent = opt.text;
+                select.appendChild(option);
             });
+            select.selectedIndex = 0;
+        };
+        input.addEventListener('input', function () {
+            var term = input.value.trim().toLowerCase();
+            var filtered = term
+                ? originalOptions.filter(function (opt) {
+                    return opt.text.toLowerCase().indexOf(term) !== -1;
+                })
+                : originalOptions;
+            renderOptions(filtered);
         });
     })();
 </script>
