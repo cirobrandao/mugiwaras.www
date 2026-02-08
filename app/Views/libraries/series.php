@@ -102,6 +102,11 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <?php if ($isPdf && $downloadToken !== ''): ?>
+                            <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) ?>" title="Download">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                        <?php endif; ?>
                         <form method="post" action="<?= base_path('/libraries/read') ?>">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                             <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
@@ -180,6 +185,11 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                 </div>
                 <div class="card-footer bg-white border-0 pt-0">
                     <div class="d-flex flex-wrap align-items-center gap-2">
+                        <?php if ($isPdf && $downloadToken !== ''): ?>
+                            <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) ?>" title="Download">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                        <?php endif; ?>
                         <form method="post" action="<?= base_path('/libraries/read') ?>">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                             <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">

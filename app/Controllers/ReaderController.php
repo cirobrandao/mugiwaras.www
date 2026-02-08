@@ -193,10 +193,34 @@ final class ReaderController extends Controller
             ContentEvent::log((int)$user['id'], (int)$content['id'], 'read_open', null, (new Request())->ip());
             Audit::log('read_open', (int)$user['id'], ['content_id' => (int)$content['id'], 'type' => 'pdf_inline']);
         }
+        $downloadName = basename($abs);
+        if ($ext === 'pdf') {
+            $seriesName = '';
+            if (!empty($content['series_id'])) {
+                $series = Series::findById((int)$content['series_id']);
+                $seriesName = (string)($series['name'] ?? '');
+            }
+            $chapterName = (string)($content['title'] ?? '');
+            $siteName = (string)config('app.name', 'Site');
+            $base = trim($seriesName) !== '' ? $seriesName : 'Serie';
+            $chapter = trim($chapterName) !== '' ? $chapterName : 'Capitulo';
+            $downloadName = $this->sanitizeDownloadFilename($base . ' - ' . $chapter . ' [' . $siteName . '].pdf');
+        }
         header('Content-Type: ' . $mime);
-        header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment') . '; filename="' . basename($abs) . '"');
+        header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment') . '; filename="' . $downloadName . '"');
         header('Content-Length: ' . filesize($abs));
         readfile($abs);
+    }
+
+    private function sanitizeDownloadFilename(string $name): string
+    {
+        $clean = preg_replace('/[\x00-\x1F\x7F"\\\/<>:\\|?*]+/', ' ', $name) ?? $name;
+        $clean = preg_replace('/\s+/', ' ', $clean) ?? $clean;
+        $clean = trim($clean);
+        if ($clean === '' || $clean === '.pdf') {
+            return 'arquivo.pdf';
+        }
+        return $clean;
     }
 
     public function epubOpen(Request $request, string $id): void
