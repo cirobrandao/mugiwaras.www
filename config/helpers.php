@@ -42,3 +42,10 @@ if (!function_exists('url')) {
         return $baseUrl . $basePath . $path;
     }
 }
+
+if (!function_exists('format_brl')) {
+    function format_brl(float $value): string
+    {
+        return 'R$ ' . number_format($value, 2, ',', '.');
+    }
+}

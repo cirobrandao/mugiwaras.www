@@ -9,14 +9,14 @@ ob_start();
 
 <div class="row g-3 mb-3">
     <div class="col-md-6">
-        <div class="card h-100 shadow-sm">
+        <div class="card h-100 shadow-sm loja-card">
             <div class="card-body">
                 <h2 class="h6">Resumo do pacote</h2>
                 <p><strong>Título:</strong> <?= View::e($package['title']) ?></p>
                 <p class="text-muted small mb-3"><?= View::e((string)$package['description']) ?></p>
                 <div class="d-flex justify-content-between">
                     <span class="text-muted">Preço mensal</span>
-                    <strong>R$ <?= number_format((float)($package['price'] ?? 0), 2, ',', '.') ?></strong>
+                    <strong><?= format_brl((float)($package['price'] ?? 0)) ?></strong>
                 </div>
                 <div class="d-flex justify-content-between">
                     <span class="text-muted">Meses</span>
@@ -26,16 +26,16 @@ ob_start();
                 <?php if (!empty($prorataCredit) && $prorataCredit > 0): ?>
                     <div class="d-flex justify-content-between">
                         <span class="text-muted">Subtotal</span>
-                        <strong>R$ <?= number_format((float)($baseTotal ?? 0), 2, ',', '.') ?></strong>
+                        <strong><?= format_brl((float)($baseTotal ?? 0)) ?></strong>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span class="text-muted">Crédito pró-rata<?= !empty($currentPackageTitle) ? ' (' . View::e((string)$currentPackageTitle) . ')' : '' ?></span>
-                        <strong class="text-success">- R$ <?= number_format((float)$prorataCredit, 2, ',', '.') ?></strong>
+                        <strong class="text-success">- <?= format_brl((float)$prorataCredit) ?></strong>
                     </div>
                 <?php endif; ?>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted">Total</span>
-                    <strong class="fs-5">R$ <?= number_format((float)($total ?? 0), 2, ',', '.') ?></strong>
+                    <strong class="fs-5"><?= format_brl((float)($total ?? 0)) ?></strong>
                 </div>
                 <?php if (!empty($remainingDays)): ?>
                     <div class="small text-muted mt-2">Crédito calculado com base em <?= (int)$remainingDays ?> dia(s) restantes.</div>
@@ -44,7 +44,7 @@ ob_start();
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card h-100 shadow-sm">
+        <div class="card h-100 shadow-sm loja-card">
             <div class="card-body">
                 <h2 class="h6">Pagamento via PIX</h2>
                 <?php if (!empty($pixKey) || !empty($pixName)): ?>
@@ -61,7 +61,7 @@ ob_start();
     </div>
 </div>
 
-<div class="card shadow-sm">
+<div class="card shadow-sm loja-card">
     <div class="card-body">
         <h2 class="h6">Enviar comprovante</h2>
         <div class="form-text mb-3">Formatos aceitos: JPG, PNG ou PDF. Tamanho máximo: 4MB.</div>

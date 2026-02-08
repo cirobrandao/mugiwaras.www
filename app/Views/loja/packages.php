@@ -45,7 +45,7 @@ ob_start();
             }
             ?>
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm">
+                <div class="card h-100 shadow-sm loja-card">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title"><?= View::e($p['title']) ?></h5>
                         <p class="card-text text-muted small mb-3"><?= View::e($p['description']) ?></p>
@@ -61,7 +61,7 @@ ob_start();
                         <?php endif; ?>
                         <form class="mt-auto" method="get" action="<?= base_path('/loja/checkout/' . (int)$p['id']) ?>">
                             <div class="fw-semibold mb-2">
-                                R$ <?= number_format((float)($p['price'] ?? 0), 2, ',', '.') ?> / mês
+                                <?= format_brl((float)($p['price'] ?? 0)) ?> / mês
                             </div>
                             <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
                                 <label class="small text-muted mb-0">Deseja assinar quantos meses?</label>
@@ -82,7 +82,7 @@ ob_start();
     </div>
 <?php endif; ?>
 
-<div class="card mt-3">
+<div class="card mt-3 loja-card">
     <div class="card-body">
         <h2 class="h6">Tenho um voucher</h2>
         <form method="post" action="<?= base_path('/loja/voucher') ?>" class="row g-2">

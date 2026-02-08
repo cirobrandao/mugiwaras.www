@@ -83,9 +83,10 @@ final class DashboardController extends Controller
 
         try {
             $stmt = Database::connection()->prepare(
-                "SELECT DATE_FORMAT(created_at, '%Y-%m') AS ym, COUNT(*) AS c\n"
-                . "FROM payments\n"
-                . "WHERE status = 'approved' AND created_at >= :start\n"
+                "SELECT DATE_FORMAT(p.created_at, '%Y-%m') AS ym, COALESCE(SUM(pk.price * p.months), 0) AS total\n"
+                . "FROM payments p\n"
+                . "LEFT JOIN packages pk ON pk.id = p.package_id\n"
+                . "WHERE p.status = 'approved' AND p.created_at >= :start\n"
                 . "GROUP BY ym\n"
                 . "ORDER BY ym ASC"
             );
@@ -93,7 +94,7 @@ final class DashboardController extends Controller
             foreach ($stmt->fetchAll() as $row) {
                 $key = (string)($row['ym'] ?? '');
                 if ($key !== '' && array_key_exists($key, $map)) {
-                    $map[$key] = (int)($row['c'] ?? 0);
+                    $map[$key] = (float)($row['total'] ?? 0);
                 }
             }
         } catch (\Throwable $e) {

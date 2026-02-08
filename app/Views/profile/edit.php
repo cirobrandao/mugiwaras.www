@@ -27,7 +27,7 @@ if ($birthDate === '0000-00-00') {
 			<input type="hidden" name="_csrf" value="<?= View::e((string)($csrf ?? '')) ?>">
 			<div class="row g-3 align-items-center mb-3">
 				<div class="col-md-3">
-					<div class="border rounded d-flex align-items-center justify-content-center profile-avatar-box" style="background: #f8f9fa;">
+					<div class="border rounded d-flex align-items-center justify-content-center profile-avatar-box">
 						<?php if ($currentAvatarPath !== ''): ?>
 							<img src="<?= base_path('/' . ltrim($currentAvatarPath, '/')) ?>" alt="Avatar" class="profile-avatar-img">
 						<?php else: ?>

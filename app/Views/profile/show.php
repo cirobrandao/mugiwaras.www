@@ -7,7 +7,7 @@ ob_start();
     <div class="card-body">
         <div class="row g-3 align-items-start">
             <div class="col-auto">
-                <div class="border rounded d-flex align-items-center justify-content-center profile-avatar-box" style="background: #f8f9fa;">
+                <div class="border rounded d-flex align-items-center justify-content-center profile-avatar-box">
                     <?php $avatarPath = (string)($user['avatar_path'] ?? ''); ?>
                     <?php if ($avatarPath !== ''): ?>
                         <img src="<?= base_path('/' . ltrim($avatarPath, '/')) ?>" alt="Avatar" class="profile-avatar-img">

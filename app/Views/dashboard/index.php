@@ -71,7 +71,7 @@ if (!function_exists('time_ago')) {
     </script>
 <?php endif; ?>
 <div class="row g-3">
-    <div class="col-12 col-xxl-8">
+    <div class="col-12 col-xl-8 dashboard-main">
         <section class="section-card">
             <div class="news-title-box">
                 <div class="section-title">Meus Favoritos</div>
@@ -225,7 +225,7 @@ if (!function_exists('time_ago')) {
         <?php endif; ?>
     </div>
 
-    <div class="col-12 col-xxl-4">
+    <div class="col-12 col-xl-4 dashboard-sidebar">
         <section class="section-card">
             <div class="news-title-box">
                 <div class="section-title">Acesso</div>

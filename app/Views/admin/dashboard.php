@@ -43,15 +43,21 @@ $parseBytes = static function (string $value): int {
 $memLimitBytes = $parseBytes((string)($server['memory_limit'] ?? ''));
 $memUsage = (int)($server['memory_usage'] ?? 0);
 $memPercent = $memLimitBytes > 0 ? min(100, (int)round(($memUsage / $memLimitBytes) * 100)) : 0;
+if ($memPercent === 0 && $memUsage > 0) {
+    $memPercent = 1;
+}
 $diskTotal = (int)($server['disk_total'] ?? 0);
 $diskFree = (int)($server['disk_free'] ?? 0);
 $diskUsed = max(0, $diskTotal - $diskFree);
 $diskPercent = $diskTotal > 0 ? min(100, (int)round(($diskUsed / $diskTotal) * 100)) : 0;
+if ($diskPercent === 0 && $diskUsed > 0) {
+    $diskPercent = 1;
+}
 $paymentsSeries = (array)($charts['payments_by_month'] ?? []);
 $uploadsSeries = (array)($charts['uploads_by_week'] ?? []);
-$maxPayments = 0;
+$maxPayments = 0.0;
 foreach ($paymentsSeries as $row) {
-    $maxPayments = max($maxPayments, (int)($row['value'] ?? 0));
+    $maxPayments = max($maxPayments, (float)($row['value'] ?? 0));
 }
 $maxUploads = 0;
 foreach ($uploadsSeries as $row) {
@@ -228,13 +234,16 @@ foreach ($uploadsSeries as $row) {
                         <div class="d-flex flex-column gap-2">
                             <?php foreach ($paymentsSeries as $row): ?>
                                 <?php
-                                    $value = (int)($row['value'] ?? 0);
+                                    $value = (float)($row['value'] ?? 0);
                                     $percent = $maxPayments > 0 ? (int)round(($value / $maxPayments) * 100) : 0;
+                                    if ($percent === 0 && $value > 0) {
+                                        $percent = 1;
+                                    }
                                 ?>
                                 <div>
                                     <div class="d-flex justify-content-between small mb-1">
                                         <span class="text-muted"><?= View::e((string)($row['label'] ?? '')) ?></span>
-                                        <span><?= $formatNumber($value) ?></span>
+                                        <span><?= format_brl($value) ?></span>
                                     </div>
                                     <div class="progress" role="progressbar" aria-valuenow="<?= $percent ?>" aria-valuemin="0" aria-valuemax="100">
                                         <div class="progress-bar" style="width: <?= $percent ?>%;"></div>
@@ -261,6 +270,9 @@ foreach ($uploadsSeries as $row) {
                                 <?php
                                     $value = (int)($row['value'] ?? 0);
                                     $percent = $maxUploads > 0 ? (int)round(($value / $maxUploads) * 100) : 0;
+                                    if ($percent === 0 && $value > 0) {
+                                        $percent = 1;
+                                    }
                                 ?>
                                 <div>
                                     <div class="d-flex justify-content-between small mb-1">

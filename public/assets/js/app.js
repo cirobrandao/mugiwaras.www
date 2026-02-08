@@ -154,3 +154,32 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+	const storageKey = 'theme';
+	const toggle = document.querySelector('[data-theme-toggle]');
+	const icon = toggle ? toggle.querySelector('i') : null;
+	const body = document.body;
+	const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+	const stored = localStorage.getItem(storageKey);
+	const initialTheme = stored || (prefersDark ? 'dark' : 'light');
+
+	const applyTheme = (theme) => {
+		const isDark = theme === 'dark';
+		body.classList.toggle('theme-dark', isDark);
+		if (icon) {
+			icon.className = isDark ? 'bi bi-sun' : 'bi bi-moon-stars';
+		}
+		if (toggle) toggle.setAttribute('aria-pressed', String(isDark));
+	};
+
+	applyTheme(initialTheme);
+
+	if (toggle) {
+		toggle.addEventListener('click', () => {
+			const next = body.classList.contains('theme-dark') ? 'light' : 'dark';
+			localStorage.setItem(storageKey, next);
+			applyTheme(next);
+		});
+	}
+});
+
