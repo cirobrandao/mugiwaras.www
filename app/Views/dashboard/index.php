@@ -278,6 +278,11 @@ if (!function_exists('time_ago')) {
             <?php else: ?>
                 <ul class="list-group news-list">
                     <?php foreach ($news as $n): ?>
+                        <?php
+                        $bodyText = (string)($n['body'] ?? '');
+                        $bodyLines = preg_split("/\r\n|\n|\r/", $bodyText);
+                        $excerpt = trim((string)($bodyLines[0] ?? ''));
+                        ?>
                         <li class="list-group-item news-item">
                             <div class="news-row">
                                 <a class="fw-semibold" href="<?= base_path('/news/' . (int)$n['id']) ?>"><?= View::e($n['title']) ?></a>
@@ -286,7 +291,10 @@ if (!function_exists('time_ago')) {
                                 <?php endif; ?>
                             </div>
                             <div class="small text-muted mb-1"><?= View::e((string)($n['published_at'] ?? $n['created_at'])) ?> · <?= View::e((string)($n['author_name'] ?? $n['author'] ?? '')) ?></div>
-                            <div><?= nl2br(View::e((string)$n['body'])) ?></div>
+                            <div><?= View::e($excerpt) ?></div>
+                            <div class="d-flex justify-content-end mt-1">
+                                <a class="small text-muted text-decoration-none" href="<?= base_path('/news/' . (int)$n['id']) ?>">ler mais...</a>
+                            </div>
                         </li>
                     <?php endforeach; ?>
                 </ul>
