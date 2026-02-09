@@ -259,8 +259,8 @@ $page = min($page, $pages);
 						<form method="post" action="<?= base_path('/admin/users/unlock') ?>">
 							<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
 							<input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
-							<button class="btn btn-sm btn-outline-secondary px-2" type="submit" <?= $isSuper ? 'disabled' : '' ?> title="Desbloquear">
-								<i class="fa-solid fa-unlock"></i>
+							<button class="btn btn-sm btn-warning px-2 lock-toggle-btn" type="submit" <?= $isSuper ? 'disabled' : '' ?> title="Desbloquear">
+								<i class="fa-solid fa-lock"></i>
 								<span class="visually-hidden">Desbloquear</span>
 							</button>
 						</form>
@@ -269,8 +269,8 @@ $page = min($page, $pages);
 							<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
 							<input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
 							<input type="hidden" name="lock_until" value="2099-12-31 00:00:00">
-							<button class="btn btn-sm btn-outline-warning px-2" type="submit" <?= $isSuper ? 'disabled' : '' ?> title="Bloquear">
-								<i class="fa-solid fa-lock"></i>
+							<button class="btn btn-sm btn-outline-warning px-2 lock-toggle-btn" type="submit" <?= $isSuper ? 'disabled' : '' ?> title="Bloquear">
+								<i class="fa-solid fa-lock-open"></i>
 								<span class="visually-hidden">Bloquear</span>
 							</button>
 						</form>

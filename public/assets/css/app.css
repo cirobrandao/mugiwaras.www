@@ -342,6 +342,14 @@ body.theme-dark .badge.text-dark {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+.lock-toggle-btn {
+	width: 34px;
+	height: 34px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+}
 body.theme-dark .pagination .page-link {
 	background: #0f172a;
 	border-color: #1f2937;
