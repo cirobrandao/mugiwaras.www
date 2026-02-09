@@ -10,6 +10,7 @@ use App\Core\Audit;
 use App\Core\Auth;
 use App\Core\Request;
 use App\Core\Logger;
+use App\Core\Database;
 use App\Models\ContentItem;
 use App\Models\ContentEvent;
 use App\Models\Setting;
@@ -120,11 +121,21 @@ final class ReaderController extends Controller
         if ($requestedPage !== null && is_numeric($requestedPage)) {
             $lastPage = max(0, (int)$requestedPage);
         }
+        $pdfDownloadUrl = null;
+        $pdfContent = $this->findPdfVersion($content);
+        if ($pdfContent && !empty($pdfContent['id'])) {
+            $pdfToken = $this->downloadToken((int)$user['id'], (int)$pdfContent['id']);
+            if ($pdfToken !== '') {
+                $pdfDownloadUrl = base_path('/download/' . (int)$pdfContent['id'] . '?token=' . urlencode($pdfToken));
+            }
+        }
+
         echo $this->view('reader/open', [
             'content' => $content,
             'pages' => $pages,
             'error' => $pageError,
             'downloadToken' => $this->downloadToken((int)$user['id'], (int)$content['id']),
+            'pdfDownloadUrl' => $pdfDownloadUrl,
             'isFavorite' => !empty($favIds),
             'lastPage' => $lastPage,
             'nextChapterUrl' => $nextChapterUrl,
@@ -133,6 +144,19 @@ final class ReaderController extends Controller
             'cbzDirection' => $cbzDirection,
             'csrf' => Csrf::token(),
         ]);
+    }
+
+    private function findPdfVersion(array $content): ?array
+    {
+        $seriesId = (int)($content['series_id'] ?? 0);
+        $title = (string)($content['title'] ?? '');
+        if ($seriesId <= 0 || $title === '') {
+            return null;
+        }
+        $stmt = Database::connection()->prepare("SELECT * FROM content_items WHERE series_id = :s AND title = :t AND LOWER(cbz_path) LIKE '%.pdf' ORDER BY id DESC LIMIT 1");
+        $stmt->execute(['s' => $seriesId, 't' => $title]);
+        $row = $stmt->fetch();
+        return $row ?: null;
     }
 
     public function download(Request $request, string $id): void

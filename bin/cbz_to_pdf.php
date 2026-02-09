@@ -99,9 +99,10 @@ foreach ($items as $item) {
         if ($dryRun) {
             echo "  dry-run: {$pdfRelative}\n";
         } else {
-            $ok = convertCbzToPdf($abs, $pdfAbs, $magickOverride);
-            if (!$ok) {
-                echo "  failed: conversion error\n";
+            $result = convertCbzToPdf($abs, $pdfAbs, $magickOverride);
+            if (!$result['ok']) {
+                $reason = $result['error'] !== '' ? $result['error'] : 'conversion error';
+                echo "  failed: {$reason}\n";
                 continue;
             }
         }
@@ -216,30 +217,36 @@ function updateContentPath(int $id, string $hash, int $size, string $path, strin
     ]);
 }
 
-function convertCbzToPdf(string $cbzAbs, string $pdfAbs, string $magickOverride): bool
+function convertCbzToPdf(string $cbzAbs, string $pdfAbs, string $magickOverride): array
 {
+    if (!class_exists('ZipArchive')) {
+        return ['ok' => false, 'error' => 'php-zip missing'];
+    }
     $tmpDir = buildTempDir();
     if (!is_dir($tmpDir)) {
-        return false;
+        return ['ok' => false, 'error' => 'tmp dir not created'];
     }
     $images = extractCbzImages($cbzAbs, $tmpDir);
     if (!$images) {
         cleanupDir($tmpDir);
-        return false;
+        return ['ok' => false, 'error' => 'no images extracted'];
     }
 
     $ok = false;
+    $error = '';
     if (extension_loaded('imagick')) {
-        $ok = convertWithImagick($images, $pdfAbs);
+        [$ok, $error] = convertWithImagick($images, $pdfAbs);
     } else {
         $magickBin = resolveMagickBinary($magickOverride);
         if ($magickBin !== '') {
-            $ok = convertWithMagick($images, $pdfAbs, $magickBin);
+            [$ok, $error] = convertWithMagick($images, $pdfAbs, $magickBin);
+        } else {
+            $error = 'ImageMagick not found and imagick extension not loaded';
         }
     }
 
     cleanupDir($tmpDir);
-    return $ok;
+    return ['ok' => $ok, 'error' => $ok ? '' : ($error !== '' ? $error : 'conversion failed')];
 }
 
 function extractCbzImages(string $cbzAbs, string $tmpDir): array
@@ -294,7 +301,7 @@ function extractCbzImages(string $cbzAbs, string $tmpDir): array
     return $output;
 }
 
-function convertWithImagick(array $images, string $pdfAbs): bool
+function convertWithImagick(array $images, string $pdfAbs): array
 {
     try {
         $imagick = new Imagick();
@@ -306,13 +313,13 @@ function convertWithImagick(array $images, string $pdfAbs): bool
         $ok = $imagick->writeImages($pdfAbs, true);
         $imagick->clear();
         $imagick->destroy();
-        return $ok;
+        return ['ok' => (bool)$ok, 'error' => $ok ? '' : 'imagick failed to write pdf'];
     } catch (Throwable $e) {
-        return false;
+        return ['ok' => false, 'error' => 'imagick error: ' . $e->getMessage()];
     }
 }
 
-function convertWithMagick(array $images, string $pdfAbs, string $magickBin): bool
+function convertWithMagick(array $images, string $pdfAbs, string $magickBin): array
 {
     $listFile = dirname($pdfAbs) . '/.cbz_pdf_list_' . bin2hex(random_bytes(4)) . '.txt';
     $lines = [];
@@ -328,7 +335,13 @@ function convertWithMagick(array $images, string $pdfAbs, string $magickBin): bo
     exec($cmd . ' 2>&1', $output, $code);
     @unlink($listFile);
 
-    return $code === 0 && file_exists($pdfAbs);
+    if ($code !== 0) {
+        return ['ok' => false, 'error' => 'magick failed: ' . implode(' ', $output)];
+    }
+    if (!file_exists($pdfAbs)) {
+        return ['ok' => false, 'error' => 'magick ok but pdf not created'];
+    }
+    return ['ok' => true, 'error' => ''];
 }
 
 function resolveMagickBinary(string $override): string

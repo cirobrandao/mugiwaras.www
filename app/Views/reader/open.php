@@ -83,7 +83,11 @@ ob_start();
 							</button>
 							<ul class="dropdown-menu dropdown-menu-end">
 								<li><a class="dropdown-item" href="<?= base_path('/download/' . (int)$content['id'] . '?token=' . urlencode((string)$downloadToken)) ?>">*.cbz</a></li>
-								<li><span class="dropdown-item disabled">*.pdf (em breve)</span></li>
+								<?php if (!empty($pdfDownloadUrl)): ?>
+									<li><a class="dropdown-item" href="<?= $pdfDownloadUrl ?>">*.pdf</a></li>
+								<?php else: ?>
+									<li><span class="dropdown-item disabled">*.pdf (indisponível)</span></li>
+								<?php endif; ?>
 								<li><span class="dropdown-item disabled">*.zip (em breve)</span></li>
 							</ul>
 						</div>
