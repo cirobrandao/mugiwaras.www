@@ -385,3 +385,20 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+	const rows = document.querySelectorAll('[data-select-row]');
+	if (!rows.length) return;
+	rows.forEach((row) => {
+		row.addEventListener('click', (event) => {
+			const target = event.target;
+			if (target && target.closest('a, button, input, select, textarea, label')) {
+				return;
+			}
+			const checkbox = row.querySelector('.bulk-select-checkbox');
+			if (!checkbox) return;
+			checkbox.checked = !checkbox.checked;
+			checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+		});
+	});
+});
+

@@ -191,7 +191,7 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
             $fileName = (string)($u['original_name'] ?? '');
             $fileLabel = $shortFileName($fileName);
             ?>
-            <tr>
+            <tr data-select-row>
                 <td>
                     <input class="form-check-input bulk-select-checkbox" type="checkbox" name="ids[]" value="<?= (int)$u['id'] ?>" data-label="<?= View::e($fileLabel) ?>" aria-label="Selecionar upload" form="bulkDeleteForm">
                     <?php if (($u['status'] ?? '') === 'pending'): ?>
