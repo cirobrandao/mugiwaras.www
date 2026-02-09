@@ -167,6 +167,7 @@ $page = min($page, $pages);
 			<?php
 				$isLocked = !empty($u['lock_until']) && strtotime((string)$u['lock_until']) > time();
 				$isSuper = $u['role'] === 'superadmin';
+				$isTeam = ($u['role'] ?? '') === 'equipe' || !empty($u['support_agent']) || !empty($u['uploader_agent']) || !empty($u['moderator_agent']);
 				$currentRole = $currentUser['role'] ?? 'user';
 				$isSelf = !empty($currentUser) && (int)$currentUser['id'] === (int)$u['id'];
 				$canEdit = !$isSuper && \App\Core\Auth::isAdmin($currentUser);
@@ -242,16 +243,6 @@ $page = min($page, $pages);
 					<button class="btn btn-sm btn-outline-info px-2" type="button" data-bs-toggle="modal" data-bs-target="#loginHistoryModal<?= (int)$u['id'] ?>" title="Historico de login">
 						<i class="fa-solid fa-clock-rotate-left"></i>
 						<span class="visually-hidden">Historico de login</span>
-					</button>
-
-					<button class="btn btn-sm btn-outline-success px-2" type="button" data-bs-toggle="modal" data-bs-target="#assignPackageModal<?= (int)$u['id'] ?>" title="Definir pacote" <?= $isSuper ? 'disabled' : '' ?>>
-						<i class="fa-solid fa-box"></i>
-						<span class="visually-hidden">Definir pacote</span>
-					</button>
-
-					<button class="btn btn-sm btn-outline-primary px-2" type="button" <?= $isSuper ? 'disabled' : '' ?> title="Trocar senha" data-bs-toggle="modal" data-bs-target="#resetUserModal<?= (int)$u['id'] ?>">
-						<i class="fa-solid fa-key"></i>
-						<span class="visually-hidden">Trocar senha</span>
 					</button>
 
 					<form method="post" action="<?= base_path('/admin/users/restrict') ?>" onsubmit="return confirm('Remover acesso deste usuário?');">
@@ -342,6 +333,27 @@ $page = min($page, $pages);
 										</select>
 									</div>
 								</div>
+								<?php if (!$isSuper): ?>
+									<hr class="my-3">
+									<div class="d-flex flex-wrap gap-2">
+										<button class="btn btn-sm btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#assignPackageModal<?= (int)$u['id'] ?>">
+											<i class="fa-solid fa-box"></i>
+											<span class="ms-1">Definir pacote</span>
+										</button>
+										<form method="post" action="<?= base_path('/admin/users/team-toggle') ?>" onsubmit="return confirm('Alterar equipe deste usuario?');">
+											<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+											<input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+											<button class="btn btn-sm <?= $isTeam ? 'btn-outline-secondary' : 'btn-outline-warning' ?>" type="submit">
+												<i class="fa-solid fa-people-group"></i>
+												<span class="ms-1"><?= $isTeam ? 'Remover equipe' : 'Tornar equipe' ?></span>
+											</button>
+										</form>
+										<button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#resetUserModal<?= (int)$u['id'] ?>">
+											<i class="fa-solid fa-key"></i>
+											<span class="ms-1">Trocar senha</span>
+										</button>
+									</div>
+								<?php endif; ?>
 							</div>
 							<div class="modal-footer">
 								<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>

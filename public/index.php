@@ -137,6 +137,7 @@ $router->post('/admin/team/update', [new App\Controllers\Admin\UsersController()
 $router->post('/admin/users/lock', [new App\Controllers\Admin\UsersController(), 'lock'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/users/unlock', [new App\Controllers\Admin\UsersController(), 'unlock'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/users/reset', [new App\Controllers\Admin\UsersController(), 'reset'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/users/team-toggle', [new App\Controllers\Admin\UsersController(), 'teamToggle'], [App\Core\Auth::requireAdmin()]);
 $router->get('/admin/packages', [new App\Controllers\Admin\PackagesController(), 'index'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/packages/create', [new App\Controllers\Admin\PackagesController(), 'create'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/packages/update', [new App\Controllers\Admin\PackagesController(), 'update'], [App\Core\Auth::requireAdmin()]);

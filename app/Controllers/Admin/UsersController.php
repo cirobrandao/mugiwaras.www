@@ -208,6 +208,37 @@ final class UsersController extends Controller
         Response::redirect(base_path('/admin/users'));
     }
 
+    public function teamToggle(Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/admin/users'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        if ($id <= 0) {
+            Response::redirect(base_path('/admin/users'));
+        }
+        $target = User::findById($id);
+        if (!$target) {
+            Response::redirect(base_path('/admin/users'));
+        }
+        if (in_array((string)($target['role'] ?? ''), ['superadmin', 'admin'], true)) {
+            Response::redirect(base_path('/admin/users'));
+        }
+        $isTeam = (string)($target['role'] ?? '') === 'equipe'
+            || !empty($target['support_agent'])
+            || !empty($target['uploader_agent'])
+            || !empty($target['moderator_agent']);
+
+        if ($isTeam) {
+            User::updateRoleFlags($id, 'user', 0, 0, 0);
+            Audit::log('team_remove', (int)$id, ['by' => (int)($request->session['user_id'] ?? 0)]);
+        } else {
+            User::updateRoleFlags($id, 'equipe', 0, 0, 0);
+            Audit::log('team_add', (int)$id, ['by' => (int)($request->session['user_id'] ?? 0)]);
+        }
+        Response::redirect(base_path('/admin/users'));
+    }
+
     public function reset(Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {

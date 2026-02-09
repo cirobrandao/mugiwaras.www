@@ -8,6 +8,9 @@ final class Response
 {
     public static function abort404(?string $message = null): void
     {
+        if (!Auth::user()) {
+            self::redirect(base_path('/'));
+        }
         http_response_code(404);
         echo View::render('errors/404', ['message' => $message]);
         exit;
