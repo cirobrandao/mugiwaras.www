@@ -42,6 +42,30 @@ Processamento de jobs:
 php bin/worker.php
 ```
 
+## Conversao CBZ -> PDF
+Script para gerar PDF a partir de CBZ mantendo ambos no servidor e registrando o PDF no banco:
+```
+php bin/cbz_to_pdf.php
+```
+Opcoes:
+```
+php bin/cbz_to_pdf.php --series=123
+php bin/cbz_to_pdf.php --content=456
+php bin/cbz_to_pdf.php --limit=50
+php bin/cbz_to_pdf.php --dry-run
+php bin/cbz_to_pdf.php --force
+php bin/cbz_to_pdf.php --magick=/usr/bin/magick
+```
+Dependencias no Ubuntu:
+- PHP CLI 8.3 com extensoes: zip
+- ImageMagick (binario `magick`) ou extensao `php-imagick`
+Exemplo de instalacao (Ubuntu):
+```
+sudo apt-get update
+sudo apt-get install -y imagemagick
+sudo apt-get install -y php8.3-cli php8.3-zip php8.3-imagick
+```
+
 ## Estrutura
 - public/: front controller e assets
 - app/: Core, Controllers, Models, Views
