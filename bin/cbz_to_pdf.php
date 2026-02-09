@@ -234,15 +234,13 @@ function convertCbzToPdf(string $cbzAbs, string $pdfAbs, string $magickOverride)
 
     $ok = false;
     $error = '';
-    if (extension_loaded('imagick')) {
+    $magickBin = resolveMagickBinary($magickOverride);
+    if ($magickBin !== '') {
+        [$ok, $error] = convertWithMagick($images, $pdfAbs, $magickBin);
+    } elseif (extension_loaded('imagick')) {
         [$ok, $error] = convertWithImagick($images, $pdfAbs);
     } else {
-        $magickBin = resolveMagickBinary($magickOverride);
-        if ($magickBin !== '') {
-            [$ok, $error] = convertWithMagick($images, $pdfAbs, $magickBin);
-        } else {
-            $error = 'ImageMagick not found and imagick extension not loaded';
-        }
+        $error = 'ImageMagick not found and imagick extension not loaded';
     }
 
     cleanupDir($tmpDir);
