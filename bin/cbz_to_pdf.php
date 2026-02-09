@@ -313,9 +313,9 @@ function convertWithImagick(array $images, string $pdfAbs): array
         $ok = $imagick->writeImages($pdfAbs, true);
         $imagick->clear();
         $imagick->destroy();
-        return ['ok' => (bool)$ok, 'error' => $ok ? '' : 'imagick failed to write pdf'];
+        return [(bool)$ok, $ok ? '' : 'imagick failed to write pdf'];
     } catch (Throwable $e) {
-        return ['ok' => false, 'error' => 'imagick error: ' . $e->getMessage()];
+        return [false, 'imagick error: ' . $e->getMessage()];
     }
 }
 
@@ -336,12 +336,12 @@ function convertWithMagick(array $images, string $pdfAbs, string $magickBin): ar
     @unlink($listFile);
 
     if ($code !== 0) {
-        return ['ok' => false, 'error' => 'magick failed: ' . implode(' ', $output)];
+        return [false, 'magick failed: ' . implode(' ', $output)];
     }
     if (!file_exists($pdfAbs)) {
-        return ['ok' => false, 'error' => 'magick ok but pdf not created'];
+        return [false, 'magick ok but pdf not created'];
     }
-    return ['ok' => true, 'error' => ''];
+    return [true, ''];
 }
 
 function resolveMagickBinary(string $override): string
