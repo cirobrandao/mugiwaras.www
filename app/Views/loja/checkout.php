@@ -49,7 +49,7 @@ ob_start();
                 <h2 class="h6">Pagamento via PIX</h2>
                 <?php if (!empty($pixKey) || !empty($pixName) || !empty($pixHolder) || !empty($pixBank) || !empty($pixCpf)): ?>
                     <div class="alert alert-info mb-0">
-                        <div class="fw-semibold mb-2">Dados para transferencia</div>
+                        <div class="fw-semibold mb-2">Dados para transferência</div>
                         <?php if (!empty($pixName) || !empty($pixHolder)): ?>
                             <div><strong>Recebedor:</strong> <?= View::e($pixName !== '' ? $pixName : $pixHolder) ?></div>
                         <?php endif; ?>
@@ -80,6 +80,31 @@ ob_start();
 <div class="card shadow-sm loja-card">
     <div class="card-body">
         <h2 class="h6">Enviar comprovante</h2>
+        <?php if (!empty($error)): ?>
+            <div class="alert alert-danger small">
+                <?php if ($error === 'proof'): ?>
+                    Envio do comprovante é obrigatório.
+                <?php elseif ($error === 'ini_size' || $error === 'form_size'): ?>
+                    O arquivo enviado excede o limite permitido pelo servidor.
+                <?php elseif ($error === 'partial'): ?>
+                    O upload foi interrompido. Tente novamente.
+                <?php elseif ($error === 'tmp'): ?>
+                    Pasta temporária ausente no servidor. Contate o suporte.
+                <?php elseif ($error === 'write' || $error === 'perm'): ?>
+                    Não foi possível salvar o comprovante no servidor.
+                <?php elseif ($error === 'ext'): ?>
+                    Extensão bloqueada pelo servidor.
+                <?php elseif ($error === 'move'): ?>
+                    Não foi possível salvar o comprovante. Tente novamente.
+                <?php elseif ($error === 'size'): ?>
+                    O arquivo ultrapassa 4MB.
+                <?php elseif ($error === 'type'): ?>
+                    Formato inválido. Envie JPG, PNG ou PDF.
+                <?php else: ?>
+                    Não foi possível enviar o comprovante.
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
         <div class="form-text mb-3">Formatos aceitos: JPG, PNG ou PDF. Tamanho máximo: 4MB.</div>
         <form method="post" action="<?= base_path('/loja/request') ?>" enctype="multipart/form-data" id="proofForm">
             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">

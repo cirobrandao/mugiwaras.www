@@ -26,6 +26,7 @@ final class Payment
         return $stmt->fetchAll();
     }
 
+
     public static function byUsers(array $userIds): array
     {
         $clean = array_values(array_unique(array_filter(array_map('intval', $userIds), static fn ($v) => $v > 0)));
@@ -51,6 +52,7 @@ final class Payment
         $stmt->execute();
         return $stmt->fetchAll();
     }
+
 
     public static function byUserAll(int $userId): array
     {
@@ -96,6 +98,12 @@ final class Payment
     {
         $stmt = Database::connection()->prepare('UPDATE payments SET proof_path = :p, updated_at = NOW() WHERE id = :id');
         $stmt->execute(['p' => $path, 'id' => $id]);
+    }
+
+    public static function delete(int $id): void
+    {
+        $stmt = Database::connection()->prepare('DELETE FROM payments WHERE id = :id');
+        $stmt->execute(['id' => $id]);
     }
 
     public static function countByPackageIds(array $packageIds): array

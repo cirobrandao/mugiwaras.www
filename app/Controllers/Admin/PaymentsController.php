@@ -83,7 +83,9 @@ final class PaymentsController extends Controller
         }
         $id = (int)($request->post['id'] ?? 0);
         $payment = Payment::find($id);
-        if (!$payment || $payment['status'] !== 'approved' || !empty($payment['revoked_at'])) {
+        $revokedAt = (string)($payment['revoked_at'] ?? '');
+        $isRevoked = $revokedAt !== '' && $revokedAt !== '0000-00-00 00:00:00' && $revokedAt !== '0000-00-00';
+        if (!$payment || $payment['status'] !== 'approved' || $isRevoked) {
             Response::redirect(base_path('/admin/payments'));
         }
 
@@ -124,7 +126,9 @@ final class PaymentsController extends Controller
         }
         $id = (int)($request->post['id'] ?? 0);
         $payment = Payment::find($id);
-        if (!$payment || $payment['status'] !== 'revoked') {
+        $revokedAt = (string)($payment['revoked_at'] ?? '');
+        $isRevoked = $revokedAt !== '' && $revokedAt !== '0000-00-00 00:00:00' && $revokedAt !== '0000-00-00';
+        if (!$payment || $payment['status'] !== 'revoked' || !$isRevoked) {
             Response::redirect(base_path('/admin/payments'));
         }
 
@@ -167,90 +171,103 @@ final class PaymentsController extends Controller
         $payment = Payment::find((int)$id);
         if (!$payment) {
             http_response_code(404);
-            echo 'Comprovante não encontrado.';
+            echo 'Comprovante nÃ£o encontrado.';
             return;
         }
 
-        if (empty($payment['proof_path'])) {
-            $configPath = trim((string)config('storage.path', 'storage/uploads'), '/');
-            $projectRoot = dirname(__DIR__, 3);
-            $paths = [$configPath];
-            if (!str_contains($configPath, 'uploads')) {
-                $paths[] = rtrim($configPath, '/') . '/uploads';
-            }
-            $paymentsDirs = [];
-            foreach (array_unique($paths) as $path) {
-                $paymentsDirs[] = $projectRoot . '/' . $path . '/payments';
-                $paymentsDirs[] = $projectRoot . '/app/' . $path . '/payments';
-                $paymentsDirs[] = dirname(__DIR__, 2) . '/' . $path . '/payments';
-            }
-            $paymentsDirs[] = $projectRoot . '/storage/uploads/payments';
-            $paymentsDirs[] = $projectRoot . '/storage/payments';
-            $paymentsDirs[] = $projectRoot . '/uploads/payments';
-            $paymentsDirs[] = $projectRoot . '/app/storage/uploads/payments';
-            $paymentsDirs[] = $projectRoot . '/app/storage/payments';
-            $found = null;
-            foreach ($paymentsDirs as $dir) {
-                if (!is_dir($dir)) {
-                    continue;
-                }
-                $matches = glob(rtrim($dir, '/') . '/payment_' . (int)$id . '_*');
-                if (!empty($matches)) {
-                    $found = $matches[0];
-                    break;
+        $proofPath = (string)($payment['proof_path'] ?? '');
+        $projectRoot = dirname(__DIR__, 3);
+        $projectReal = realpath($projectRoot);
+        $configRaw = str_replace('\\', '/', (string)config('storage.path', 'storage/uploads'));
+        $configIsAbsolute = $this->isAbsolutePath($configRaw);
+        $configPath = $configIsAbsolute ? rtrim($configRaw, '/') : trim($configRaw, '/');
+        $configReal = $configIsAbsolute ? realpath($configPath) : realpath($projectRoot . '/' . $configPath);
+
+        $real = null;
+        if ($proofPath !== '' && $this->isAbsolutePath($proofPath)) {
+            $absolute = realpath($proofPath);
+            if ($absolute) {
+                $allowProject = $projectReal && str_starts_with($absolute, $projectReal);
+                $allowStorage = $configReal && str_starts_with($absolute, $configReal);
+                if ($allowProject || $allowStorage) {
+                    $real = $absolute;
                 }
             }
+        }
+
+        if (!$real && empty($payment['proof_path'])) {
+            $found = $this->findProofById((int)$id, $configPath, $configIsAbsolute, $projectRoot);
             if ($found) {
                 Payment::attachProof((int)$id, 'payments/' . basename($found));
                 $payment = Payment::find((int)$id) ?? $payment;
             } else {
                 http_response_code(404);
-                echo 'Comprovante não encontrado.';
+                echo 'Comprovante nÃ£o encontrado.';
                 return;
             }
         }
-        $clean = str_replace(['..', '\\'], ['', '/'], (string)$payment['proof_path']);
-        $configPath = trim((string)config('storage.path', 'storage/uploads'), '/');
-        $projectRoot = dirname(__DIR__, 3);
-        $projectReal = realpath($projectRoot);
-        $candidates = [];
-        $cleanTrim = ltrim($clean, '/');
-        $altTrim = $cleanTrim;
 
-        if (str_starts_with($altTrim, 'storage/')) {
-            $altTrim = substr($altTrim, strlen('storage/'));
-        }
-        if (str_starts_with($altTrim, 'uploads/')) {
-            $altTrim = substr($altTrim, strlen('uploads/'));
-        }
+        if (!$real) {
+            $clean = str_replace(['..', '\\'], ['', '/'], (string)($payment['proof_path'] ?? ''));
+            $candidates = [];
+            $cleanTrim = ltrim($clean, '/');
+            $altTrim = $cleanTrim;
 
-        $relatives = array_unique(array_filter([
-            $cleanTrim,
-            $altTrim,
-            $altTrim !== '' && !str_starts_with($altTrim, 'payments/') ? 'payments/' . $altTrim : null,
-        ]));
+            if (str_starts_with($altTrim, 'storage/')) {
+                $altTrim = substr($altTrim, strlen('storage/'));
+            }
+            if (str_starts_with($altTrim, 'uploads/')) {
+                $altTrim = substr($altTrim, strlen('uploads/'));
+            }
 
-        foreach ($relatives as $rel) {
-            $candidates[] = $projectRoot . '/' . $configPath . '/' . $rel;
-            $candidates[] = $projectRoot . '/app/' . $configPath . '/' . $rel;
-            $candidates[] = dirname(__DIR__, 2) . '/' . $configPath . '/' . $rel;
-            if (str_starts_with($rel, 'storage/') || str_starts_with($rel, 'uploads/')) {
-                $candidates[] = $projectRoot . '/' . $rel;
-                $candidates[] = $projectRoot . '/app/' . $rel;
+            $relatives = array_unique(array_filter([
+                $cleanTrim,
+                $altTrim,
+                $altTrim !== '' && !str_starts_with($altTrim, 'payments/') ? 'payments/' . $altTrim : null,
+            ]));
+
+            foreach ($relatives as $rel) {
+                if ($configIsAbsolute) {
+                    $candidates[] = $configPath . '/' . $rel;
+                    if (!str_contains($configPath, 'uploads')) {
+                        $candidates[] = rtrim($configPath, '/') . '/uploads/' . $rel;
+                    }
+                } else {
+                    $candidates[] = $projectRoot . '/' . $configPath . '/' . $rel;
+                    $candidates[] = $projectRoot . '/app/' . $configPath . '/' . $rel;
+                    $candidates[] = dirname(__DIR__, 2) . '/' . $configPath . '/' . $rel;
+                    if (str_starts_with($rel, 'storage/') || str_starts_with($rel, 'uploads/')) {
+                        $candidates[] = $projectRoot . '/' . $rel;
+                        $candidates[] = $projectRoot . '/app/' . $rel;
+                    }
+                }
+            }
+
+            foreach ($candidates as $full) {
+                $candidate = realpath($full);
+                if (!$candidate) {
+                    continue;
+                }
+                $allowProject = $projectReal && str_starts_with($candidate, $projectReal);
+                $allowStorage = $configReal && str_starts_with($candidate, $configReal);
+                if ($allowProject || $allowStorage) {
+                    $real = $candidate;
+                    break;
+                }
+            }
+
+            if (!$real) {
+                $found = $this->findProofById((int)$id, $configPath, $configIsAbsolute, $projectRoot);
+                if ($found) {
+                    Payment::attachProof((int)$id, 'payments/' . basename($found));
+                    $real = realpath($found) ?: null;
+                }
             }
         }
 
-        $real = null;
-        foreach ($candidates as $full) {
-            $candidate = realpath($full);
-            if ($candidate && $projectReal && str_starts_with($candidate, $projectReal)) {
-                $real = $candidate;
-                break;
-            }
-        }
         if (!$real) {
             http_response_code(404);
-            echo 'Comprovante não encontrado.';
+            echo 'Comprovante nÃ£o encontrado.';
             return;
         }
 
@@ -263,5 +280,49 @@ final class PaymentsController extends Controller
         header('Content-Type: ' . $mime);
         header('Content-Disposition: inline; filename="' . basename($real) . '"');
         readfile($real);
+    }
+
+    private function isAbsolutePath(string $path): bool
+    {
+        if ($path === '') {
+            return false;
+        }
+        if (str_starts_with($path, '/')) {
+            return true;
+        }
+        return (bool)preg_match('/^[A-Za-z]:[\\/\\\\]/', $path);
+    }
+
+    private function findProofById(int $id, string $configPath, bool $configIsAbsolute, string $projectRoot): ?string
+    {
+        $paths = [$configPath];
+        if (!str_contains($configPath, 'uploads')) {
+            $paths[] = rtrim($configPath, '/') . '/uploads';
+        }
+        $paymentsDirs = [];
+        foreach (array_unique($paths) as $path) {
+            if ($configIsAbsolute) {
+                $paymentsDirs[] = rtrim($path, '/') . '/payments';
+                continue;
+            }
+            $paymentsDirs[] = $projectRoot . '/' . $path . '/payments';
+            $paymentsDirs[] = $projectRoot . '/app/' . $path . '/payments';
+            $paymentsDirs[] = dirname(__DIR__, 2) . '/' . $path . '/payments';
+        }
+        $paymentsDirs[] = $projectRoot . '/storage/uploads/payments';
+        $paymentsDirs[] = $projectRoot . '/storage/payments';
+        $paymentsDirs[] = $projectRoot . '/uploads/payments';
+        $paymentsDirs[] = $projectRoot . '/app/storage/uploads/payments';
+        $paymentsDirs[] = $projectRoot . '/app/storage/payments';
+        foreach ($paymentsDirs as $dir) {
+            if (!is_dir($dir)) {
+                continue;
+            }
+            $matches = glob(rtrim($dir, '/') . '/payment_' . $id . '_*');
+            if (!empty($matches)) {
+                return $matches[0];
+            }
+        }
+        return null;
     }
 }

@@ -88,6 +88,7 @@ $router->post('/loja/voucher', [new App\Controllers\PaymentController(), 'redeem
 $router->get('/loja/history', [new App\Controllers\PaymentController(), 'history']);
 $router->post('/loja/proof', [new App\Controllers\PaymentController(), 'uploadProof']);
 
+
 $router->get('/libraries', [new App\Controllers\LibraryController(), 'index'], [App\Core\Middleware::requireActiveAccess()]);
 $router->get('/libraries/search', [new App\Controllers\LibraryController(), 'search'], [App\Core\Middleware::requireActiveAccess()]);
 $router->get('/libraries/{category}', [new App\Controllers\LibraryController(), 'category'], [App\Core\Middleware::requireActiveAccess()]);
@@ -148,6 +149,7 @@ $router->post('/admin/payments/approve', [new App\Controllers\Admin\PaymentsCont
 $router->post('/admin/payments/reject', [new App\Controllers\Admin\PaymentsController(), 'reject'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/payments/revoke', [new App\Controllers\Admin\PaymentsController(), 'revoke'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/payments/revoke-cancel', [new App\Controllers\Admin\PaymentsController(), 'cancelRevocation'], [App\Core\Auth::requireAdmin()]);
+
 $router->get('/admin/support', [new App\Controllers\Admin\SupportController(), 'index'], [App\Core\Auth::requireSupportStaff()]);
 $router->get('/admin/support/{id}', [new App\Controllers\Admin\SupportController(), 'show'], [App\Core\Auth::requireSupportStaff()]);
 $router->get('/admin/uploads', [new App\Controllers\Admin\UploadsController(), 'index'], [App\Core\Auth::requireTeamAccess()]);

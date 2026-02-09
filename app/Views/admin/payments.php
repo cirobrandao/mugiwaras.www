@@ -1,7 +1,6 @@
 <?php
 use App\Core\View;
 ob_start();
-
 $statusMap = [
 	'pending' => ['label' => 'Pendente', 'class' => 'bg-warning text-dark'],
 	'approved' => ['label' => 'Aprovado', 'class' => 'bg-success'],
@@ -35,6 +34,13 @@ $formatAccountAge = static function (?string $dt): string {
 		return '-';
 	}
 };
+$isZeroDate = static function (?string $dt): bool {
+	if (!$dt) {
+		return true;
+	}
+	$clean = trim($dt);
+	return $clean === '0000-00-00 00:00:00' || $clean === '0000-00-00';
+};
 ?>
 <h1 class="h4 mb-3">Pagamentos</h1>
 <hr class="text-success" />
@@ -55,7 +61,7 @@ $formatAccountAge = static function (?string $dt): string {
 		<?php foreach (($payments ?? []) as $p): ?>
 			<?php
 			$st = (string)($p['status'] ?? '');
-			$isRefunded = !empty($p['revoked_at']);
+			$isRefunded = !empty($p['revoked_at']) && !$isZeroDate((string)$p['revoked_at']);
 			if ($isRefunded && $st !== 'revoked') {
 				$st = 'revoked';
 			}
@@ -82,7 +88,11 @@ $formatAccountAge = static function (?string $dt): string {
 					</span>
 				</td>
 				<td>
-					<button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#proofModal<?= (int)$p['id'] ?>">Ver</button>
+					<?php if ($proofPath !== ''): ?>
+						<button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#proofModal<?= (int)$p['id'] ?>">Ver</button>
+					<?php else: ?>
+						<span class="text-muted">-</span>
+					<?php endif; ?>
 				</td>
 				<td><?= View::e((string)$p['created_at']) ?></td>
 				<td class="text-end">
@@ -129,46 +139,46 @@ $formatAccountAge = static function (?string $dt): string {
 				</td>
 			</tr>
 			<?php
-			ob_start();
-			?>
-			<div class="modal fade" id="proofModal<?= (int)$p['id'] ?>" tabindex="-1" aria-hidden="true">
-				<div class="modal-dialog modal-xl modal-dialog-centered">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title">Comprovante</h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-						</div>
-						<div class="modal-body">
-							<div class="text-muted small mb-2">Usuario: <?= View::e((string)($p['user_name'] ?? ('#' . (int)$p['user_id']))) ?></div>
-							<div class="mb-2">
-								<a class="small" href="<?= View::e($proofUrl) ?>" target="_blank" rel="noopener">Abrir comprovante em nova aba</a>
+			if ($proofPath !== '') {
+				ob_start();
+				?>
+				<div class="modal fade" id="proofModal<?= (int)$p['id'] ?>" tabindex="-1" aria-hidden="true">
+					<div class="modal-dialog modal-xl modal-dialog-centered">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title">Comprovante</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
 							</div>
-							<?php if ($proofExt === 'pdf' || $proofExt === ''): ?>
-								<div class="border rounded" style="height:70vh;">
-									<iframe src="<?= View::e($proofUrl) ?>" title="Comprovante" style="border:0;width:100%;height:100%;" allowfullscreen></iframe>
+							<div class="modal-body">
+							<div class="text-muted small mb-2">Usuário: <?= View::e((string)($p['user_name'] ?? ('#' . (int)$p['user_id']))) ?></div>
+								<div class="mb-2">
+									<a class="small" href="<?= View::e($proofUrl) ?>" target="_blank" rel="noopener">Abrir comprovante em nova aba</a>
 								</div>
-							<?php else: ?>
-								<div class="text-center">
-									<img src="<?= View::e($proofUrl) ?>" alt="Comprovante" class="img-fluid" style="max-height:70vh;" />
-								</div>
-							<?php endif; ?>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+								<?php if ($proofExt === 'pdf' || $proofExt === ''): ?>
+									<div class="border rounded" style="height:70vh;">
+										<iframe src="<?= View::e($proofUrl) ?>" title="Comprovante" style="border:0;width:100%;height:100%;" allowfullscreen></iframe>
+									</div>
+								<?php else: ?>
+									<div class="text-center">
+										<img src="<?= View::e($proofUrl) ?>" alt="Comprovante" class="img-fluid" style="max-height:70vh;" />
+									</div>
+								<?php endif; ?>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<?php
-			$proofModals[] = ob_get_clean();
-			?>
-		<?php endforeach; ?>
+				<?php
+				$proofModals[] = ob_get_clean();
+			}
+		endforeach;
+		?>
 		</tbody>
 	</table>
 </div>
-
 <?= implode('', $proofModals) ?>
-
 <?php
 $renderedUsers = [];
 foreach (($payments ?? []) as $p):
@@ -211,7 +221,7 @@ foreach (($payments ?? []) as $p):
 						<div class="small text-muted">Acesso</div>
 						<div><strong>Tier:</strong> <?= View::e($userTier) ?></div>
 						<div><strong>Assinatura:</strong> <?= View::e($userSub !== '' ? $userSub : '-') ?></div>
-						<div><strong>Creditos:</strong> <?= View::e($userCredits) ?></div>
+							<div><strong>Créditos:</strong> <?= View::e($userCredits) ?></div>
 					</div>
 				</div>
 				<div class="mb-2"><strong>Historico de compras</strong></div>
@@ -260,8 +270,6 @@ foreach (($payments ?? []) as $p):
 	</div>
 </div>
 <?php endforeach; ?>
-
-
 <div class="modal fade" id="revokeModal" tabindex="-1" aria-hidden="true">
 	<div class="modal-dialog modal-lg modal-dialog-centered">
 		<div class="modal-content">
@@ -274,17 +282,17 @@ foreach (($payments ?? []) as $p):
 					<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
 					<input type="hidden" name="id" id="revokeId" value="">
 					<div class="alert alert-warning small mb-3">
-						<strong>Atencao:</strong> este estorno desfaz a compra, removendo creditos e revertendo a assinatura deste pagamento.
+							<strong>Atenção:</strong> este estorno desfaz a compra, removendo créditos e revertendo a assinatura deste pagamento.
 					</div>
 					<ul class="list-unstyled small mb-0">
-						<li><strong>Usuario:</strong> <span id="revokeUser"></span></li>
+							<li><strong>Usuário:</strong> <span id="revokeUser"></span></li>
 						<li><strong>Pacote:</strong> <span id="revokePackage"></span></li>
 						<li><strong>Meses:</strong> <span id="revokeMonths"></span></li>
 						<li><strong>Status atual:</strong> <span id="revokeStatus"></span></li>
 						<li><strong>Criado em:</strong> <span id="revokeCreated"></span></li>
 						<li><strong>Tier atual:</strong> <span id="revokeTier"></span></li>
 						<li><strong>Assinatura atual:</strong> <span id="revokeSubscription"></span></li>
-						<li><strong>Creditos atuais:</strong> <span id="revokeCredits"></span></li>
+							<li><strong>Créditos atuais:</strong> <span id="revokeCredits"></span></li>
 						<li><strong>Comprovante:</strong> <span id="revokeProof"></span></li>
 					</ul>
 				</div>
@@ -296,7 +304,6 @@ foreach (($payments ?? []) as $p):
 		</div>
 	</div>
 </div>
-
 <div class="modal fade" id="revokeCancelModal" tabindex="-1" aria-hidden="true">
 	<div class="modal-dialog modal-lg modal-dialog-centered">
 		<div class="modal-content">
@@ -309,17 +316,17 @@ foreach (($payments ?? []) as $p):
 					<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
 					<input type="hidden" name="id" id="revokeCancelId" value="">
 					<div class="alert alert-info small mb-3">
-						<strong>Confirmacao:</strong> esta acao desfaz o estorno e restaura os dados anteriores da compra.
+							<strong>Confirmação:</strong> esta ação desfaz o estorno e restaura os dados anteriores da compra.
 					</div>
 					<ul class="list-unstyled small mb-0">
-						<li><strong>Usuario:</strong> <span id="revokeCancelUser"></span></li>
+							<li><strong>Usuário:</strong> <span id="revokeCancelUser"></span></li>
 						<li><strong>Pacote:</strong> <span id="revokeCancelPackage"></span></li>
 						<li><strong>Meses:</strong> <span id="revokeCancelMonths"></span></li>
 						<li><strong>Status atual:</strong> <span id="revokeCancelStatus"></span></li>
 						<li><strong>Criado em:</strong> <span id="revokeCancelCreated"></span></li>
 						<li><strong>Tier atual:</strong> <span id="revokeCancelTier"></span></li>
 						<li><strong>Assinatura atual:</strong> <span id="revokeCancelSubscription"></span></li>
-						<li><strong>Creditos atuais:</strong> <span id="revokeCancelCredits"></span></li>
+							<li><strong>Créditos atuais:</strong> <span id="revokeCancelCredits"></span></li>
 						<li><strong>Comprovante:</strong> <span id="revokeCancelProof"></span></li>
 					</ul>
 				</div>
@@ -331,7 +338,6 @@ foreach (($payments ?? []) as $p):
 		</div>
 	</div>
 </div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 	var proofModal = document.getElementById('proofModal');
@@ -350,8 +356,9 @@ document.addEventListener('DOMContentLoaded', function () {
 			var image = document.getElementById('proofImage');
 			var userEl = document.getElementById('proofUser');
 			var openLink = document.getElementById('proofOpenLink');
-			if (userEl) {
-				userEl.textContent = user !== '' ? ('Usuario: ' + user) : '';
+				if (userEl) {
+					userEl.textContent = user !== '' ? ('Usuário: ' + user) : '';
+				}
 			}
 			if (openLink) {
 				openLink.href = url || '#';
@@ -371,7 +378,6 @@ document.addEventListener('DOMContentLoaded', function () {
 				if (frame) { frame.src = ''; }
 			}
 		});
-
 		proofModal.addEventListener('hidden.bs.modal', function () {
 			var frame = document.getElementById('proofFrame');
 			var image = document.getElementById('proofImage');
@@ -385,7 +391,6 @@ document.addEventListener('DOMContentLoaded', function () {
 				openLink.style.opacity = '0.5';
 			}
 		});
-
 		var openLink = document.getElementById('proofOpenLink');
 		if (openLink) {
 			openLink.addEventListener('click', function (event) {
@@ -398,11 +403,13 @@ document.addEventListener('DOMContentLoaded', function () {
 			});
 		}
 	}
-
 	var revokeModal = document.getElementById('revokeModal');
 	if (revokeModal) {
 		revokeModal.addEventListener('show.bs.modal', function (event) {
-			var button = event.relatedTarget || document.activeElement;
+			var button = event.relatedTarget || event.target;
+			if (button && button.closest) {
+				button = button.closest('button[data-revoke-id]');
+			}
 			if (!button) {
 				return;
 			}
@@ -426,11 +433,13 @@ document.addEventListener('DOMContentLoaded', function () {
 			setText('revokeProof', button.getAttribute('data-revoke-proof') || '-');
 		});
 	}
-
 	var revokeCancelModal = document.getElementById('revokeCancelModal');
 	if (revokeCancelModal) {
 		revokeCancelModal.addEventListener('show.bs.modal', function (event) {
-			var button = event.relatedTarget || document.activeElement;
+			var button = event.relatedTarget || event.target;
+			if (button && button.closest) {
+				button = button.closest('button[data-revoke-id]');
+			}
 			if (!button) {
 				return;
 			}

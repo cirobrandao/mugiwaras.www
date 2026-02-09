@@ -14,9 +14,7 @@ use App\Models\Package;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\Category;
-use App\Models\Voucher;
 use App\Models\User;
-use App\Core\Database;
 
 final class PaymentController extends Controller
 {
@@ -98,6 +96,7 @@ final class PaymentController extends Controller
         $pixBank = (string)env('PIX_BANK', '');
         $pixHolder = (string)env('PIX_HOLDER', '');
         $pixCpf = (string)env('PIX_CPF', '');
+        $error = (string)($_GET['error'] ?? '');
         echo $this->view('loja/checkout', [
             'package' => $package,
             'months' => $months,
@@ -112,6 +111,7 @@ final class PaymentController extends Controller
             'pixBank' => $pixBank,
             'pixHolder' => $pixHolder,
             'pixCpf' => $pixCpf,
+            'error' => $error,
         ]);
     }
 
@@ -124,6 +124,21 @@ final class PaymentController extends Controller
         if (!$user) {
             Response::redirect(base_path('/'));
         }
+        $file = $request->files['proof'] ?? null;
+        $uploadError = is_array($file) ? (int)($file['error'] ?? UPLOAD_ERR_NO_FILE) : UPLOAD_ERR_NO_FILE;
+        if (!$file || $uploadError !== UPLOAD_ERR_OK) {
+            $slug = match ($uploadError) {
+                UPLOAD_ERR_INI_SIZE => 'ini_size',
+                UPLOAD_ERR_FORM_SIZE => 'form_size',
+                UPLOAD_ERR_PARTIAL => 'partial',
+                UPLOAD_ERR_NO_FILE => 'proof',
+                UPLOAD_ERR_NO_TMP_DIR => 'tmp',
+                UPLOAD_ERR_CANT_WRITE => 'write',
+                UPLOAD_ERR_EXTENSION => 'ext',
+                default => 'upload',
+            };
+            Response::redirect(base_path('/loja/checkout/' . (int)($request->post['package_id'] ?? 0) . '?error=' . $slug));
+        }
         $packageId = (int)($request->post['package_id'] ?? 0);
         $months = (int)($request->post['months'] ?? 1);
         if ($months < 1) {
@@ -134,6 +149,7 @@ final class PaymentController extends Controller
         if (!Package::find($packageId)) {
             Response::redirect(base_path('/loja?error=package'));
         }
+        $ext = $this->validateProof($file);
         $paymentId = Payment::create([
             'uid' => (int)$user['id'],
             'pid' => $packageId,
@@ -141,24 +157,33 @@ final class PaymentController extends Controller
             'months' => $months,
         ]);
 
-        if (!empty($request->files['proof']) && $request->files['proof']['error'] === UPLOAD_ERR_OK) {
-            $file = $request->files['proof'];
-            $ext = $this->validateProof($file);
-            $storageRoot = $this->proofStorageRoot();
-            $proofDir = $storageRoot . '/payments';
-            if (!is_dir($proofDir)) {
-                mkdir($proofDir, 0777, true);
+        $storageRoot = $this->storageBase();
+        $proofDir = $storageRoot . '/payments';
+        if (!is_dir($proofDir)) {
+            if (!mkdir($proofDir, 0777, true) && !is_dir($proofDir)) {
+                Payment::delete($paymentId);
+                Response::redirect(base_path('/loja/checkout/' . $packageId . '?error=perm'));
             }
-            $safeName = 'payment_' . $paymentId . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
-            $target = $proofDir . '/' . $safeName;
-            if (move_uploaded_file((string)$file['tmp_name'], $target)) {
-                Payment::attachProof($paymentId, 'payments/' . $safeName);
-                Audit::log('payment_proof_upload', (int)$user['id'], ['payment_id' => $paymentId]);
-            }
-        } else {
-            Audit::log('payment_proof_missing', (int)$user['id'], ['payment_id' => $paymentId]);
+        }
+        if (!is_writable($proofDir)) {
+            Payment::delete($paymentId);
+            Response::redirect(base_path('/loja/checkout/' . $packageId . '?error=perm'));
+        }
+        $safeName = 'payment_' . $paymentId . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
+        $target = $proofDir . '/' . $safeName;
+        if (!move_uploaded_file((string)$file['tmp_name'], $target)) {
+            Payment::delete($paymentId);
+            Audit::log('payment_proof_move_failed', (int)$user['id'], [
+                'payment_id' => $paymentId,
+                'tmp' => (string)($file['tmp_name'] ?? ''),
+                'size' => (int)($file['size'] ?? 0),
+                'target' => $target,
+            ]);
+            Response::redirect(base_path('/loja/checkout/' . $packageId . '?error=move'));
         }
 
+        Payment::attachProof($paymentId, 'payments/' . $safeName);
+        Audit::log('payment_proof_upload', (int)$user['id'], ['payment_id' => $paymentId]);
         Audit::log('payment_request', (int)$user['id'], ['package_id' => $packageId]);
         Response::redirect(base_path('/loja?requested=1'));
     }
@@ -176,7 +201,7 @@ final class PaymentController extends Controller
         if ($code === '') {
             Response::redirect(base_path('/loja?voucher=invalid'));
         }
-        $voucher = Voucher::findByCode($code);
+        $voucher = \App\Models\Voucher::findByCode($code);
         if (!$voucher || empty($voucher['is_active'])) {
             Response::redirect(base_path('/loja?voucher=invalid'));
         }
@@ -192,7 +217,7 @@ final class PaymentController extends Controller
         if ($maxUses > 0 && $uses >= $maxUses) {
             Response::redirect(base_path('/loja?voucher=limit'));
         }
-        if (Voucher::hasRedeemed($code, (int)$user['id'])) {
+        if (\App\Models\Voucher::hasRedeemed($code, (int)$user['id'])) {
             Response::redirect(base_path('/loja?voucher=used'));
         }
         $packageId = (int)($voucher['package_id'] ?? 0);
@@ -209,7 +234,7 @@ final class PaymentController extends Controller
             $months = (int)ceil(max(1, $days) / (int)$package['subscription_days']);
         }
 
-        $db = Database::connection();
+        $db = \App\Core\Database::connection();
         try {
             $db->beginTransaction();
             $stmt = $db->prepare('INSERT INTO voucher_redemptions (voucher_code, user_id, redeemed_at) VALUES (:c,:u,NOW())');
@@ -273,7 +298,7 @@ final class PaymentController extends Controller
         $file = $request->files['proof'];
         $ext = $this->validateProof($file);
 
-        $storageRoot = $this->proofStorageRoot();
+        $storageRoot = $this->storageBase();
         $proofDir = $storageRoot . '/payments';
         if (!is_dir($proofDir)) {
             mkdir($proofDir, 0777, true);
@@ -292,7 +317,7 @@ final class PaymentController extends Controller
     private function validateProof(array $file): string
     {
         if ((int)$file['size'] > 4 * 1024 * 1024) {
-            Response::redirect(base_path('/loja/history?error=size'));
+            Response::redirect(base_path('/loja/checkout/' . (int)($_POST['package_id'] ?? 0) . '?error=size'));
         }
         $ext = strtolower(pathinfo((string)$file['name'], PATHINFO_EXTENSION));
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
@@ -304,20 +329,18 @@ final class PaymentController extends Controller
             'pdf' => 'application/pdf',
         ];
         if (!isset($allowed[$ext]) || $allowed[$ext] !== $mime) {
-            Response::redirect(base_path('/loja/history?error=type'));
+            Response::redirect(base_path('/loja/checkout/' . (int)($_POST['package_id'] ?? 0) . '?error=type'));
         }
         return $ext;
     }
 
-    private function proofStorageRoot(): string
+    private function storageBase(): string
     {
-        $projectRoot = dirname(__DIR__, 3);
-        $configPath = trim((string)config('storage.path', 'storage/uploads'), '/');
-        $paths = [$configPath];
-        if (!str_contains($configPath, 'uploads')) {
-            $paths[] = rtrim($configPath, '/') . '/uploads';
+        $projectRoot = dirname(__DIR__, 2);
+        $configRaw = str_replace('\\', '/', (string)config('storage.path', 'storage/uploads'));
+        if ($configRaw !== '' && ($configRaw[0] === '/' || preg_match('/^[A-Za-z]:[\\/]/', $configRaw))) {
+            return rtrim($configRaw, '/');
         }
-        $preferred = $paths[count($paths) - 1];
-        return $projectRoot . '/' . $preferred;
+        return $projectRoot . '/' . trim($configRaw, '/');
     }
 }
