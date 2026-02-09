@@ -32,15 +32,28 @@ final class VouchersController extends Controller
         $code = strtoupper(trim((string)($request->post['code'] ?? '')));
         $days = max(0, (int)($request->post['days'] ?? 0));
         $maxUses = (int)($request->post['max_uses'] ?? 0);
-        $expiresAt = trim((string)($request->post['expires_at'] ?? ''));
+        $expiresAtRaw = trim((string)($request->post['expires_at'] ?? ''));
         $packageId = (int)($request->post['package_id'] ?? 0);
         $isActive = !empty($request->post['is_active']) ? 1 : 0;
 
-        if ($code === '' || !str_starts_with($code, 'VC-')) {
+        if ($code === '') {
+            $code = Voucher::generateUniqueCode();
+        }
+        if (!str_starts_with($code, 'VC-')) {
             Response::redirect(base_path('/admin/vouchers?error=code'));
         }
         if ($packageId <= 0 || !Package::find($packageId)) {
             Response::redirect(base_path('/admin/vouchers?error=package'));
+        }
+
+        $expiresAt = null;
+        if ($expiresAtRaw !== '') {
+            try {
+                $dt = new \DateTimeImmutable($expiresAtRaw);
+                $expiresAt = $dt->setTime(0, 0, 0)->format('Y-m-d H:i:s');
+            } catch (\Exception $e) {
+                $expiresAt = null;
+            }
         }
 
         Voucher::upsert([
@@ -48,7 +61,7 @@ final class VouchersController extends Controller
             'package_id' => $packageId,
             'days' => $days,
             'max_uses' => $maxUses > 0 ? $maxUses : null,
-            'expires_at' => $expiresAt !== '' ? $expiresAt : null,
+            'expires_at' => $expiresAt,
             'is_active' => $isActive,
         ]);
         Response::redirect(base_path('/admin/vouchers'));

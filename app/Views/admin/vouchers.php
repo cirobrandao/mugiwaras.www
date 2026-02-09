@@ -19,17 +19,16 @@ ob_start();
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Adicionar voucher</h5>
+                <div>
+                    <h5 class="modal-title mb-1">Adicionar voucher</h5>
+                    <div class="text-muted small">Codigo gerado automaticamente e vencimento sempre as 00:00.</div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
-                <form method="post" action="<?= base_path('/admin/vouchers/save') ?>" class="row g-2" id="voucherForm">
+                <form method="post" action="<?= base_path('/admin/vouchers/save') ?>" class="row g-3" id="voucherForm">
                     <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                    <div class="col-md-6">
-                        <label class="form-label">Código</label>
-                        <input class="form-control" name="code" placeholder="VC-..." id="voucherKey" required>
-                    </div>
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <label class="form-label">Pacote</label>
                         <select class="form-select" name="package_id" required>
                             <option value="">Selecionar pacote</option>
@@ -48,7 +47,7 @@ ob_start();
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Expira em</label>
-                        <input class="form-control" type="datetime-local" name="expires_at">
+                        <input class="form-control" type="date" name="expires_at">
                     </div>
                     <div class="col-md-4">
                         <div class="form-check mt-4">
@@ -56,35 +55,17 @@ ob_start();
                             <label class="form-check-label" for="voucherActive">Ativo</label>
                         </div>
                     </div>
-                    <div class="col-md-4 d-grid">
-                        <button class="btn btn-outline-secondary" type="button" id="voucherGenerate">Gerar chave</button>
-                    </div>
-                    <div class="col-md-4 d-grid">
-                        <button class="btn btn-primary" type="submit">Salvar</button>
+                    <div class="col-md-8 d-flex align-items-end justify-content-end">
+                        <button class="btn btn-primary px-4" type="submit">Salvar voucher</button>
                     </div>
                 </form>
-                <div class="small text-muted mt-2">
-                    Dias é opcional; se vazio, usa os dias do pacote. Limite de usos 0 = ilimitado.
+                <div class="small text-muted mt-3">
+                    Dias e limite de usos sao opcionais. Limite 0 = ilimitado. Vencimento e aplicado as 00:00.
                 </div>
             </div>
         </div>
     </div>
 </div>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('voucherGenerate');
-    const input = document.getElementById('voucherKey');
-    if (!btn || !input) return;
-    const gen = () => {
-        const bytes = new Uint8Array(12);
-        window.crypto.getRandomValues(bytes);
-        const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-        input.value = `VC-${hex}`.toUpperCase();
-        input.focus();
-    };
-    btn.addEventListener('click', gen);
-});
-</script>
 
 <div class="table-responsive">
     <table class="table table-sm">

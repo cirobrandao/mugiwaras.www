@@ -8,6 +8,8 @@ use App\Core\Database;
 
 final class Voucher
 {
+    private const CODE_PREFIX = 'VC-';
+
     public static function all(): array
     {
         $sql = 'SELECT v.*, p.title AS package_title
@@ -58,5 +60,22 @@ final class Voucher
         $stmt = Database::connection()->prepare('SELECT 1 FROM voucher_redemptions WHERE voucher_code = :c AND user_id = :u LIMIT 1');
         $stmt->execute(['c' => $code, 'u' => $userId]);
         return (bool)$stmt->fetch();
+    }
+
+    public static function generateUniqueCode(int $bytes = 6): string
+    {
+        $attempts = 0;
+        do {
+            $raw = bin2hex(random_bytes($bytes));
+            $code = self::CODE_PREFIX . strtoupper($raw);
+            $exists = self::findByCode($code) !== null;
+            $attempts++;
+        } while ($exists && $attempts < 10);
+
+        if ($exists) {
+            $code = self::CODE_PREFIX . strtoupper(bin2hex(random_bytes($bytes + 2)));
+        }
+
+        return $code;
     }
 }
