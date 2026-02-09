@@ -248,3 +248,107 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+	const selectAllBulk = document.getElementById('selectAllBulk');
+	const approveForm = document.getElementById('bulkApproveForm');
+	const failedForm = document.getElementById('bulkDeleteFailedForm');
+	const approveBtn = document.getElementById('bulkApproveBtn');
+	const failedBtn = document.getElementById('bulkDeleteFailedBtn');
+	const modalEl = document.getElementById('bulkActionModal');
+	const modalTitle = document.getElementById('bulkActionTitle');
+	const modalMessage = document.getElementById('bulkActionMessage');
+	const modalList = document.getElementById('bulkActionList');
+	const modalConfirm = document.getElementById('bulkActionConfirm');
+	const modal = modalEl && window.bootstrap ? new window.bootstrap.Modal(modalEl) : null;
+
+	if (selectAllBulk) {
+		selectAllBulk.addEventListener('change', () => {
+			document.querySelectorAll('.bulk-pending-checkbox, .bulk-failed-checkbox').forEach((cb) => {
+				cb.checked = selectAllBulk.checked;
+			});
+		});
+	}
+
+	if (!modal || !modalTitle || !modalMessage || !modalList || !modalConfirm) return;
+
+	const buildList = (items) => {
+		modalList.innerHTML = '';
+		items.forEach((item) => {
+			const li = document.createElement('li');
+			li.className = 'list-group-item d-flex justify-content-between align-items-center';
+			li.textContent = item.label;
+			const badge = document.createElement('span');
+			badge.className = 'badge bg-light text-muted border';
+			badge.textContent = '#' + item.id;
+			li.appendChild(badge);
+			modalList.appendChild(li);
+		});
+	};
+	const collectSelected = (selector) => {
+		return Array.from(document.querySelectorAll(selector)).map((cb) => ({
+			id: cb.value,
+			label: cb.getAttribute('data-label') || cb.value,
+		}));
+	};
+	const showModal = (config) => {
+		modalTitle.textContent = config.title;
+		modalMessage.textContent = config.message;
+		buildList(config.items);
+		modalConfirm.textContent = config.confirmLabel;
+		modalConfirm.className = 'btn ' + config.confirmClass;
+		modalConfirm.onclick = config.onConfirm;
+		modalConfirm.disabled = config.items.length === 0;
+		modal.show();
+	};
+
+	if (approveBtn && approveForm) {
+		approveBtn.addEventListener('click', () => {
+			const items = collectSelected('.bulk-pending-checkbox:checked');
+			showModal({
+				title: 'Confirmar liberacao',
+				message: items.length ? 'Liberar os seguintes uploads pendentes?' : 'Nenhum pendente selecionado.',
+				items,
+				confirmLabel: 'Liberar',
+				confirmClass: 'btn-success',
+				onConfirm: () => {
+					approveForm.querySelectorAll('input[name="ids[]"][data-generated="1"]').forEach((el) => el.remove());
+					items.forEach((item) => {
+						const hidden = document.createElement('input');
+						hidden.type = 'hidden';
+						hidden.name = 'ids[]';
+						hidden.value = item.id;
+						hidden.setAttribute('data-generated', '1');
+						approveForm.appendChild(hidden);
+					});
+					approveForm.submit();
+				},
+			});
+		});
+	}
+
+	if (failedBtn && failedForm) {
+		failedBtn.addEventListener('click', () => {
+			const items = collectSelected('.bulk-failed-checkbox:checked');
+			showModal({
+				title: 'Confirmar remocao',
+				message: items.length ? 'Remover as falhas selecionadas?' : 'Nenhuma falha selecionada.',
+				items,
+				confirmLabel: 'Remover',
+				confirmClass: 'btn-danger',
+				onConfirm: () => {
+					failedForm.querySelectorAll('input[name="ids[]"][data-generated="1"]').forEach((el) => el.remove());
+					items.forEach((item) => {
+						const hidden = document.createElement('input');
+						hidden.type = 'hidden';
+						hidden.name = 'ids[]';
+						hidden.value = item.id;
+						hidden.setAttribute('data-generated', '1');
+						failedForm.appendChild(hidden);
+					});
+					failedForm.submit();
+				},
+			});
+		});
+	}
+});
+

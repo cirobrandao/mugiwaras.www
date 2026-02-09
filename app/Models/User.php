@@ -225,7 +225,7 @@ final class User
 
     public static function teamMembers(int $limit = 1000): array
     {
-        $stmt = Database::connection()->prepare("SELECT * FROM users WHERE role IN ('admin','equipe','superadmin') ORDER BY FIELD(role,'superadmin','admin','equipe'), id DESC LIMIT :l");
+        $stmt = Database::connection()->prepare("SELECT * FROM users WHERE role IN ('admin','equipe','superadmin') OR support_agent = 1 OR uploader_agent = 1 OR moderator_agent = 1 ORDER BY FIELD(role,'superadmin','admin','equipe'), id DESC LIMIT :l");
         $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll();

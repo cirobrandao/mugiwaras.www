@@ -340,14 +340,10 @@ $page = min($page, $pages);
 											<i class="fa-solid fa-box"></i>
 											<span class="ms-1">Definir pacote</span>
 										</button>
-										<form method="post" action="<?= base_path('/admin/users/team-toggle') ?>" onsubmit="return confirm('Alterar equipe deste usuario?');">
-											<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-											<input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
-											<button class="btn btn-sm <?= $isTeam ? 'btn-outline-secondary' : 'btn-outline-warning' ?>" type="submit">
-												<i class="fa-solid fa-people-group"></i>
-												<span class="ms-1"><?= $isTeam ? 'Remover equipe' : 'Tornar equipe' ?></span>
-											</button>
-										</form>
+										<button class="btn btn-sm <?= $isTeam ? 'btn-outline-secondary' : 'btn-outline-warning' ?>" type="submit" formaction="<?= base_path('/admin/users/team-toggle') ?>" formmethod="post" formnovalidate onclick="return confirm('Alterar equipe deste usuario?');">
+											<i class="fa-solid fa-people-group"></i>
+											<span class="ms-1"><?= $isTeam ? 'Remover equipe' : 'Tornar equipe' ?></span>
+										</button>
 										<button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#resetUserModal<?= (int)$u['id'] ?>">
 											<i class="fa-solid fa-key"></i>
 											<span class="ms-1">Trocar senha</span>
