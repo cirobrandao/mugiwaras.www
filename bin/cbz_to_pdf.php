@@ -319,19 +319,17 @@ function convertWithImagick(array $images, string $pdfAbs): array
 
 function convertWithMagick(array $images, string $pdfAbs, string $magickBin): array
 {
-    $listFile = dirname($pdfAbs) . '/.cbz_pdf_list_' . bin2hex(random_bytes(4)) . '.txt';
-    $lines = [];
+    $args = [];
     foreach ($images as $img) {
-        $lines[] = str_replace('"', '\\"', $img);
+        $args[] = escapeshellarg($img);
     }
-    file_put_contents($listFile, implode(PHP_EOL, $lines));
-
-    $listArg = '@' . $listFile;
-    $cmd = '"' . $magickBin . '" -quality 90 ' . escapeshellarg($listArg) . ' ' . escapeshellarg($pdfAbs);
+    if (empty($args)) {
+        return [false, 'no images to convert'];
+    }
+    $cmd = '"' . $magickBin . '" -quality 90 ' . implode(' ', $args) . ' ' . escapeshellarg($pdfAbs);
     $output = [];
     $code = 0;
     exec($cmd . ' 2>&1', $output, $code);
-    @unlink($listFile);
 
     if ($code !== 0) {
         return [false, 'magick failed: ' . implode(' ', $output)];
