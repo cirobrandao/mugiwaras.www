@@ -44,8 +44,8 @@ final class UsersController extends Controller
             Response::redirect(base_path('/admin/users'));
         }
 
-        $username = trim((string)($request->post['username'] ?? (string)$target['username']));
-        $email = trim((string)($request->post['email'] ?? (string)$target['email']));
+        $username = mb_strtolower(trim((string)($request->post['username'] ?? (string)$target['username'])));
+        $email = mb_strtolower(trim((string)($request->post['email'] ?? (string)$target['email'])));
         $phone = trim((string)($request->post['phone'] ?? (string)$target['phone']));
         $phoneCountry = trim((string)($request->post['phone_country'] ?? (string)$target['phone_country']));
         $birthDate = trim((string)($request->post['birth_date'] ?? (string)$target['birth_date']));

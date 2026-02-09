@@ -92,7 +92,19 @@ final class Auth
 
     public static function attempt(string $username, string $password, bool $remember, Request $request): bool
     {
-        $user = User::findByUsername($username);
+        $login = trim($username);
+        $user = null;
+        if ($login !== '') {
+            if (strpos($login, '@') !== false) {
+                $user = User::findByEmail(mb_strtolower($login));
+            }
+            if (!$user) {
+                $user = User::findByUsername($login);
+                if (!$user && $login !== mb_strtolower($login)) {
+                    $user = User::findByUsername(mb_strtolower($login));
+                }
+            }
+        }
         if (!$user) {
             return false;
         }

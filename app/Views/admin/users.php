@@ -295,11 +295,11 @@ $page = min($page, $pages);
 								<div class="row g-2">
 									<div class="col-md-6">
 										<label class="form-label">Usuário</label>
-										<input class="form-control" type="text" name="username" value="<?= View::e((string)$u['username']) ?>" required>
+										<input class="form-control" type="text" name="username" value="<?= View::e((string)$u['username']) ?>" required autocapitalize="none" oninput="this.value = this.value.toLowerCase()">
 									</div>
 									<div class="col-md-6">
 										<label class="form-label">Email</label>
-										<input class="form-control" type="email" name="email" value="<?= View::e((string)$u['email']) ?>" required>
+										<input class="form-control" type="email" name="email" value="<?= View::e((string)$u['email']) ?>" required autocapitalize="none" oninput="this.value = this.value.toLowerCase()">
 									</div>
 									<div class="col-md-4">
 										<label class="form-label">Telefone</label>

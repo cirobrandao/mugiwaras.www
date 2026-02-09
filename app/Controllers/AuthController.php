@@ -39,7 +39,7 @@ final class AuthController extends Controller
             return;
         }
 
-        $username = trim((string)($request->post['username'] ?? ''));
+        $username = mb_strtolower(trim((string)($request->post['username'] ?? '')));
         $password = (string)($request->post['password'] ?? '');
         $remember = isset($request->post['remember']);
 
@@ -97,8 +97,8 @@ final class AuthController extends Controller
         }
 
         $data = [
-            'username' => trim((string)($request->post['username'] ?? '')),
-            'email' => trim((string)($request->post['email'] ?? '')),
+            'username' => mb_strtolower(trim((string)($request->post['username'] ?? ''))),
+            'email' => mb_strtolower(trim((string)($request->post['email'] ?? ''))),
             'phone' => trim((string)($request->post['phone'] ?? '')),
             'phone_country' => trim((string)($request->post['phone_country'] ?? '')),
             'phone_has_whatsapp' => isset($request->post['no_whatsapp']) ? 0 : 1,

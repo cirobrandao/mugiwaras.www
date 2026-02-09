@@ -16,7 +16,7 @@ ob_start();
     <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
     <div class="mb-3">
         <label class="form-label" for="support-email">Email</label>
-        <input id="support-email" type="email" name="email" class="form-control" required>
+        <input id="support-email" type="email" name="email" class="form-control" required autocapitalize="none" oninput="this.value = this.value.toLowerCase()">
     </div>
     <div class="mb-3">
         <label class="form-label" for="support-subject">Assunto</label>

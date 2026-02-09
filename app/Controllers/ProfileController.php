@@ -83,8 +83,8 @@ final class ProfileController extends Controller
             Response::redirect(base_path('/perfil'));
         }
 
-        $username = trim((string)($request->post['username'] ?? ''));
-        $email = trim((string)($request->post['email'] ?? ''));
+        $username = mb_strtolower(trim((string)($request->post['username'] ?? '')));
+        $email = mb_strtolower(trim((string)($request->post['email'] ?? '')));
         $phone = trim((string)($request->post['phone'] ?? ''));
         $phoneCountry = preg_replace('/\D+/', '', (string)($request->post['phone_country'] ?? '')) ?? '';
         $phoneWhatsApp = !empty($request->post['phone_has_whatsapp']) ? 1 : 0;

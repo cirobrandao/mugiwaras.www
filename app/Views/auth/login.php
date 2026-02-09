@@ -19,8 +19,9 @@ ob_start();
         <form method="post" action="<?= base_path('/login') ?>">
             <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
             <div class="mb-3">
-                <label class="form-label" for="login-username">Email</label>
-                <input id="login-username" type="text" name="username" class="form-control" required>
+                <label class="form-label" for="login-username">Usuario ou email</label>
+                <input id="login-username" type="text" name="username" class="form-control" required autocapitalize="none" oninput="this.value = this.value.toLowerCase()">
+                <div class="form-text">Voce pode entrar com usuario ou email.</div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="login-password">Senha</label>

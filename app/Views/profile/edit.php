@@ -44,11 +44,11 @@ if ($birthDate === '0000-00-00') {
 			<div class="row g-3">
 				<div class="col-md-6">
 					<label class="form-label">Usuario</label>
-					<input class="form-control" name="username" value="<?= View::e($username) ?>" required>
+					<input class="form-control" name="username" value="<?= View::e($username) ?>" required autocapitalize="none" oninput="this.value = this.value.toLowerCase()">
 				</div>
 				<div class="col-md-6">
 					<label class="form-label">Email</label>
-					<input class="form-control" type="email" name="email" value="<?= View::e($email) ?>" required>
+					<input class="form-control" type="email" name="email" value="<?= View::e($email) ?>" required autocapitalize="none" oninput="this.value = this.value.toLowerCase()">
 				</div>
 				<div class="col-md-3">
 					<label class="form-label">DDI</label>
