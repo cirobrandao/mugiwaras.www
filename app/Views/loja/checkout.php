@@ -44,14 +44,30 @@ ob_start();
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card h-100 shadow-sm loja-card">
+            <div class="card h-100 shadow-sm loja-card">
             <div class="card-body">
                 <h2 class="h6">Pagamento via PIX</h2>
-                <?php if (!empty($pixKey) || !empty($pixName)): ?>
+                <?php if (!empty($pixKey) || !empty($pixName) || !empty($pixHolder) || !empty($pixBank) || !empty($pixCpf)): ?>
                     <div class="alert alert-info mb-0">
-                        <div class="fw-semibold mb-1">Chave PIX</div>
-                        <div><?= !empty($pixName) ? View::e($pixName) : '' ?></div>
-                        <div class="text-break"><?= !empty($pixKey) ? View::e($pixKey) : '' ?></div>
+                        <div class="fw-semibold mb-2">Dados para transferencia</div>
+                        <?php if (!empty($pixName) || !empty($pixHolder)): ?>
+                            <div><strong>Recebedor:</strong> <?= View::e($pixName !== '' ? $pixName : $pixHolder) ?></div>
+                        <?php endif; ?>
+                        <?php if (!empty($pixBank)): ?>
+                            <div><strong>Banco:</strong> <?= View::e($pixBank) ?></div>
+                        <?php endif; ?>
+                        <?php if (!empty($pixCpf)): ?>
+                            <div><strong>CPF:</strong> <?= View::e($pixCpf) ?></div>
+                        <?php endif; ?>
+                        <?php if (!empty($pixKey)): ?>
+                            <div class="mt-2">
+                                <div class="fw-semibold">Chave PIX</div>
+                                <div class="input-group input-group-sm mt-1">
+                                    <input class="form-control" type="text" id="pixKeyValue" value="<?= View::e($pixKey) ?>" readonly>
+                                    <button class="btn btn-outline-primary" type="button" id="copyPixKey">Copiar</button>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 <?php else: ?>
                     <div class="alert alert-warning mb-0">PIX não configurado.</div>
@@ -78,31 +94,6 @@ ob_start();
         </form>
     </div>
 </div>
-<script>
-(() => {
-    const input = document.querySelector('#proofForm input[type="file"]');
-    const btn = document.getElementById('proofSubmit');
-    const err = document.getElementById('proofError');
-    if (!input || !btn || !err) return;
-    const max = 4 * 1024 * 1024;
-    const allowed = ['image/jpeg','image/png','application/pdf','image/x-png'];
-    input.addEventListener('change', () => {
-        err.style.display = 'none';
-        const file = input.files && input.files[0];
-        if (!file) return;
-        if (file.size > max) {
-            err.textContent = 'Arquivo maior que 4MB.';
-            err.style.display = 'block';
-            return;
-        }
-        if (!allowed.includes(file.type)) {
-            err.textContent = 'Tipo inválido. Envie JPG, PNG ou PDF.';
-            err.style.display = 'block';
-            return;
-        }
-    });
-})();
-</script>
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../layout.php';

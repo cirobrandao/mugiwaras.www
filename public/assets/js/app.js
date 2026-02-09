@@ -183,3 +183,68 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+	const input = document.querySelector('#proofForm input[type="file"]');
+	const btn = document.getElementById('proofSubmit');
+	const err = document.getElementById('proofError');
+	if (!input || !btn || !err) return;
+	const max = 4 * 1024 * 1024;
+	const allowed = ['image/jpeg', 'image/png', 'application/pdf', 'image/x-png'];
+	input.addEventListener('change', () => {
+		err.style.display = 'none';
+		const file = input.files && input.files[0];
+		if (!file) return;
+		if (file.size > max) {
+			err.textContent = 'Arquivo maior que 4MB.';
+			err.style.display = 'block';
+			return;
+		}
+		if (!allowed.includes(file.type)) {
+			err.textContent = 'Tipo invalido. Envie JPG, PNG ou PDF.';
+			err.style.display = 'block';
+		}
+	});
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+	const btn = document.getElementById('copyPixKey');
+	const input = document.getElementById('pixKeyValue');
+	if (!btn || !input) return;
+	const copyViaExecCommand = (text) => {
+		const ta = document.createElement('textarea');
+		ta.value = text;
+		ta.setAttribute('readonly', 'readonly');
+		ta.style.position = 'fixed';
+		ta.style.opacity = '0';
+		ta.style.left = '-9999px';
+		document.body.appendChild(ta);
+		ta.focus();
+		ta.select();
+		ta.setSelectionRange(0, ta.value.length);
+		const ok = document.execCommand('copy');
+		document.body.removeChild(ta);
+		return ok;
+	};
+	btn.addEventListener('click', async () => {
+		const text = input.value || '';
+		if (text === '') return;
+		try {
+			if (navigator.clipboard && window.isSecureContext) {
+				await navigator.clipboard.writeText(text);
+			} else {
+				copyViaExecCommand(text);
+			}
+			btn.textContent = 'Copiado';
+			setTimeout(() => {
+				btn.textContent = 'Copiar';
+			}, 2000);
+		} catch (e) {
+			const ok = copyViaExecCommand(text);
+			btn.textContent = ok ? 'Copiado' : 'Falha';
+			setTimeout(() => {
+				btn.textContent = 'Copiar';
+			}, 2000);
+		}
+	});
+});
+

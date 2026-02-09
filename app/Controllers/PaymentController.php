@@ -85,8 +85,17 @@ final class PaymentController extends Controller
                 }
             }
         }
-        $pixKey = Setting::get('pix_key', '');
-        $pixName = Setting::get('pix_receiver', '');
+        $pixKey = (string)Setting::get('pix_key', '');
+        if ($pixKey === '') {
+            $pixKey = (string)env('PIX_KEY', '');
+        }
+        $pixName = (string)Setting::get('pix_receiver', '');
+        if ($pixName === '') {
+            $pixName = (string)env('PIX_HOLDER', '');
+        }
+        $pixBank = (string)env('PIX_BANK', '');
+        $pixHolder = (string)env('PIX_HOLDER', '');
+        $pixCpf = (string)env('PIX_CPF', '');
         echo $this->view('loja/checkout', [
             'package' => $package,
             'months' => $months,
@@ -98,6 +107,9 @@ final class PaymentController extends Controller
             'csrf' => Csrf::token(),
             'pixKey' => $pixKey,
             'pixName' => $pixName,
+            'pixBank' => $pixBank,
+            'pixHolder' => $pixHolder,
+            'pixCpf' => $pixCpf,
         ]);
     }
 
