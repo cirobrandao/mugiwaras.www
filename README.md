@@ -55,10 +55,15 @@ php bin/cbz_to_pdf.php --limit=50
 php bin/cbz_to_pdf.php --dry-run
 php bin/cbz_to_pdf.php --force
 php bin/cbz_to_pdf.php --magick=/usr/bin/magick
+php bin/cbz_to_pdf.php --magick=/usr/bin/convert
+```
+Padroes fixos (para evitar cache exhausted):
+```
+--max-width=1600 --quality=85 --limit-memory=256MiB --limit-map=512MiB --limit-disk=2GiB
 ```
 Dependencias no Ubuntu:
 - PHP CLI 8.3 com extensoes: zip
-- ImageMagick (binario `magick`) ou extensao `php-imagick`
+- ImageMagick (binario `magick` ou `convert`) ou extensao `php-imagick`
 Exemplo de instalacao (Ubuntu):
 ```
 sudo apt-get update
