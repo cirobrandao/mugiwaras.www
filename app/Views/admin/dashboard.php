@@ -235,41 +235,6 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                     </div>
 
                     <div class="row g-3 mb-4">
-                        <div class="col-md-4">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="text-muted small">Categorias</div>
-                                    <div class="fs-4 fw-semibold"><?= $formatNumber((int)($stats['categories_total'] ?? 0)) ?></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="text-muted small">Pacotes</div>
-                                    <div class="fs-4 fw-semibold"><?= $formatNumber((int)($stats['packages_total'] ?? 0)) ?></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="text-muted small">Series</div>
-                                    <div class="fs-4 fw-semibold"><?= $formatNumber((int)($stats['series_total'] ?? 0)) ?></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="text-muted small">Capitulos</div>
-                                    <div class="fs-4 fw-semibold"><?= $formatNumber((int)($stats['content_total'] ?? 0)) ?></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mb-4">
                         <div class="col-lg-6">
                             <div class="card h-100 border-0 shadow-sm">
                                 <div class="card-body">
@@ -380,14 +345,15 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                             $when = (string)($fail['created_at'] ?? '');
                                             $label = $label !== '' ? $label : 'usuario desconhecido';
                                             ?>
-                                            <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2 py-2">
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <span class="badge bg-danger">Falhou</span>
-                                                    <span><?= View::e($label) ?></span>
-                                                    <?php if ($ip !== ''): ?>
-                                                        <span class="text-muted">(<?= View::e($ip) ?>)</span>
-                                                    <?php endif; ?>
-                                                </div>
+                                            <?php
+                                                $fullLabel = $label;
+                                                if ($ip !== '') {
+                                                    $fullLabel .= ' (' . $ip . ')';
+                                                }
+                                                $displayLabel = mb_strimwidth($fullLabel, 0, 36, '...');
+                                            ?>
+                                            <div class="list-group-item d-flex align-items-center justify-content-between gap-2 py-2">
+                                                <span class="login-fail-label" title="<?= View::e($fullLabel) ?>"><?= View::e($displayLabel) ?></span>
                                                 <span class="small text-muted"><?= View::e(time_ago($when !== '' ? $when : null)) ?></span>
                                             </div>
                                         <?php endforeach; ?>

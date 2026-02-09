@@ -335,6 +335,13 @@ body.theme-dark .admin-support-table .table-light > * {
 body.theme-dark .badge.text-dark {
 	color: #111827 !important;
 }
+.login-fail-label {
+	display: inline-block;
+	max-width: 220px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
 body.theme-dark .pagination .page-link {
 	background: #0f172a;
 	border-color: #1f2937;
