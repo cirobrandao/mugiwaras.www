@@ -358,6 +358,7 @@ function resolveMagickBinary(string $override): string
         $candidates[] = $env;
     }
     $candidates[] = 'magick';
+    $candidates[] = 'convert';
     $candidates[] = 'magick.exe';
 
     foreach ($candidates as $candidate) {
@@ -374,6 +375,11 @@ function resolveMagickBinary(string $override): string
         if (is_executable($path)) {
             return $path;
         }
+    }
+
+    $linuxConvert = '/usr/bin/convert';
+    if (is_executable($linuxConvert)) {
+        return $linuxConvert;
     }
 
     return '';
