@@ -9,9 +9,10 @@ use App\Core\Database;
 use App\Models\ContentItem;
 use App\Models\Series;
 
-$options = getopt('', ['limit::', 'series::', 'content::', 'dry-run', 'force', 'magick::', 'help']);
+$options = getopt('', ['limit::', 'series::', 'content::', 'dry-run', 'force', 'magick::', 'max-width::', 'quality::', 'limit-memory::', 'limit-map::', 'limit-disk::', 'help']);
 if (isset($options['help'])) {
-    echo "Usage: php bin/cbz_to_pdf.php [--series=ID] [--content=ID] [--limit=50] [--dry-run] [--force] [--magick=PATH]\n";
+    echo "Usage: php bin/cbz_to_pdf.php [--series=ID] [--content=ID] [--limit=50] [--dry-run] [--force] [--magick=PATH]" .
+        " [--max-width=1600] [--quality=85] [--limit-memory=256MiB] [--limit-map=512MiB] [--limit-disk=2GiB]\n";
     exit(0);
 }
 
@@ -21,6 +22,18 @@ $limit = isset($options['limit']) ? max(0, (int)$options['limit']) : 0;
 $dryRun = array_key_exists('dry-run', $options);
 $force = array_key_exists('force', $options);
 $magickOverride = (string)($options['magick'] ?? '');
+$maxWidth = isset($options['max-width']) ? (int)$options['max-width'] : 0;
+$quality = isset($options['quality']) ? (int)$options['quality'] : 0;
+$limitMemory = (string)($options['limit-memory'] ?? '');
+$limitMap = (string)($options['limit-map'] ?? '');
+$limitDisk = (string)($options['limit-disk'] ?? '');
+$convertOptions = [
+    'max_width' => $maxWidth,
+    'quality' => $quality,
+    'limit_memory' => $limitMemory,
+    'limit_map' => $limitMap,
+    'limit_disk' => $limitDisk,
+];
 
 $sql = "SELECT * FROM content_items WHERE cbz_path IS NOT NULL AND LOWER(cbz_path) NOT LIKE '%.pdf' AND LOWER(cbz_path) NOT LIKE '%.epub'";
 $params = [];
@@ -99,7 +112,7 @@ foreach ($items as $item) {
         if ($dryRun) {
             echo "  dry-run: {$pdfRelative}\n";
         } else {
-            $result = convertCbzToPdf($abs, $pdfAbs, $magickOverride);
+            $result = convertCbzToPdf($abs, $pdfAbs, $magickOverride, $convertOptions);
             if (!$result['ok']) {
                 $reason = $result['error'] !== '' ? $result['error'] : 'conversion error';
                 echo "  failed: {$reason}\n";
@@ -217,7 +230,7 @@ function updateContentPath(int $id, string $hash, int $size, string $path, strin
     ]);
 }
 
-function convertCbzToPdf(string $cbzAbs, string $pdfAbs, string $magickOverride): array
+function convertCbzToPdf(string $cbzAbs, string $pdfAbs, string $magickOverride, array $options): array
 {
     if (!class_exists('ZipArchive')) {
         return ['ok' => false, 'error' => 'php-zip missing'];
@@ -236,9 +249,9 @@ function convertCbzToPdf(string $cbzAbs, string $pdfAbs, string $magickOverride)
     $error = '';
     $magickBin = resolveMagickBinary($magickOverride);
     if ($magickBin !== '') {
-        [$ok, $error] = convertWithMagick($images, $pdfAbs, $magickBin);
+        [$ok, $error] = convertWithMagick($images, $pdfAbs, $magickBin, $options);
     } elseif (extension_loaded('imagick')) {
-        [$ok, $error] = convertWithImagick($images, $pdfAbs);
+        [$ok, $error] = convertWithImagick($images, $pdfAbs, $options);
     } else {
         $error = 'ImageMagick not found and imagick extension not loaded';
     }
@@ -299,15 +312,31 @@ function extractCbzImages(string $cbzAbs, string $tmpDir): array
     return $output;
 }
 
-function convertWithImagick(array $images, string $pdfAbs): array
+function convertWithImagick(array $images, string $pdfAbs, array $options): array
 {
     try {
         $imagick = new Imagick();
+        if (!empty($options['limit_memory'])) {
+            $imagick->setResourceLimit(Imagick::RESOURCETYPE_MEMORY, (int)$options['limit_memory']);
+        }
+        if (!empty($options['limit_map'])) {
+            $imagick->setResourceLimit(Imagick::RESOURCETYPE_MAP, (int)$options['limit_map']);
+        }
+        if (!empty($options['limit_disk'])) {
+            $imagick->setResourceLimit(Imagick::RESOURCETYPE_DISK, (int)$options['limit_disk']);
+        }
         foreach ($images as $img) {
             $imagick->readImage($img);
+            if (!empty($options['max_width']) && (int)$options['max_width'] > 0) {
+                $imagick->resizeImage((int)$options['max_width'], 0, Imagick::FILTER_LANCZOS, 1, true);
+            }
         }
         $imagick->setImageFormat('pdf');
-        $imagick->setImageCompressionQuality(90);
+        if (!empty($options['quality']) && (int)$options['quality'] > 0) {
+            $imagick->setImageCompressionQuality((int)$options['quality']);
+        } else {
+            $imagick->setImageCompressionQuality(90);
+        }
         $ok = $imagick->writeImages($pdfAbs, true);
         $imagick->clear();
         $imagick->destroy();
@@ -317,7 +346,7 @@ function convertWithImagick(array $images, string $pdfAbs): array
     }
 }
 
-function convertWithMagick(array $images, string $pdfAbs, string $magickBin): array
+function convertWithMagick(array $images, string $pdfAbs, string $magickBin, array $options): array
 {
     $args = [];
     foreach ($images as $img) {
@@ -326,7 +355,22 @@ function convertWithMagick(array $images, string $pdfAbs, string $magickBin): ar
     if (empty($args)) {
         return [false, 'no images to convert'];
     }
-    $cmd = '"' . $magickBin . '" -quality 90 ' . implode(' ', $args) . ' ' . escapeshellarg($pdfAbs);
+    $limits = '';
+    if (!empty($options['limit_memory'])) {
+        $limits .= ' -limit memory ' . escapeshellarg((string)$options['limit_memory']);
+    }
+    if (!empty($options['limit_map'])) {
+        $limits .= ' -limit map ' . escapeshellarg((string)$options['limit_map']);
+    }
+    if (!empty($options['limit_disk'])) {
+        $limits .= ' -limit disk ' . escapeshellarg((string)$options['limit_disk']);
+    }
+    $resize = '';
+    if (!empty($options['max_width']) && (int)$options['max_width'] > 0) {
+        $resize = ' -resize ' . escapeshellarg((int)$options['max_width'] . 'x');
+    }
+    $quality = !empty($options['quality']) && (int)$options['quality'] > 0 ? (int)$options['quality'] : 90;
+    $cmd = '"' . $magickBin . '"' . $limits . ' -quality ' . $quality . $resize . ' ' . implode(' ', $args) . ' ' . escapeshellarg($pdfAbs);
     $output = [];
     $code = 0;
     exec($cmd . ' 2>&1', $output, $code);
