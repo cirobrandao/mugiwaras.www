@@ -334,6 +334,12 @@ final class User
         $stmt->execute(['t' => $tier, 'id' => $id]);
     }
 
+    public static function setSubscriptionExpiresAt(int $id, ?string $expiresAt): void
+    {
+        $stmt = Database::connection()->prepare('UPDATE users SET subscription_expires_at = :exp WHERE id = :id');
+        $stmt->execute(['exp' => $expiresAt, 'id' => $id]);
+    }
+
     public static function updateRoleFlags(int $id, string $role, int $supportAgent, int $uploaderAgent, int $moderatorAgent): void
     {
         $stmt = Database::connection()->prepare('UPDATE users SET role = :r, support_agent = :s, uploader_agent = :u, moderator_agent = :m WHERE id = :id');
@@ -355,6 +361,12 @@ final class User
     public static function addCredits(int $id, int $credits): void
     {
         $stmt = Database::connection()->prepare('UPDATE users SET credits = credits + :c WHERE id = :id');
+        $stmt->execute(['c' => $credits, 'id' => $id]);
+    }
+
+    public static function removeCredits(int $id, int $credits): void
+    {
+        $stmt = Database::connection()->prepare('UPDATE users SET credits = GREATEST(credits - :c, 0) WHERE id = :id');
         $stmt->execute(['c' => $credits, 'id' => $id]);
     }
 

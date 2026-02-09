@@ -68,20 +68,22 @@ final class PaymentController extends Controller
             if ($currentPackage) {
                 $currentPackageTitle = (string)($currentPackage['title'] ?? '');
             }
+            $samePackage = (int)($lastApproved['package_id'] ?? 0) === (int)($package['id'] ?? 0);
+            $isUpgrade = $currentPackage
+                && (float)($currentPackage['price'] ?? 0) < (float)($package['price'] ?? 0)
+                && !$samePackage;
             $expiresAt = $user['subscription_expires_at'] ?? null;
             $expiresTs = is_string($expiresAt) ? strtotime($expiresAt) : false;
-            if ($expiresTs !== false && $expiresTs > time()) {
+            if ($expiresTs !== false && $expiresTs > time() && $isUpgrade) {
                 $remainingDays = (int)ceil(($expiresTs - time()) / 86400);
-                if ($currentPackage && (int)$currentPackage['subscription_days'] > 0) {
-                    $currentMonths = (int)($lastApproved['months'] ?? 1);
-                    $currentMonths = max(1, min(12, $currentMonths));
-                    $currentTotalDays = (int)$currentPackage['subscription_days'] * $currentMonths;
-                    $currentTotalPrice = (float)($currentPackage['price'] ?? 0) * $currentMonths;
-                    if ($currentTotalDays > 0 && $currentTotalPrice > 0) {
-                        $dailyRate = $currentTotalPrice / $currentTotalDays;
-                        $prorataCredit = $dailyRate * $remainingDays;
-                        $total = max(0.0, $baseTotal - $prorataCredit);
-                    }
+                $currentMonths = (int)($lastApproved['months'] ?? 1);
+                $currentMonths = max(1, min(12, $currentMonths));
+                $currentTotalDays = 30 * $currentMonths;
+                $currentTotalPrice = (float)($currentPackage['price'] ?? 0) * $currentMonths;
+                if ($currentTotalDays > 0 && $currentTotalPrice > 0) {
+                    $dailyRate = $currentTotalPrice / $currentTotalDays;
+                    $prorataCredit = $dailyRate * $remainingDays;
+                    $total = max(0.0, $baseTotal - $prorataCredit);
                 }
             }
         }
@@ -142,7 +144,7 @@ final class PaymentController extends Controller
         if (!empty($request->files['proof']) && $request->files['proof']['error'] === UPLOAD_ERR_OK) {
             $file = $request->files['proof'];
             $ext = $this->validateProof($file);
-            $storageRoot = dirname(__DIR__, 2) . '/' . trim((string)config('storage.path', 'storage/uploads'), '/');
+            $storageRoot = $this->proofStorageRoot();
             $proofDir = $storageRoot . '/payments';
             if (!is_dir($proofDir)) {
                 mkdir($proofDir, 0777, true);
@@ -153,6 +155,8 @@ final class PaymentController extends Controller
                 Payment::attachProof($paymentId, 'payments/' . $safeName);
                 Audit::log('payment_proof_upload', (int)$user['id'], ['payment_id' => $paymentId]);
             }
+        } else {
+            Audit::log('payment_proof_missing', (int)$user['id'], ['payment_id' => $paymentId]);
         }
 
         Audit::log('payment_request', (int)$user['id'], ['package_id' => $packageId]);
@@ -269,7 +273,7 @@ final class PaymentController extends Controller
         $file = $request->files['proof'];
         $ext = $this->validateProof($file);
 
-        $storageRoot = dirname(__DIR__, 2) . '/' . trim((string)config('storage.path', 'storage/uploads'), '/');
+        $storageRoot = $this->proofStorageRoot();
         $proofDir = $storageRoot . '/payments';
         if (!is_dir($proofDir)) {
             mkdir($proofDir, 0777, true);
@@ -303,5 +307,17 @@ final class PaymentController extends Controller
             Response::redirect(base_path('/loja/history?error=type'));
         }
         return $ext;
+    }
+
+    private function proofStorageRoot(): string
+    {
+        $projectRoot = dirname(__DIR__, 3);
+        $configPath = trim((string)config('storage.path', 'storage/uploads'), '/');
+        $paths = [$configPath];
+        if (!str_contains($configPath, 'uploads')) {
+            $paths[] = rtrim($configPath, '/') . '/uploads';
+        }
+        $preferred = $paths[count($paths) - 1];
+        return $projectRoot . '/' . $preferred;
     }
 }

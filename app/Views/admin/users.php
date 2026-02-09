@@ -171,7 +171,8 @@ $page = min($page, $pages);
 				$currentRole = $currentUser['role'] ?? 'user';
 				$isSelf = !empty($currentUser) && (int)$currentUser['id'] === (int)$u['id'];
 				$canEdit = !$isSuper && \App\Core\Auth::isAdmin($currentUser);
-				$rowClass = $isLocked ? 'text-muted' : '';
+				$isRestricted = ($u['access_tier'] ?? '') === 'restrito';
+				$rowClass = $isLocked ? 'table-danger' : ($isRestricted ? 'table-warning' : '');
 				$tier = (string)($u['access_tier'] ?? 'user');
 				$tierColor = $tierColors[$tier] ?? '#6c757d';
 			?>
@@ -248,7 +249,6 @@ $page = min($page, $pages);
 					<form method="post" action="<?= base_path('/admin/users/restrict') ?>" onsubmit="return confirm('Remover acesso deste usuário?');">
 						<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
 						<input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
-						<?php $isRestricted = ($u['access_tier'] ?? '') === 'restrito'; ?>
 						<button class="btn btn-sm px-2 <?= $isRestricted ? 'btn-danger' : 'btn-outline-danger' ?>" type="submit" <?= $isSuper ? 'disabled' : '' ?> title="Restringir acesso">
 							<i class="fa-solid fa-user-slash"></i>
 							<span class="visually-hidden">Restringir acesso</span>

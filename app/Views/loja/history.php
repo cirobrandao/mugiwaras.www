@@ -22,12 +22,19 @@ ob_start();
         </tr>
         </thead>
         <tbody>
-        <?php foreach (($payments ?? []) as $p): ?>
+        <?php
+        $statusMap = [
+            'pending' => 'Pendente',
+            'approved' => 'Aprovado',
+            'rejected' => 'Rejeitado',
+            'revoked' => 'Estornado',
+        ];
+        foreach (($payments ?? []) as $p): ?>
             <tr>
                 <td><?= (int)$p['id'] ?></td>
-                <td><?= (int)$p['package_id'] ?></td>
+                <td><?= View::e((string)($p['package_name'] ?? ('#' . (int)$p['package_id']))) ?></td>
                 <td><?= (int)($p['months'] ?? 1) ?></td>
-                <td><?= View::e($p['status']) ?></td>
+                <td><?= View::e($statusMap[$p['status']] ?? (string)$p['status']) ?></td>
                 <td>
                     <?php if (!empty($p['proof_path'])): ?>
                         <span class="text-success">Enviado</span>

@@ -17,18 +17,35 @@ final class Payment
 
     public static function all(): array
     {
-        $sql = 'SELECT p.*, u.username AS user_name, pk.title AS package_name
-                FROM payments p
-                LEFT JOIN users u ON u.id = p.user_id
-                LEFT JOIN packages pk ON pk.id = p.package_id
-                ORDER BY p.id DESC';
+        $sql = 'SELECT p.*, u.username AS user_name, u.email AS user_email, u.phone AS user_phone, u.phone_country AS user_phone_country, u.data_registro AS user_registered_at, u.access_tier AS user_tier, u.subscription_expires_at AS user_subscription_expires_at, u.credits AS user_credits, pk.title AS package_name
+            FROM payments p
+            LEFT JOIN users u ON u.id = p.user_id
+            LEFT JOIN packages pk ON pk.id = p.package_id
+            ORDER BY p.id DESC';
         $stmt = Database::connection()->query($sql);
+        return $stmt->fetchAll();
+    }
+
+    public static function byUsers(array $userIds): array
+    {
+        $clean = array_values(array_unique(array_filter(array_map('intval', $userIds), static fn ($v) => $v > 0)));
+        if (empty($clean)) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($clean), '?'));
+        $sql = 'SELECT p.*, pk.title AS package_name
+                FROM payments p
+                LEFT JOIN packages pk ON pk.id = p.package_id
+                WHERE p.user_id IN (' . $placeholders . ')
+                ORDER BY p.user_id ASC, p.id DESC';
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute($clean);
         return $stmt->fetchAll();
     }
 
     public static function byUser(int $userId, int $limit = 100): array
     {
-        $stmt = Database::connection()->prepare('SELECT * FROM payments WHERE user_id = :u ORDER BY id DESC LIMIT :l');
+        $stmt = Database::connection()->prepare('SELECT p.*, pk.title AS package_name FROM payments p LEFT JOIN packages pk ON pk.id = p.package_id WHERE p.user_id = :u ORDER BY p.id DESC LIMIT :l');
         $stmt->bindValue('u', $userId, \PDO::PARAM_INT);
         $stmt->bindValue('l', $limit, \PDO::PARAM_INT);
         $stmt->execute();
@@ -37,7 +54,7 @@ final class Payment
 
     public static function byUserAll(int $userId): array
     {
-        $stmt = Database::connection()->prepare('SELECT * FROM payments WHERE user_id = :u ORDER BY id DESC');
+        $stmt = Database::connection()->prepare('SELECT p.*, pk.title AS package_name FROM payments p LEFT JOIN packages pk ON pk.id = p.package_id WHERE p.user_id = :u ORDER BY p.id DESC');
         $stmt->bindValue('u', $userId, \PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll();
@@ -55,6 +72,24 @@ final class Payment
     {
         $stmt = Database::connection()->prepare('UPDATE payments SET status = :s, updated_at = NOW() WHERE id = :id');
         $stmt->execute(['s' => $status, 'id' => $id]);
+    }
+
+    public static function markRevoked(int $id, int $adminId, ?string $prevExpires): void
+    {
+        $stmt = Database::connection()->prepare('UPDATE payments SET status = :s, revoked_at = NOW(), revoked_by = :rb, revoked_prev_tier = :pt, revoked_prev_expires_at = :pe, updated_at = NOW() WHERE id = :id');
+        $stmt->execute([
+            's' => 'revoked',
+            'rb' => $adminId,
+            'pt' => null,
+            'pe' => $prevExpires,
+            'id' => $id,
+        ]);
+    }
+
+    public static function cancelRevocation(int $id): void
+    {
+        $stmt = Database::connection()->prepare('UPDATE payments SET status = :s, revoked_at = NULL, revoked_by = NULL, revoked_prev_tier = NULL, revoked_prev_expires_at = NULL, updated_at = NOW() WHERE id = :id');
+        $stmt->execute(['s' => 'approved', 'id' => $id]);
     }
 
     public static function attachProof(int $id, string $path): void

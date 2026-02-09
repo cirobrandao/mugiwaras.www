@@ -146,6 +146,8 @@ $router->get('/admin/payments', [new App\Controllers\Admin\PaymentsController(),
 $router->get('/admin/payments/proof/{id}', [new App\Controllers\Admin\PaymentsController(), 'proof'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/payments/approve', [new App\Controllers\Admin\PaymentsController(), 'approve'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/payments/reject', [new App\Controllers\Admin\PaymentsController(), 'reject'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/payments/revoke', [new App\Controllers\Admin\PaymentsController(), 'revoke'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/payments/revoke-cancel', [new App\Controllers\Admin\PaymentsController(), 'cancelRevocation'], [App\Core\Auth::requireAdmin()]);
 $router->get('/admin/support', [new App\Controllers\Admin\SupportController(), 'index'], [App\Core\Auth::requireSupportStaff()]);
 $router->get('/admin/support/{id}', [new App\Controllers\Admin\SupportController(), 'show'], [App\Core\Auth::requireSupportStaff()]);
 $router->get('/admin/uploads', [new App\Controllers\Admin\UploadsController(), 'index'], [App\Core\Auth::requireTeamAccess()]);

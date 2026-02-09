@@ -111,10 +111,14 @@ CREATE TABLE IF NOT EXISTS payments (
     user_id INT NOT NULL,
     package_id INT NOT NULL,
     months INT NOT NULL DEFAULT 1,
-    status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+    status ENUM('pending','approved','rejected','revoked') NOT NULL DEFAULT 'pending',
     created_at DATETIME NOT NULL,
     updated_at DATETIME NULL,
     proof_path VARCHAR(255) NULL,
+    revoked_at DATETIME NULL,
+    revoked_by INT NULL,
+    revoked_prev_tier VARCHAR(20) NULL,
+    revoked_prev_expires_at DATETIME NULL,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (package_id) REFERENCES packages(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
