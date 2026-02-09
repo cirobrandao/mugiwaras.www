@@ -189,43 +189,43 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                         <span class="badge text-bg-light">Admin</span>
                                     </div>
                                     <div class="row g-2">
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/users') ?>">Usuarios</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/team') ?>">Equipe</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/categories') ?>">Categorias</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/packages') ?>">Pacotes</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/vouchers') ?>">Vouchers</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/news') ?>">Noticias</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/uploads') ?>">Uploads</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/payments') ?>">Pagamentos</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/support') ?>">Suporte</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/settings') ?>">Configuracoes</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/avatar-gallery') ?>">Galeria de avatares</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/security/email-blocklist') ?>">Email blocklist</a>
                                         </div>
-                                        <div class="col-md-4 d-grid">
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/security/user-blocklist') ?>">User blocklist</a>
                                         </div>
                                     </div>
