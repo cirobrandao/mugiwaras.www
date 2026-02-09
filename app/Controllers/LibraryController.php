@@ -356,6 +356,25 @@ final class LibraryController extends Controller
                 ? ContentItem::bySeriesAndFormat((int)$ser['id'], $format, $order, $perPage, $offset)
                 : ContentItem::bySeriesAndTypes((int)$ser['id'], $allowedTypes, $order, $perPage, $offset);
         }
+        $cbzTitles = [];
+        foreach ($items as $item) {
+            $path = (string)($item['cbz_path'] ?? '');
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            if ($ext !== 'pdf' && $ext !== 'epub') {
+                $cbzTitles[(string)($item['title'] ?? '')] = true;
+            }
+        }
+        if (!empty($cbzTitles)) {
+            $items = array_values(array_filter($items, function (array $item) use ($cbzTitles): bool {
+                $path = (string)($item['cbz_path'] ?? '');
+                $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                if ($ext !== 'pdf') {
+                    return true;
+                }
+                $title = (string)($item['title'] ?? '');
+                return $title === '' || !isset($cbzTitles[$title]);
+            }));
+        }
         $pending = Upload::pendingBySeries((int)$ser['id']);
 
         $contentIds = array_map(fn ($i) => (int)$i['id'], $items);
@@ -372,6 +391,23 @@ final class LibraryController extends Controller
         foreach ($contentIds as $contentId) {
             $downloadTokens[$contentId] = $this->downloadToken((int)$user['id'], (int)$contentId);
         }
+        $pdfDownloadUrls = [];
+        foreach ($items as $item) {
+            $itemId = (int)($item['id'] ?? 0);
+            $path = (string)($item['cbz_path'] ?? '');
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            if ($ext === 'pdf' || $ext === 'epub') {
+                continue;
+            }
+            $token = $downloadTokens[$itemId] ?? '';
+            if ($token === '') {
+                continue;
+            }
+            $pdfPath = $this->resolvePdfForContent($item, (string)($ser['name'] ?? ''));
+            if ($pdfPath !== null && file_exists($pdfPath)) {
+                $pdfDownloadUrls[$itemId] = base_path('/download-pdf/' . $itemId . '?token=' . urlencode($token));
+            }
+        }
 
         echo $this->view('libraries/series', [
             'category' => $cat,
@@ -387,10 +423,61 @@ final class LibraryController extends Controller
             'pages' => (int)ceil($total / $perPage),
             'isIos' => $isIos,
             'downloadTokens' => $downloadTokens,
+            'pdfDownloadUrls' => $pdfDownloadUrls,
             'iosTest' => $iosTest,
             'format' => $format,
             'order' => $order,
         ]);
+    }
+
+    private function resolvePdfForContent(array $content, string $seriesName): ?string
+    {
+        $cbzPath = (string)($content['cbz_path'] ?? '');
+        if ($cbzPath === '') {
+            return null;
+        }
+        $abs = $this->resolveContentPath($cbzPath);
+        if ($abs === null) {
+            return null;
+        }
+        $chapterName = (string)($content['title'] ?? '');
+        $siteName = (string)config('app.name', 'Site');
+        $base = trim($seriesName) !== '' ? $seriesName : 'Serie';
+        $chapter = trim($chapterName) !== '' ? $chapterName : 'Capitulo';
+        $filename = $this->sanitizeDownloadFilename($base . ' - ' . $chapter . ' [' . $siteName . '].pdf');
+        return rtrim(dirname($abs), '/') . '/' . $filename;
+    }
+
+    private function resolveContentPath(string $relative): ?string
+    {
+        $clean = str_replace(['..', '\\'], ['', '/'], $relative);
+        $storageRoot = dirname(__DIR__, 2) . '/' . trim((string)config('storage.path', 'storage/uploads'), '/');
+        $storageFull = rtrim($storageRoot, '/') . '/' . ltrim($clean, '/');
+        $storageReal = realpath($storageFull);
+        $storageRootReal = realpath($storageRoot);
+        if ($storageReal && $storageRootReal && str_starts_with($storageReal, $storageRootReal)) {
+            return $storageReal;
+        }
+
+        $libraryRoot = dirname(__DIR__, 2) . '/' . trim((string)config('library.path', 'storage/library'), '/');
+        $libraryFull = rtrim($libraryRoot, '/') . '/' . ltrim($clean, '/');
+        $libraryReal = realpath($libraryFull);
+        $libraryRootReal = realpath($libraryRoot);
+        if ($libraryReal && $libraryRootReal && str_starts_with($libraryReal, $libraryRootReal)) {
+            return $libraryReal;
+        }
+        return null;
+    }
+
+    private function sanitizeDownloadFilename(string $name): string
+    {
+        $clean = preg_replace('/[\x00-\x1F\x7F"\\\\\/<>:\\|?*]+/', ' ', $name) ?? $name;
+        $clean = preg_replace('/\s+/', ' ', $clean) ?? $clean;
+        $clean = trim($clean);
+        if ($clean === '' || $clean === '.pdf') {
+            return 'arquivo.pdf';
+        }
+        return $clean;
     }
 
     private function downloadToken(int $userId, int $contentId): string

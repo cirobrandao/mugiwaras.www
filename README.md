@@ -43,7 +43,7 @@ php bin/worker.php
 ```
 
 ## Conversao CBZ -> PDF
-Script para gerar PDF a partir de CBZ mantendo ambos no servidor e registrando o PDF no banco:
+Script para gerar PDF a partir de CBZ mantendo ambos no servidor (nao cria novo volume no banco):
 ```
 php bin/cbz_to_pdf.php
 ```

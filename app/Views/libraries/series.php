@@ -69,6 +69,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php $isEpub = $itemExt === 'epub'; ?>
             <?php $iosOnlyDownload = !empty($isIos); ?>
             <?php $downloadToken = !empty($downloadTokens[(int)$item['id']]) ? (string)$downloadTokens[(int)$item['id']] : ''; ?>
+            <?php $pdfDownloadUrl = !empty($pdfDownloadUrls[(int)$item['id']]) ? (string)$pdfDownloadUrls[(int)$item['id']] : ''; ?>
             <?php if ($isPdf) { $hasPdf = true; } ?>
             <?php $editModalId = 'edit-content-' . (int)$item['id']; ?>
             <?php $deleteModalId = 'delete-content-' . (int)$item['id']; ?>
@@ -102,7 +103,11 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <?php if ($isPdf && $downloadToken !== ''): ?>
+                        <?php if ($pdfDownloadUrl !== ''): ?>
+                            <a class="btn btn-sm btn-outline-primary" href="<?= $pdfDownloadUrl ?>" title="Download PDF">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                        <?php elseif ($isPdf && $downloadToken !== ''): ?>
                             <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) ?>" title="Download">
                                 <i class="fa-solid fa-download"></i>
                             </a>
@@ -144,6 +149,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php $isEpub = $itemExt === 'epub'; ?>
             <?php $iosOnlyDownload = !empty($isIos); ?>
             <?php $downloadToken = !empty($downloadTokens[(int)$item['id']]) ? (string)$downloadTokens[(int)$item['id']] : ''; ?>
+            <?php $pdfDownloadUrl = !empty($pdfDownloadUrls[(int)$item['id']]) ? (string)$pdfDownloadUrls[(int)$item['id']] : ''; ?>
             <?php if ($isPdf) { $hasPdf = true; } ?>
             <?php $editModalId = 'edit-content-' . (int)$item['id']; ?>
             <?php $deleteModalId = 'delete-content-' . (int)$item['id']; ?>
@@ -185,7 +191,11 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                 </div>
                 <div class="card-footer bg-white border-0 pt-0">
                     <div class="d-flex flex-wrap align-items-center gap-2">
-                        <?php if ($isPdf && $downloadToken !== ''): ?>
+                        <?php if ($pdfDownloadUrl !== ''): ?>
+                            <a class="btn btn-sm btn-outline-primary" href="<?= $pdfDownloadUrl ?>" title="Download PDF">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                        <?php elseif ($isPdf && $downloadToken !== ''): ?>
                             <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) ?>" title="Download">
                                 <i class="fa-solid fa-download"></i>
                             </a>

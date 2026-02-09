@@ -6,7 +6,6 @@ require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once dirname(__DIR__) . '/config/bootstrap.php';
 
 use App\Core\Database;
-use App\Models\ContentItem;
 use App\Models\Series;
 
 $options = getopt('', ['limit::', 'series::', 'content::', 'dry-run', 'force', 'magick::', 'max-width::', 'quality::', 'limit-memory::', 'limit-map::', 'limit-disk::', 'help']);
@@ -19,6 +18,9 @@ if (isset($options['help'])) {
     echo "  --limit-memory=256MiB\n";
     echo "  --limit-map=512MiB\n";
     echo "  --limit-disk=2GiB\n";
+    echo "\nNotas:\n";
+    echo "  - Gera somente o arquivo PDF ao lado do CBZ.\n";
+    echo "  - Nao cria registro de PDF no banco.\n";
     echo "\nCron example:\n";
     echo "  */30 * * * * cd /srv/web/www/mugiwaras.www && /usr/bin/php bin/cbz_to_pdf.php --magick=/usr/bin/convert >> storage/logs/cbz_to_pdf.log 2>&1\n";
     exit(0);
@@ -107,11 +109,10 @@ foreach ($items as $item) {
     $pdfAbs = rtrim(dirname($abs), '/') . '/' . $fileName;
     $pdfRelative = ltrim(str_replace($root . '/', '', $pdfAbs), '/');
 
-    $existingPdfRow = findContentByPath($pdfRelative);
     $pdfExists = file_exists($pdfAbs);
 
-    if ($pdfExists && $existingPdfRow && !$force) {
-        echo "#{$id} skip: pdf already registered ({$pdfRelative})\n";
+    if ($pdfExists && !$force) {
+        echo "#{$id} skip: pdf already exists ({$pdfRelative})\n";
         continue;
     }
 
@@ -139,33 +140,6 @@ foreach ($items as $item) {
         echo "  failed: pdf not found after conversion\n";
         continue;
     }
-
-    $hash = hash_file('sha256', $pdfAbs);
-    $size = (int)filesize($pdfAbs);
-    $originalName = basename($pdfAbs);
-
-    if ($existingPdfRow) {
-        updateContentPath((int)$existingPdfRow['id'], $hash, $size, $pdfRelative, $originalName);
-        echo "  updated: content #" . (int)$existingPdfRow['id'] . "\n";
-        continue;
-    }
-
-    if (ContentItem::findByHash($hash)) {
-        echo "  skip: duplicate hash detected\n";
-        continue;
-    }
-
-    ContentItem::create([
-        'l' => $item['library_id'] ?? null,
-        'c' => (int)($item['category_id'] ?? 0),
-        's' => (int)($item['series_id'] ?? 0),
-        't' => (string)($item['title'] ?? $chapterName),
-        'p' => $pdfRelative,
-        'h' => $hash,
-        'sz' => $size,
-        'o' => $originalName,
-        'co' => (int)($item['content_order'] ?? 0),
-    ]);
 
     echo "  created: {$pdfRelative}\n";
 }
@@ -216,26 +190,6 @@ function sanitizeFilename(string $name): string
         $clean .= '.pdf';
     }
     return $clean;
-}
-
-function findContentByPath(string $path): ?array
-{
-    $stmt = Database::connection()->prepare('SELECT * FROM content_items WHERE cbz_path = :p LIMIT 1');
-    $stmt->execute(['p' => $path]);
-    $row = $stmt->fetch();
-    return $row ?: null;
-}
-
-function updateContentPath(int $id, string $hash, int $size, string $path, string $originalName): void
-{
-    $stmt = Database::connection()->prepare('UPDATE content_items SET file_hash = :h, file_size = :sz, cbz_path = :p, original_name = :o WHERE id = :id');
-    $stmt->execute([
-        'h' => $hash,
-        'sz' => $size,
-        'p' => $path,
-        'o' => $originalName,
-        'id' => $id,
-    ]);
 }
 
 function convertCbzToPdf(string $cbzAbs, string $pdfAbs, string $magickOverride, array $options): array

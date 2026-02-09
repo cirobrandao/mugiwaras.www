@@ -10,7 +10,6 @@ use App\Core\Audit;
 use App\Core\Auth;
 use App\Core\Request;
 use App\Core\Logger;
-use App\Core\Database;
 use App\Models\ContentItem;
 use App\Models\ContentEvent;
 use App\Models\Setting;
@@ -122,12 +121,10 @@ final class ReaderController extends Controller
             $lastPage = max(0, (int)$requestedPage);
         }
         $pdfDownloadUrl = null;
-        $pdfContent = $this->findPdfVersion($content);
-        if ($pdfContent && !empty($pdfContent['id'])) {
-            $pdfToken = $this->downloadToken((int)$user['id'], (int)$pdfContent['id']);
-            if ($pdfToken !== '') {
-                $pdfDownloadUrl = base_path('/download/' . (int)$pdfContent['id'] . '?token=' . urlencode($pdfToken));
-            }
+        $pdfToken = $this->downloadToken((int)$user['id'], (int)$content['id']);
+        $pdfPath = $this->resolvePdfPathForContent($content);
+        if ($pdfToken !== '' && $pdfPath !== null && file_exists($pdfPath)) {
+            $pdfDownloadUrl = base_path('/download-pdf/' . (int)$content['id'] . '?token=' . urlencode($pdfToken));
         }
 
         echo $this->view('reader/open', [
@@ -146,17 +143,84 @@ final class ReaderController extends Controller
         ]);
     }
 
-    private function findPdfVersion(array $content): ?array
+    public function downloadPdf(Request $request, string $id): void
     {
-        $seriesId = (int)($content['series_id'] ?? 0);
-        $title = (string)($content['title'] ?? '');
-        if ($seriesId <= 0 || $title === '') {
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/'));
+        }
+        $token = (string)($request->get['token'] ?? '');
+        if (!$this->validateDownloadToken((int)$user['id'], (int)$id, $token)) {
+            http_response_code(403);
+            echo 'Token inválido.';
+            return;
+        }
+        if ($msg = $this->accessError($user)) {
+            http_response_code(403);
+            echo $msg;
+            return;
+        }
+        $content = ContentItem::find((int)$id);
+        if (!$content) {
+            http_response_code(404);
+            echo 'Conteúdo não encontrado.';
+            return;
+        }
+        if (!$this->canAccessCategory($user, (int)($content['category_id'] ?? 0))) {
+            http_response_code(403);
+            echo 'Acesso indisponível para esta categoria.';
+            return;
+        }
+
+        $abs = $this->resolvePdfPathForContent($content);
+        if ($abs === null || !file_exists($abs)) {
+            http_response_code(404);
+            echo 'Arquivo não encontrado.';
+            return;
+        }
+
+        ContentItem::incrementDownload((int)$content['id']);
+        ContentEvent::log((int)$user['id'], (int)$content['id'], 'download', null, (new Request())->ip());
+        Audit::log('download', (int)$user['id'], ['content_id' => (int)$content['id'], 'type' => 'pdf_from_cbz']);
+
+        $seriesName = '';
+        if (!empty($content['series_id'])) {
+            $series = Series::findById((int)$content['series_id']);
+            $seriesName = (string)($series['name'] ?? '');
+        }
+        $chapterName = (string)($content['title'] ?? '');
+        $siteName = (string)config('app.name', 'Site');
+        $base = trim($seriesName) !== '' ? $seriesName : 'Serie';
+        $chapter = trim($chapterName) !== '' ? $chapterName : 'Capitulo';
+        $downloadName = $this->sanitizeDownloadFilename($base . ' - ' . $chapter . ' [' . $siteName . '].pdf');
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $downloadName . '"');
+        header('Content-Length: ' . filesize($abs));
+        readfile($abs);
+    }
+
+    private function resolvePdfPathForContent(array $content): ?string
+    {
+        $cbzPath = (string)($content['cbz_path'] ?? '');
+        if ($cbzPath === '') {
             return null;
         }
-        $stmt = Database::connection()->prepare("SELECT * FROM content_items WHERE series_id = :s AND title = :t AND LOWER(cbz_path) LIKE '%.pdf' ORDER BY id DESC LIMIT 1");
-        $stmt->execute(['s' => $seriesId, 't' => $title]);
-        $row = $stmt->fetch();
-        return $row ?: null;
+        $abs = $this->resolveCbzPath($cbzPath);
+        if ($abs === null) {
+            return null;
+        }
+        $seriesName = '';
+        if (!empty($content['series_id'])) {
+            $series = Series::findById((int)$content['series_id']);
+            $seriesName = (string)($series['name'] ?? '');
+        }
+        $chapterName = (string)($content['title'] ?? '');
+        $siteName = (string)config('app.name', 'Site');
+        $base = trim($seriesName) !== '' ? $seriesName : 'Serie';
+        $chapter = trim($chapterName) !== '' ? $chapterName : 'Capitulo';
+        $filename = $this->sanitizeDownloadFilename($base . ' - ' . $chapter . ' [' . $siteName . '].pdf');
+        return rtrim(dirname($abs), '/') . '/' . $filename;
     }
 
     public function download(Request $request, string $id): void

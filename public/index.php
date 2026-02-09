@@ -118,6 +118,7 @@ $router->get('/epub/{id}', [new App\Controllers\ReaderController(), 'epubOpen'],
 $router->get('/pdf/{id}', [new App\Controllers\ReaderController(), 'pdfOpen'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->get('/reader/{id}/page/{page}', [new App\Controllers\ReaderController(), 'page'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->get('/download/{id}', [new App\Controllers\ReaderController(), 'download'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->get('/download-pdf/{id}', [new App\Controllers\ReaderController(), 'downloadPdf'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->get('/reader/file', [new App\Controllers\ReaderController(), 'openFile'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->get('/reader/file/page/{page}', [new App\Controllers\ReaderController(), 'pageFile'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->get('/reader/file', [new App\Controllers\ReaderController(), 'openFile'], [App\Core\Middleware::requireActiveAccess()]);
