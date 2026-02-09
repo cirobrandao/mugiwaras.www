@@ -23,6 +23,8 @@ foreach ($messages ?? [] as $m) {
 }
 ?>
 <h1 class="h4 mb-3">Suporte</h1>
+<hr class="text-success" />
+
 <?php if (empty($messages)): ?>
     <div class="alert alert-secondary">Sem mensagens.</div>
 <?php else: ?>

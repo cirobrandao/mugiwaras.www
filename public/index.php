@@ -152,6 +152,8 @@ $router->post('/admin/uploads/update', [new App\Controllers\Admin\UploadsControl
 $router->post('/admin/uploads/approve', [new App\Controllers\Admin\UploadsController(), 'approve'], [App\Core\Auth::requireTeamAccess()]);
 $router->post('/admin/uploads/approve-multiple', [new App\Controllers\Admin\UploadsController(), 'approveMultiple'], [App\Core\Auth::requireTeamAccess()]);
 $router->post('/admin/uploads/delete-multiple', [new App\Controllers\Admin\UploadsController(), 'deleteMultiple'], [App\Core\Auth::requireTeamAccess()]);
+$router->post('/admin/uploads/delete-failed-selected', [new App\Controllers\Admin\UploadsController(), 'deleteFailedSelected'], [App\Core\Auth::requireTeamAccess()]);
+$router->post('/admin/uploads/delete-failed', [new App\Controllers\Admin\UploadsController(), 'deleteFailed'], [App\Core\Auth::requireTeamAccess()]);
 $router->post('/admin/uploads/delete', [new App\Controllers\Admin\UploadsController(), 'delete'], [App\Core\Auth::requireTeamAccess()]);
 $router->post('/admin/support/status', [new App\Controllers\Admin\SupportController(), 'status'], [App\Core\Auth::requireSupportStaff()]);
 $router->post('/admin/support/note', [new App\Controllers\Admin\SupportController(), 'note'], [App\Core\Auth::requireSupportStaff()]);

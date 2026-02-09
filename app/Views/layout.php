@@ -288,7 +288,7 @@ $activePage = $activePage ?? '';
 
             <footer class="app-footer">
                 <div>© <?= date('Y') ?> <?= View::e($systemName) ?></div>
-                <div class="text-muted">Ultima atualizacao <span data-last-sync>agora</span></div>
+                <div class="text-muted">Carga do servidor: baixa <span class="text-success fw-semibold">18%</span> · Última atualização <span data-last-sync>agora</span></div>
             </footer>
         </div>
     </div>

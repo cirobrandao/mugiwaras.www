@@ -32,10 +32,12 @@ ob_start();
     <div class="alert alert-warning">Nenhuma categoria cadastrada. Crie uma categoria no painel administrativo.</div>
 <?php endif; ?>
 <div id="uploadResult"></div>
-<section class="section-card mb-3">
-    <div class="news-title-box">
-        <div class="section-title">Enviar arquivos</div>
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div>
+        <h1 class="h4 mb-1">Enviar arquivos</h1>
     </div>
+</div>
+<section class="section-card mb-3">
     <div class="mb-3">
         <div class="progress" style="height: 6px;">
             <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>

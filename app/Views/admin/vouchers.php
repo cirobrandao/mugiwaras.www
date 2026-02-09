@@ -7,6 +7,8 @@ ob_start();
     <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#voucherCreateModal">Adicionar</button>
 </div>
 
+<hr class="text-success" />
+
 <?php if (!empty($_GET['error']) && $_GET['error'] === 'package'): ?>
     <div class="alert alert-warning">Selecione um pacote válido para o voucher.</div>
 <?php elseif (!empty($_GET['error']) && $_GET['error'] === 'code'): ?>

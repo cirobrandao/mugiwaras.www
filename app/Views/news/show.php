@@ -84,26 +84,30 @@ $metaLine = implode(' · ', array_filter($metaParts));
 
 <div class="row g-3">
     <div class="col-12 col-xl-8">
-        <section class="section-card">
-            <div class="news-title-box">
-                <div class="section-title"><?= View::e((string)($newsItem['title'] ?? 'Noticia')) ?></div>
-            </div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div>
+            <h1 class="h4 mb-1"><?= View::e((string)($newsItem['title'] ?? 'Noticia')) ?></h1>
+        </div>
+    </div>
+
             <?php if (!empty($newsItem['category_name'])): ?>
                 <div class="mb-2">
                     <span class="badge bg-secondary"><?= View::e((string)$newsItem['category_name']) ?></span>
                 </div>
             <?php endif; ?>
+            
+            <div><?= nl2br(View::e((string)($newsItem['body'] ?? ''))) ?></div>
+            <hr class="text-success" />
             <?php if ($metaLine !== ''): ?>
                 <div class="small text-muted mb-3"><?= View::e($metaLine) ?></div>
             <?php endif; ?>
-            <div><?= nl2br(View::e((string)($newsItem['body'] ?? ''))) ?></div>
-        </section>
+
     </div>
 
     <div class="col-12 col-xl-4">
         <section class="section-card">
             <div class="news-title-box">
-                <div class="section-title">Acesso</div>
+                <div class="section-title news-title">➧ Plano Ativo</div>
             </div>
             <?php if (!empty($activePackageTitle) && !empty($accessInfo['expires_at'])): ?>
                 <?php
@@ -125,7 +129,7 @@ $metaLine = implode(' · ', array_filter($metaParts));
 
         <section class="section-card mt-3">
             <div class="news-title-box">
-                <div class="section-title">Top 5 series mais lidas</div>
+                <div class="section-title news-title">➧ Top 5</div>
             </div>
             <?php $mostReadTop = array_slice($mostReadSeries ?? [], 0, 5); ?>
             <?php if (empty($mostReadTop)): ?>
@@ -159,7 +163,7 @@ $metaLine = implode(' · ', array_filter($metaParts));
 
         <section class="section-card mt-3">
             <div class="news-title-box">
-                <div class="section-title">Ultimos Lancamentos</div>
+                <div class="section-title news-title">➧ Ultimos Lancamentos</div>
             </div>
             <?php if (empty($recentContent)): ?>
                 <div class="alert alert-secondary mb-0">Sem novos envios.</div>
@@ -204,7 +208,7 @@ $metaLine = implode(' · ', array_filter($metaParts));
 
         <section class="section-card mt-3">
             <div class="news-title-box">
-                <div class="section-title">Publicacoes recentes</div>
+                <div class="section-title news-title">➧ Publicações recentes</div>
             </div>
             <?php if (empty($recentNews)): ?>
                 <div class="alert alert-secondary mb-0">Sem noticias recentes.</div>

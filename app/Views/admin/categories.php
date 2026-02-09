@@ -6,7 +6,7 @@ ob_start();
     <h1 class="h4 mb-0">Categorias</h1>
     <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#categoryCreateModal">Adicionar</button>
 </div>
-
+<hr class="text-success" />
 <?php if (!empty($_GET['created'])): ?>
     <div class="alert alert-success">Categoria criada.</div>
 <?php elseif (!empty($_GET['updated'])): ?>

@@ -74,7 +74,7 @@ if (!function_exists('time_ago')) {
     <div class="col-12 col-xl-8 dashboard-main">
         <section class="section-card">
             <div class="news-title-box">
-                <div class="section-title">Meus Favoritos</div>
+                <div class="section-title news-title">➧ Meus Favoritos</div>
             </div>
             <?php if (empty($favoriteSeries)): ?>
                 <div class="alert alert-secondary mb-0">Você ainda não favoritou nenhuma série. <a href="<?= base_path('/libraries') ?>">Explorar bibliotecas</a></div>
@@ -118,8 +118,8 @@ if (!function_exists('time_ago')) {
         <div class="row g-3 mt-0">
             <div class="col-12 col-xl-6">
                 <section class="section-card h-100">
-                    <div class="news-title-box">
-                        <div class="section-title">Top 5 séries mais lidas</div>
+                    <div class="news-title-box news-title">
+                        <div class="section-title">➧ Top 5</div>
                     </div>
                     <?php $mostReadTop = array_slice($mostReadSeries ?? [], 0, 5); ?>
                     <?php if (empty($mostReadTop)): ?>
@@ -156,7 +156,7 @@ if (!function_exists('time_ago')) {
             <div class="col-12 col-xl-6">
                 <section class="section-card h-100">
                     <div class="news-title-box">
-                        <div class="section-title">Ultimos Lançamentos</div>
+                        <div class="section-title news-title">➧ Ultimos Lançamentos</div>
                     </div>
                     <?php if (empty($recentContent)): ?>
                         <div class="alert alert-secondary mb-0">Sem novos envios.</div>
@@ -205,7 +205,7 @@ if (!function_exists('time_ago')) {
         <?php if (!empty($newsBelowMostRead)): ?>
             <section class="section-card mt-3">
                 <div class="news-title-box">
-                    <div class="section-title">Notícias</div>
+                    <div class="section-title news-title">➧ Notícias</div>
                 </div>
                 <div class="list-group news-list">
                     <?php foreach ($newsBelowMostRead as $n): ?>
@@ -228,7 +228,7 @@ if (!function_exists('time_ago')) {
     <div class="col-12 col-xl-4 dashboard-sidebar">
         <section class="section-card">
             <div class="news-title-box">
-                <div class="section-title">Acesso</div>
+                <div class="section-title news-title">➧ Plano Ativo</div>
             </div>
             <?php if (!empty($activePackageTitle) && !empty($accessInfo['expires_at'])): ?>
                 <?php
@@ -250,7 +250,7 @@ if (!function_exists('time_ago')) {
 
         <section class="section-card mt-3 news-card">
             <div class="news-title-box">
-                <div class="section-title news-title">Novidades</div>
+                <div class="section-title news-title">➧ Novidades</div>
             </div>
             <?php if (empty($news)): ?>
                 <div class="alert alert-secondary mb-0">Sem notícias.</div>

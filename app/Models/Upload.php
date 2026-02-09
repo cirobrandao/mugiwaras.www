@@ -316,6 +316,19 @@ final class Upload
         return $row ?: null;
     }
 
+    public static function findWithJobStatus(int $id): ?array
+    {
+        $sql = 'SELECT u.*, j.status AS job_status
+                FROM uploads u
+                LEFT JOIN jobs j ON j.id = u.job_id
+                WHERE u.id = :id
+                LIMIT 1';
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
     public static function setStatusByJob(int $jobId, string $status): void
     {
         $stmt = Database::connection()->prepare('UPDATE uploads SET status = :s, updated_at = NOW() WHERE job_id = :j');
@@ -338,6 +351,17 @@ final class Upload
     {
         $stmt = Database::connection()->prepare('DELETE FROM uploads WHERE id = :id');
         $stmt->execute(['id' => $id]);
+    }
+
+    public static function failedIds(): array
+    {
+        $sql = "SELECT u.id
+                FROM uploads u
+                LEFT JOIN jobs j ON j.id = u.job_id
+                WHERE u.status = 'failed' OR j.status = 'failed'";
+        $stmt = Database::connection()->query($sql);
+        $rows = $stmt->fetchAll();
+        return array_map(static fn (array $row): int => (int)$row['id'], $rows);
     }
 
     public static function updateCategorySeries(int $id, ?int $categoryId, ?int $seriesId): void

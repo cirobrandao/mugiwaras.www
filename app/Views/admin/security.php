@@ -12,7 +12,7 @@ $testResult = $testResult ?? null;
 	</div>
 	<a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/admin/security/user-blocklist') ?>">Blocklist de usuarios</a>
 </div>
-
+<hr class="text-success" />
 <?php if ($status === 'created'): ?>
 	<div class="alert alert-success">Dominio adicionado.</div>
 <?php elseif ($status === 'exists'): ?>

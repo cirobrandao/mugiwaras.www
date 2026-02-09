@@ -3,6 +3,7 @@ use App\Core\View;
 ob_start();
 ?>
 <h1 class="h4 mb-3">Configurações</h1>
+<hr class="text-success" />
 
 <?php if (!empty($_GET['error']) && $_GET['error'] === 'logo'): ?>
     <div class="alert alert-danger">Logo inválido. Use imagem (jpg, png, webp, svg).</div>

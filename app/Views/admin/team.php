@@ -20,6 +20,8 @@ $canManageModerators = $isAdmin;
     </div>
 </div>
 
+<hr class="text-success" />
+
 <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead class="table-light">

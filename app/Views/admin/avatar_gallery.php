@@ -3,7 +3,7 @@ use App\Core\View;
 ob_start();
 ?>
 <h1 class="h4 mb-3">Galeria de Avatar</h1>
-
+<hr class="text-success" />
 <?php if (!empty($_GET['error'])): ?>
     <div class="alert alert-danger">
         <?php if ($_GET['error'] === 'type'): ?>Formato invalido. Use jpg, png ou webp.

@@ -58,21 +58,60 @@ $formatBytes = static function (int $bytes): string {
     $value = $bytes / (1024 ** $pow);
     return number_format($value, $value >= 100 ? 0 : 1, ',', '.') . ' ' . $units[$pow];
 };
-$parseBytes = static function (string $value): int {
+$parseNumber = static function (string $value): float {
     $value = trim($value);
-    if ($value === '' || $value === '-1' || $value === 'N/A') {
+    if ($value === '') {
+        return 0.0;
+    }
+    if (is_numeric($value)) {
+        return (float)$value;
+    }
+    $clean = preg_replace('/[^0-9,.-]/', '', $value) ?? '';
+    if ($clean === '') {
+        return 0.0;
+    }
+    if (str_contains($clean, '.') && !str_contains($clean, ',')) {
+        $parts = explode('.', $clean);
+        $last = end($parts);
+        $validThousands = $last !== false && strlen((string)$last) === 3;
+        foreach (array_slice($parts, 1) as $part) {
+            if (strlen($part) !== 3) {
+                $validThousands = false;
+                break;
+            }
+        }
+        if ($validThousands) {
+            $clean = str_replace('.', '', $clean);
+        }
+    }
+    if (str_contains($clean, ',') && str_contains($clean, '.')) {
+        $clean = str_replace('.', '', $clean);
+        $clean = str_replace(',', '.', $clean);
+    } elseif (str_contains($clean, ',')) {
+        $clean = str_replace(',', '.', $clean);
+    }
+    return (float)$clean;
+};
+$parseBytes = static function (string $value): int {
+    $value = strtolower(str_replace(' ', '', trim($value)));
+    if ($value === '' || $value === '-1' || $value === 'n/a') {
         return 0;
     }
-    $unit = strtolower(substr($value, -1));
-    $number = (float)preg_replace('/[^0-9.]/', '', $value);
-    $mult = 1;
-    if ($unit === 'g') {
-        $mult = 1024 ** 3;
-    } elseif ($unit === 'm') {
-        $mult = 1024 ** 2;
-    } elseif ($unit === 'k') {
-        $mult = 1024;
+    if (ctype_digit($value)) {
+        return (int)$value;
     }
+    if (!preg_match('/^(\d+(?:\.\d+)?)(k|kb|kib|m|mb|mib|g|gb|gib|t|tb|tib)?$/', $value, $matches)) {
+        return 0;
+    }
+    $number = (float)$matches[1];
+    $unit = $matches[2] ?? '';
+    $mult = match ($unit) {
+        'k', 'kb', 'kib' => 1024,
+        'm', 'mb', 'mib' => 1024 ** 2,
+        'g', 'gb', 'gib' => 1024 ** 3,
+        't', 'tb', 'tib' => 1024 ** 4,
+        default => 1,
+    };
     return (int)round($number * $mult);
 };
 $memLimitBytes = $parseBytes((string)($server['memory_limit'] ?? ''));
@@ -80,6 +119,13 @@ $memUsage = (int)($server['memory_usage'] ?? 0);
 $memPercent = $memLimitBytes > 0 ? min(100, (int)round(($memUsage / $memLimitBytes) * 100)) : 0;
 if ($memPercent === 0 && $memUsage > 0) {
     $memPercent = 1;
+}
+$systemMemTotal = (int)($server['system_mem_total'] ?? 0);
+$systemMemAvailable = (int)($server['system_mem_available'] ?? 0);
+$systemMemUsed = $systemMemTotal > 0 ? max(0, $systemMemTotal - $systemMemAvailable) : 0;
+$systemMemPercent = $systemMemTotal > 0 ? min(100, (int)round(($systemMemUsed / $systemMemTotal) * 100)) : 0;
+if ($systemMemPercent === 0 && $systemMemUsed > 0) {
+    $systemMemPercent = 1;
 }
 $diskTotal = (int)($server['disk_total'] ?? 0);
 $diskFree = (int)($server['disk_free'] ?? 0);
@@ -92,21 +138,21 @@ $paymentsSeries = (array)($charts['payments_by_month'] ?? []);
 $uploadsSeries = (array)($charts['uploads_by_week'] ?? []);
 $maxPayments = 0.0;
 foreach ($paymentsSeries as $row) {
-    $maxPayments = max($maxPayments, (float)($row['value'] ?? 0));
+    $maxPayments = max($maxPayments, $parseNumber((string)($row['value'] ?? '0')));
 }
-$maxUploads = 0;
+$uploadsValues = [];
 foreach ($uploadsSeries as $row) {
-    $maxUploads = max($maxUploads, (int)($row['value'] ?? 0));
+    $uploadsValues[] = (int)round($parseNumber((string)($row['value'] ?? '0')));
 }
+$maxUploads = !empty($uploadsValues) ? max($uploadsValues) : 0;
 $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 ?>
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     <div>
         <h1 class="h4 mb-1">Painel Admin</h1>
-        <div class="text-muted small">Visao geral, metricas e atalhos de gestao.</div>
     </div>
 </div>
-
+<hr class="text-success" />
 <?php if ($isAdmin): ?>
     <div class="row g-3 align-items-start admin-dashboard-layout">
                 <div class="col-lg-8 admin-dashboard-main">
@@ -167,9 +213,15 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                         <div class="d-flex justify-content-between"><span class="text-muted">Conexoes</span><span><?= $formatNumber((int)($dbInfo['connections'] ?? 0)) ?></span></div>
                                     </div>
                                     <div class="mt-3">
-                                        <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Memoria</span><span><?= $formatBytes($memUsage) ?> / <?= View::e((string)($server['memory_limit'] ?? '')) ?></span></div>
+                                        <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Memoria PHP</span><span><?= $formatBytes($memUsage) ?> / <?= View::e((string)($server['memory_limit'] ?? '')) ?></span></div>
                                         <div class="progress" role="progressbar" aria-label="Memoria" aria-valuenow="<?= $memPercent ?>" aria-valuemin="0" aria-valuemax="100">
                                             <div class="progress-bar" style="width: <?= $memPercent ?>%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Memoria servidor</span><span><?= $systemMemTotal > 0 ? ($formatBytes($systemMemUsed) . ' / ' . $formatBytes($systemMemTotal)) : 'N/A' ?></span></div>
+                                        <div class="progress" role="progressbar" aria-label="Memoria servidor" aria-valuenow="<?= $systemMemPercent ?>" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="progress-bar bg-info" style="width: <?= $systemMemPercent ?>%;"></div>
                                         </div>
                                     </div>
                                     <div class="mt-3">
@@ -238,9 +290,8 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                         <div class="col-lg-6">
                             <div class="card h-100 border-0 shadow-sm">
                                 <div class="card-body">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <h2 class="h6 mb-0">Pagamentos por mes</h2>
-                                        <span class="badge bg-light text-muted border">Ultimos <?= count($paymentsSeries) ?></span>
+                                    <div class="news-title-box">
+                                        <div class="section-title news-title">➧ Pagamentos por mês</div>
                                     </div>
                                     <?php if (empty($paymentsSeries)): ?>
                                         <div class="text-muted">Sem dados.</div>
@@ -248,7 +299,7 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                         <div class="d-flex flex-column gap-2">
                                             <?php foreach ($paymentsSeries as $row): ?>
                                                 <?php
-                                                    $value = (float)($row['value'] ?? 0);
+                                                    $value = $parseNumber((string)($row['value'] ?? '0'));
                                                     $percent = $maxPayments > 0 ? (int)round(($value / $maxPayments) * 100) : 0;
                                                     if ($percent === 0 && $value > 0) {
                                                         $percent = 1;
@@ -272,17 +323,16 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                         <div class="col-lg-6">
                             <div class="card h-100 border-0 shadow-sm">
                                 <div class="card-body">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <h2 class="h6 mb-0">Uploads por semana</h2>
-                                        <span class="badge bg-light text-muted border">Ultimas <?= count($uploadsSeries) ?></span>
+                                    <div class="news-title-box">
+                                        <div class="section-title news-title">➧ Uploads por semana</div>
                                     </div>
                                     <?php if (empty($uploadsSeries)): ?>
                                         <div class="text-muted">Sem dados.</div>
                                     <?php else: ?>
                                         <div class="d-flex flex-column gap-2">
-                                            <?php foreach ($uploadsSeries as $row): ?>
+                                            <?php foreach ($uploadsSeries as $idx => $row): ?>
                                                 <?php
-                                                    $value = (int)($row['value'] ?? 0);
+                                                    $value = $uploadsValues[$idx] ?? (int)round($parseNumber((string)($row['value'] ?? '0')));
                                                     $percent = $maxUploads > 0 ? (int)round(($value / $maxUploads) * 100) : 0;
                                                     if ($percent === 0 && $value > 0) {
                                                         $percent = 1;
@@ -309,10 +359,11 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                     <div class="d-flex flex-column gap-3">
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <h2 class="h6 mb-0">➧ Ultimos conectados</h2>
-                                    
+
+                                 <div class="news-title-box">
+                                    <div class="section-title news-title">➧ Ultimos conectados</div>
                                 </div>
+                                
                                 <?php if (empty($recentUsers)): ?>
                                     <div class="text-muted">Sem registros recentes.</div>
                                 <?php else: ?>
@@ -330,9 +381,8 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                         </div>
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <h2 class="h6 mb-0">➧ Tentativas de falhas</h2>
-                                    
+                                <div class="news-title-box">
+                                    <div class="section-title news-title">➧ Tentativas de falhas</div>
                                 </div>
                                 <?php if (empty($loginFailAttempts)): ?>
                                     <div class="text-muted">Sem tentativas recentes.</div>

@@ -5,11 +5,11 @@ ob_start();
 <?php if (!empty($error)): ?>
     <div class="alert alert-warning"><?= View::e($error) ?></div>
 <?php endif; ?>
-<section class="section-card app-card mb-3">
-    <div class="news-title-box">
-        <div class="section-title">Bibliotecas</div>
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div>
+        <h1 class="h4 mb-1">Bibliotecas</h1>
     </div>
-</section>
+</div>
 <?php if (empty($categories)): ?>
     <div class="alert alert-secondary">Nenhuma biblioteca encontrada.</div>
 <?php else: ?>

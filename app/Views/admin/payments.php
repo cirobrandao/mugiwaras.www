@@ -9,7 +9,7 @@ $statusMap = [
 ];
 ?>
 <h1 class="h4 mb-3">Pagamentos</h1>
-
+<hr class="text-success" />
 <div class="table-responsive">
 	<table class="table table-hover align-middle">
 		<thead class="table-light">

@@ -10,7 +10,7 @@ $status = (string)($_GET['status'] ?? '');
     </div>
     <a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/admin/security/email-blocklist') ?>">Email blocklist</a>
 </div>
-
+<hr class="text-success" />
 <?php if ($status === 'created'): ?>
     <div class="alert alert-success">Usuario bloqueado.</div>
 <?php elseif ($status === 'exists'): ?>

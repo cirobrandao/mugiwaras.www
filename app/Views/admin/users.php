@@ -74,6 +74,8 @@ foreach (($users ?? []) as $u) {
 	</div>
 </div>
 
+<hr class="text-success" />
+
 <?php
 $filters = (array)($filters ?? []);
 $filterQ = (string)($filters['q'] ?? '');

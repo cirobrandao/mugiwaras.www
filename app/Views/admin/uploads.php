@@ -51,6 +51,9 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
         </div>
     <?php endif; ?>
 </div>
+
+<hr class="text-success" />
+
 <style>
     .uploads-action-btn {
         width: 34px;
@@ -131,7 +134,8 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
     </div>
     <div class="col-sm-12 col-md-3 d-flex gap-2 justify-content-md-end"></div>
 </form>
-<form id="bulkApproveForm" method="post" action="<?= base_path('/admin/uploads/approve-multiple') ?>">
+<div class="d-flex flex-wrap justify-content-end gap-2 mb-2">
+    <form id="bulkApproveForm" method="post" action="<?= base_path('/admin/uploads/approve-multiple') ?>" class="m-0">
     <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
     <input type="hidden" name="page" value="<?= (int)($page ?? 1) ?>">
     <input type="hidden" name="perPage" value="<?= (int)($perPage ?? 50) ?>">
@@ -139,19 +143,32 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
     <input type="hidden" name="category" value="<?= (int)($filterCategory ?? 0) ?>">
     <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
     <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
-    <div class="d-flex justify-content-end mb-2">
-        <button class="btn btn-sm btn-outline-success" type="submit" title="Liberar pendentes selecionados">
+        <button class="btn btn-sm btn-outline-success" type="button" id="bulkApproveBtn" title="Liberar pendentes selecionados">
             <i class="fa-solid fa-check-double"></i>
             <span class="ms-1">Liberar pendentes selecionados</span>
         </button>
-    </div>
-</form>
+    </form>
+    <form id="bulkDeleteFailedForm" method="post" action="<?= base_path('/admin/uploads/delete-failed-selected') ?>" class="m-0">
+        <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+        <input type="hidden" name="confirm" value="1">
+        <input type="hidden" name="page" value="<?= (int)($page ?? 1) ?>">
+        <input type="hidden" name="perPage" value="<?= (int)($perPage ?? 50) ?>">
+        <input type="hidden" name="user" value="<?= View::e((string)($filterUser ?? '')) ?>">
+        <input type="hidden" name="category" value="<?= (int)($filterCategory ?? 0) ?>">
+        <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
+        <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
+        <button class="btn btn-sm btn-outline-danger" type="button" id="bulkDeleteFailedBtn" title="Remover falhas selecionadas">
+            <i class="fa-solid fa-trash"></i>
+            <span class="ms-1">Remover falhas selecionadas</span>
+        </button>
+    </form>
+</div>
 <div class="table-responsive">
     <table class="table table-hover align-middle" style="table-layout: fixed;">
         <thead class="table-light">
         <tr>
             <th scope="col" style="width: 32px;">
-                <input class="form-check-input" type="checkbox" id="selectAllPending" aria-label="Selecionar todos os pendentes">
+                <input class="form-check-input" type="checkbox" id="selectAllBulk" aria-label="Selecionar todos" title="Selecionar todos">
             </th>
             <th scope="col" style="width: 40px;"></th>
             <th scope="col" style="width: 220px;">Arquivo</th>
@@ -165,19 +182,26 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
         <tbody>
         <?php $modals = []; ?>
         <?php foreach (($uploads ?? []) as $u): ?>
+            <?php
+            $st = (string)($u['status'] ?? '');
+            $jobStatus = (string)($u['job_status'] ?? '');
+            if ($jobStatus === 'failed') {
+                $st = 'failed';
+            }
+            $isFailed = $st === 'failed';
+            $fileName = (string)($u['original_name'] ?? '');
+            $fileLabel = $shortFileName($fileName);
+            ?>
             <tr>
                 <td>
                     <?php if (($u['status'] ?? '') === 'pending'): ?>
-                        <input class="form-check-input bulk-pending-checkbox" type="checkbox" name="ids[]" value="<?= (int)$u['id'] ?>" aria-label="Selecionar pendente" form="bulkApproveForm">
+                        <input class="form-check-input bulk-pending-checkbox" type="checkbox" name="ids[]" value="<?= (int)$u['id'] ?>" data-label="<?= View::e($fileLabel) ?>" aria-label="Selecionar pendente" form="bulkApproveForm">
+                    <?php elseif ($isFailed): ?>
+                        <input class="form-check-input bulk-failed-checkbox" type="checkbox" name="ids[]" value="<?= (int)$u['id'] ?>" data-label="<?= View::e($fileLabel) ?>" aria-label="Selecionar falha" form="bulkDeleteFailedForm">
                     <?php endif; ?>
                 </td>
                 <td>
                     <?php
-                    $st = (string)($u['status'] ?? '');
-                    $jobStatus = (string)($u['job_status'] ?? '');
-                    if ($jobStatus === 'failed') {
-                        $st = 'failed';
-                    }
                     $icon = 'fa-circle'; $cls = 'text-secondary';
                     if ($st === 'queued' || $st === 'pending') { $icon = 'fa-clock'; $cls = 'text-muted'; }
                     elseif ($st === 'processing') { $icon = 'fa-spinner fa-spin'; $cls = 'text-primary'; }
@@ -187,9 +211,8 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
                     <i class="fa-solid <?= $icon ?> <?= $cls ?>" title="<?= View::e($st) ?>"></i>
                 </td>
                 <td>
-                    <?php $fileName = (string)($u['original_name'] ?? ''); ?>
                     <span class="uploads-pill" style="display:inline-block;max-width:180px;padding:2px 8px;border:1px solid #dee2e6;border-radius:6px;background:#f8f9fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= View::e($fileName) ?>">
-                        <?= View::e($shortFileName($fileName)) ?>
+                        <?= View::e($fileLabel) ?>
                     </span>
                 </td>
                 <td>
@@ -350,27 +373,119 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
         <?= $m ?>
     <?php endforeach; ?>
 <?php endif; ?>
+<div class="modal fade" id="bulkActionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bulkActionTitle">Confirmar acao</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div id="bulkActionMessage" class="mb-2"></div>
+                <ul class="list-group list-group-flush" id="bulkActionList"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="bulkActionConfirm">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 (() => {
-    const selectAll = document.getElementById('selectAllPending');
-    const form = document.getElementById('bulkApproveForm');
-    if (selectAll) {
-        selectAll.addEventListener('change', () => {
-            document.querySelectorAll('.bulk-pending-checkbox').forEach((cb) => {
-                cb.checked = selectAll.checked;
+    const selectAllBulk = document.getElementById('selectAllBulk');
+    const approveForm = document.getElementById('bulkApproveForm');
+    const failedForm = document.getElementById('bulkDeleteFailedForm');
+    const approveBtn = document.getElementById('bulkApproveBtn');
+    const failedBtn = document.getElementById('bulkDeleteFailedBtn');
+    const modalEl = document.getElementById('bulkActionModal');
+    const modalTitle = document.getElementById('bulkActionTitle');
+    const modalMessage = document.getElementById('bulkActionMessage');
+    const modalList = document.getElementById('bulkActionList');
+    const modalConfirm = document.getElementById('bulkActionConfirm');
+    const modal = modalEl ? new bootstrap.Modal(modalEl) : null;
+    if (selectAllBulk) {
+        selectAllBulk.addEventListener('change', () => {
+            document.querySelectorAll('.bulk-pending-checkbox, .bulk-failed-checkbox').forEach((cb) => {
+                cb.checked = selectAllBulk.checked;
             });
         });
     }
-    if (form) {
-        form.addEventListener('submit', () => {
-            form.querySelectorAll('input[name="ids[]"][data-generated="1"]').forEach((el) => el.remove());
-            document.querySelectorAll('.bulk-pending-checkbox:checked').forEach((cb) => {
-                const hidden = document.createElement('input');
-                hidden.type = 'hidden';
-                hidden.name = 'ids[]';
-                hidden.value = cb.value;
-                hidden.setAttribute('data-generated', '1');
-                form.appendChild(hidden);
+    const buildList = (items) => {
+        modalList.innerHTML = '';
+        items.forEach((item) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.textContent = item.label;
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-light text-muted border';
+            badge.textContent = '#' + item.id;
+            li.appendChild(badge);
+            modalList.appendChild(li);
+        });
+    };
+    const collectSelected = (selector) => {
+        return Array.from(document.querySelectorAll(selector)).map((cb) => ({
+            id: cb.value,
+            label: cb.getAttribute('data-label') || cb.value,
+        }));
+    };
+    const showModal = (config) => {
+        if (!modal) return;
+        modalTitle.textContent = config.title;
+        modalMessage.textContent = config.message;
+        buildList(config.items);
+        modalConfirm.textContent = config.confirmLabel;
+        modalConfirm.className = 'btn ' + config.confirmClass;
+        modalConfirm.onclick = config.onConfirm;
+        modalConfirm.disabled = config.items.length === 0;
+        modal.show();
+    };
+    if (approveBtn && approveForm) {
+        approveBtn.addEventListener('click', () => {
+            const items = collectSelected('.bulk-pending-checkbox:checked');
+            showModal({
+                title: 'Confirmar liberacao',
+                message: items.length ? 'Liberar os seguintes uploads pendentes?' : 'Nenhum pendente selecionado.',
+                items,
+                confirmLabel: 'Liberar',
+                confirmClass: 'btn-success',
+                onConfirm: () => {
+                    approveForm.querySelectorAll('input[name="ids[]"][data-generated="1"]').forEach((el) => el.remove());
+                    items.forEach((item) => {
+                        const hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = 'ids[]';
+                        hidden.value = item.id;
+                        hidden.setAttribute('data-generated', '1');
+                        approveForm.appendChild(hidden);
+                    });
+                    approveForm.submit();
+                },
+            });
+        });
+    }
+    if (failedBtn && failedForm) {
+        failedBtn.addEventListener('click', () => {
+            const items = collectSelected('.bulk-failed-checkbox:checked');
+            showModal({
+                title: 'Confirmar remocao',
+                message: items.length ? 'Remover as falhas selecionadas?' : 'Nenhuma falha selecionada.',
+                items,
+                confirmLabel: 'Remover',
+                confirmClass: 'btn-danger',
+                onConfirm: () => {
+                    failedForm.querySelectorAll('input[name="ids[]"][data-generated="1"]').forEach((el) => el.remove());
+                    items.forEach((item) => {
+                        const hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = 'ids[]';
+                        hidden.value = item.id;
+                        hidden.setAttribute('data-generated', '1');
+                        failedForm.appendChild(hidden);
+                    });
+                    failedForm.submit();
+                },
             });
         });
     }

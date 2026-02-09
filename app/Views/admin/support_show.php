@@ -8,6 +8,8 @@ $labelMap = [
 ];
 ?>
 <h1 class="h4 mb-3">Chamado #<?= str_pad((string)(int)$ticket['id'], 4, '0', STR_PAD_LEFT) ?> - <?= View::e((string)$ticket['subject']) ?></h1>
+<hr class="text-success" />
+
 <div class="mb-3">
     <div class="d-flex flex-wrap align-items-center gap-3">
         <div><strong>Email:</strong> <?= View::e((string)$ticket['email']) ?></div>

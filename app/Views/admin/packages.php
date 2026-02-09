@@ -6,7 +6,7 @@ ob_start();
 	<h1 class="h4 mb-0">Pacotes</h1>
 	<button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#packageCreateModal">Adicionar</button>
 </div>
-
+<hr class="text-success" />
 <?php if (($error ?? '') === 'has_payments'): ?>
 	<div class="alert alert-warning">Não é possível excluir pacotes com pagamentos registrados.</div>
 <?php endif; ?>

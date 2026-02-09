@@ -38,12 +38,15 @@ final class DashboardController extends Controller
         $rootPath = dirname(__DIR__, 3);
         $diskTotal = @disk_total_space($rootPath);
         $diskFree = @disk_free_space($rootPath);
+        $systemMem = $this->systemMemoryInfo();
         $server = [
             'php_version' => PHP_VERSION,
             'os' => php_uname('s') . ' ' . php_uname('r'),
             'server_software' => (string)($_SERVER['SERVER_SOFTWARE'] ?? 'N/A'),
             'memory_limit' => (string)(ini_get('memory_limit') ?: 'N/A'),
             'memory_usage' => memory_get_usage(true),
+            'system_mem_total' => $systemMem['total'],
+            'system_mem_available' => $systemMem['available'],
             'disk_total' => $diskTotal !== false ? (int)$diskTotal : 0,
             'disk_free' => $diskFree !== false ? (int)$diskFree : 0,
             'time' => date('Y-m-d H:i:s'),
@@ -167,5 +170,26 @@ final class DashboardController extends Controller
             // ignore
         }
         return $info;
+    }
+
+    private function systemMemoryInfo(): array
+    {
+        $total = 0;
+        $available = 0;
+        if (is_file('/proc/meminfo')) {
+            $lines = @file('/proc/meminfo', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            if ($lines !== false) {
+                foreach ($lines as $line) {
+                    if (str_starts_with($line, 'MemTotal:')) {
+                        $total = (int)preg_replace('/\D+/', '', $line) * 1024;
+                    } elseif (str_starts_with($line, 'MemAvailable:')) {
+                        $available = (int)preg_replace('/\D+/', '', $line) * 1024;
+                    } elseif ($available === 0 && str_starts_with($line, 'MemFree:')) {
+                        $available = (int)preg_replace('/\D+/', '', $line) * 1024;
+                    }
+                }
+            }
+        }
+        return ['total' => $total, 'available' => $available];
     }
 }

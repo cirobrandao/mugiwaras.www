@@ -13,6 +13,8 @@ ob_start();
 	</div>
 </div>
 
+<hr class="text-success" />
+
 <?php if (!empty($importResult)): ?>
 	<div class="alert alert-info">
 		<strong>Importacao concluida.</strong>

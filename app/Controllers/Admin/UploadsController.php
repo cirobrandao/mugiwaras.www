@@ -217,6 +217,65 @@ final class UploadsController extends Controller
         Response::redirect(base_path('/admin/uploads'));
     }
 
+    public function deleteFailedSelected(Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect($this->uploadsRedirect($request));
+        }
+        if (($request->post['confirm'] ?? '') !== '1') {
+            Response::redirect($this->uploadsRedirect($request));
+        }
+        $ids = $request->post['ids'] ?? [];
+        if (!is_array($ids) || empty($ids)) {
+            Response::redirect($this->uploadsRedirect($request));
+        }
+        $deleted = 0;
+        foreach ($ids as $id) {
+            $id = (int)$id;
+            if ($id <= 0) {
+                continue;
+            }
+            $upload = Upload::findWithJobStatus($id);
+            if (!$upload) {
+                continue;
+            }
+            $status = (string)($upload['status'] ?? '');
+            $jobStatus = (string)($upload['job_status'] ?? '');
+            if ($status !== 'failed' && $jobStatus !== 'failed') {
+                continue;
+            }
+            $this->deleteUploadById($id);
+            $deleted++;
+        }
+        if ($deleted > 0) {
+            Audit::log('upload_failed_selected_clear', null, ['count' => $deleted]);
+        }
+        Response::redirect($this->uploadsRedirect($request));
+    }
+
+    public function deleteFailed(Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/admin/uploads'));
+        }
+        if (($request->post['confirm'] ?? '') !== '1') {
+            Response::redirect(base_path('/admin/uploads'));
+        }
+        $ids = Upload::failedIds();
+        $deleted = 0;
+        foreach ($ids as $id) {
+            $id = (int)$id;
+            if ($id > 0) {
+                $this->deleteUploadById($id);
+                $deleted++;
+            }
+        }
+        if ($deleted > 0) {
+            Audit::log('upload_failed_clear', null, ['count' => $deleted]);
+        }
+        Response::redirect(base_path('/admin/uploads'));
+    }
+
     private function extractChapterOrder(string $title, string $originalName = ''): int
     {
         $candidates = array_filter([trim($title), trim($originalName)], static fn ($v) => $v !== '');
