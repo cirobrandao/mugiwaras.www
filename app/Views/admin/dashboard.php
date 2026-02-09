@@ -310,8 +310,8 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <h2 class="h6 mb-0">Ultimos usuarios conectados</h2>
-                                    <span class="badge bg-light text-muted border"><?= count($recentUsers) ?></span>
+                                    <h2 class="h6 mb-0">➧ Ultimos conectados</h2>
+                                    
                                 </div>
                                 <?php if (empty($recentUsers)): ?>
                                     <div class="text-muted">Sem registros recentes.</div>
@@ -331,8 +331,8 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <h2 class="h6 mb-0">Tentativas de login falhas</h2>
-                                    <span class="badge bg-light text-muted border"><?= count($loginFailAttempts) ?></span>
+                                    <h2 class="h6 mb-0">➧ Tentativas de falhas</h2>
+                                    
                                 </div>
                                 <?php if (empty($loginFailAttempts)): ?>
                                     <div class="text-muted">Sem tentativas recentes.</div>
