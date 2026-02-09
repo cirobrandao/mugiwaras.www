@@ -282,17 +282,8 @@ final class ReaderController extends Controller
             Audit::log('read_open', (int)$user['id'], ['content_id' => (int)$content['id'], 'type' => 'pdf_inline']);
         }
         $downloadName = basename($abs);
-        if ($ext === 'pdf') {
-            $seriesName = '';
-            if (!empty($content['series_id'])) {
-                $series = Series::findById((int)$content['series_id']);
-                $seriesName = (string)($series['name'] ?? '');
-            }
-            $chapterName = (string)($content['title'] ?? '');
-            $siteName = (string)config('app.name', 'Site');
-            $base = trim($seriesName) !== '' ? $seriesName : 'Serie';
-            $chapter = trim($chapterName) !== '' ? $chapterName : 'Capitulo';
-            $downloadName = $this->sanitizeDownloadFilename($base . ' - ' . $chapter . ' [' . $siteName . '].pdf');
+        if (in_array($ext, ['pdf', 'epub', 'cbz', 'zip'], true)) {
+            $downloadName = $this->buildDownloadName($content, $ext);
         }
         header('Content-Type: ' . $mime);
         header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment') . '; filename="' . $downloadName . '"');
@@ -309,6 +300,21 @@ final class ReaderController extends Controller
             return 'arquivo.pdf';
         }
         return $clean;
+    }
+
+    private function buildDownloadName(array $content, string $ext): string
+    {
+        $seriesName = '';
+        if (!empty($content['series_id'])) {
+            $series = Series::findById((int)$content['series_id']);
+            $seriesName = (string)($series['name'] ?? '');
+        }
+        $chapterName = (string)($content['title'] ?? '');
+        $siteName = (string)config('app.name', 'Site');
+        $base = trim($seriesName) !== '' ? $seriesName : 'Serie';
+        $chapter = trim($chapterName) !== '' ? $chapterName : 'Capitulo';
+        $filename = $base . ' - ' . $chapter . ' [' . $siteName . '].' . $ext;
+        return $this->sanitizeDownloadFilename($filename);
     }
 
     public function epubOpen(Request $request, string $id): void
