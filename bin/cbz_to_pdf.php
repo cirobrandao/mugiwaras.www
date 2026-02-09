@@ -13,6 +13,14 @@ $options = getopt('', ['limit::', 'series::', 'content::', 'dry-run', 'force', '
 if (isset($options['help'])) {
     echo "Usage: php bin/cbz_to_pdf.php [--series=ID] [--content=ID] [--limit=50] [--dry-run] [--force] [--magick=PATH]" .
         " [--max-width=1600] [--quality=85] [--limit-memory=256MiB] [--limit-map=512MiB] [--limit-disk=2GiB]\n";
+    echo "\nDefaults:\n";
+    echo "  --max-width=1600\n";
+    echo "  --quality=85\n";
+    echo "  --limit-memory=256MiB\n";
+    echo "  --limit-map=512MiB\n";
+    echo "  --limit-disk=2GiB\n";
+    echo "\nCron example:\n";
+    echo "  */30 * * * * cd /srv/web/www/mugiwaras.www && /usr/bin/php bin/cbz_to_pdf.php --magick=/usr/bin/convert >> storage/logs/cbz_to_pdf.log 2>&1\n";
     exit(0);
 }
 
@@ -22,11 +30,11 @@ $limit = isset($options['limit']) ? max(0, (int)$options['limit']) : 0;
 $dryRun = array_key_exists('dry-run', $options);
 $force = array_key_exists('force', $options);
 $magickOverride = (string)($options['magick'] ?? '');
-$maxWidth = isset($options['max-width']) ? (int)$options['max-width'] : 0;
-$quality = isset($options['quality']) ? (int)$options['quality'] : 0;
-$limitMemory = (string)($options['limit-memory'] ?? '');
-$limitMap = (string)($options['limit-map'] ?? '');
-$limitDisk = (string)($options['limit-disk'] ?? '');
+$maxWidth = isset($options['max-width']) ? (int)$options['max-width'] : 1600;
+$quality = isset($options['quality']) ? (int)$options['quality'] : 85;
+$limitMemory = (string)($options['limit-memory'] ?? '256MiB');
+$limitMap = (string)($options['limit-map'] ?? '512MiB');
+$limitDisk = (string)($options['limit-disk'] ?? '2GiB');
 $convertOptions = [
     'max_width' => $maxWidth,
     'quality' => $quality,
@@ -317,13 +325,13 @@ function convertWithImagick(array $images, string $pdfAbs, array $options): arra
     try {
         $imagick = new Imagick();
         if (!empty($options['limit_memory'])) {
-            $imagick->setResourceLimit(Imagick::RESOURCETYPE_MEMORY, (int)$options['limit_memory']);
+            $imagick->setResourceLimit(Imagick::RESOURCETYPE_MEMORY, parseSizeToBytes((string)$options['limit_memory']));
         }
         if (!empty($options['limit_map'])) {
-            $imagick->setResourceLimit(Imagick::RESOURCETYPE_MAP, (int)$options['limit_map']);
+            $imagick->setResourceLimit(Imagick::RESOURCETYPE_MAP, parseSizeToBytes((string)$options['limit_map']));
         }
         if (!empty($options['limit_disk'])) {
-            $imagick->setResourceLimit(Imagick::RESOURCETYPE_DISK, (int)$options['limit_disk']);
+            $imagick->setResourceLimit(Imagick::RESOURCETYPE_DISK, parseSizeToBytes((string)$options['limit_disk']));
         }
         foreach ($images as $img) {
             $imagick->readImage($img);
@@ -450,4 +458,29 @@ function cleanupDir(string $dir): void
         $file->isDir() ? rmdir($file->getRealPath()) : unlink($file->getRealPath());
     }
     @rmdir($dir);
+}
+
+function parseSizeToBytes(string $value): int
+{
+    $clean = trim($value);
+    if ($clean === '') {
+        return 0;
+    }
+    if (ctype_digit($clean)) {
+        return (int)$clean;
+    }
+    if (!preg_match('/^(\d+)(kib|kb|mib|mb|gib|gb)$/i', $clean, $matches)) {
+        return 0;
+    }
+    $num = (int)$matches[1];
+    $unit = strtolower($matches[2]);
+    return match ($unit) {
+        'kb' => $num * 1000,
+        'kib' => $num * 1024,
+        'mb' => $num * 1000 * 1000,
+        'mib' => $num * 1024 * 1024,
+        'gb' => $num * 1000 * 1000 * 1000,
+        'gib' => $num * 1024 * 1024 * 1024,
+        default => 0,
+    };
 }
