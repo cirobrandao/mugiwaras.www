@@ -184,6 +184,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+	const bars = document.querySelectorAll('.progress-bar[data-progress]');
+	if (!bars.length) return;
+	requestAnimationFrame(() => {
+		bars.forEach((bar) => {
+			const value = Number(bar.getAttribute('data-progress') || '0');
+			const percent = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+			bar.style.width = percent + '%';
+		});
+	});
+});
+
+document.addEventListener('DOMContentLoaded', () => {
 	const input = document.querySelector('#proofForm input[type="file"]');
 	const btn = document.getElementById('proofSubmit');
 	const err = document.getElementById('proofError');
@@ -260,6 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	const modalList = document.getElementById('bulkActionList');
 	const modalConfirm = document.getElementById('bulkActionConfirm');
 	const modal = modalEl && window.bootstrap ? new window.bootstrap.Modal(modalEl) : null;
+	const canUseModal = !!(modal && modalTitle && modalMessage && modalList && modalConfirm);
 
 	if (selectAllBulk) {
 		selectAllBulk.addEventListener('change', () => {
@@ -268,8 +281,6 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		});
 	}
-
-	if (!modal || !modalTitle || !modalMessage || !modalList || !modalConfirm) return;
 
 	const buildList = (items) => {
 		modalList.innerHTML = '';
@@ -291,14 +302,26 @@ document.addEventListener('DOMContentLoaded', () => {
 		}));
 	};
 	const showModal = (config) => {
-		modalTitle.textContent = config.title;
-		modalMessage.textContent = config.message;
-		buildList(config.items);
-		modalConfirm.textContent = config.confirmLabel;
-		modalConfirm.className = 'btn ' + config.confirmClass;
-		modalConfirm.onclick = config.onConfirm;
-		modalConfirm.disabled = config.items.length === 0;
-		modal.show();
+		if (canUseModal) {
+			modalTitle.textContent = config.title;
+			modalMessage.textContent = config.message;
+			buildList(config.items);
+			modalConfirm.textContent = config.confirmLabel;
+			modalConfirm.className = 'btn ' + config.confirmClass;
+			modalConfirm.onclick = config.onConfirm;
+			modalConfirm.disabled = config.items.length === 0;
+			modal.show();
+			return;
+		}
+		if (!config.items.length) {
+			window.alert(config.message);
+			return;
+		}
+		const list = config.items.map((item) => `#${item.id} ${item.label}`).join('\n');
+		const message = `${config.message}\n\n${list}`;
+		if (window.confirm(message)) {
+			config.onConfirm();
+		}
 	};
 
 	const buildAndSubmit = (form, items) => {
@@ -318,7 +341,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	if (approveForm) {
 		approveForm.addEventListener('submit', (event) => {
 			if (approveForm.getAttribute('data-confirmed') === '1') return;
-			if (!modal) return;
 			event.preventDefault();
 			const items = collectSelected('.bulk-pending-checkbox:checked');
 			showModal({
@@ -335,7 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	if (deleteForm) {
 		deleteForm.addEventListener('submit', (event) => {
 			if (deleteForm.getAttribute('data-confirmed') === '1') return;
-			if (!modal) return;
 			event.preventDefault();
 			const items = collectSelected('.bulk-select-checkbox:checked');
 			showModal({
@@ -351,7 +372,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	if (approveBtn) {
 		approveBtn.addEventListener('click', (event) => {
-			if (!modal) return;
 			event.preventDefault();
 			approveForm?.requestSubmit();
 		});
@@ -359,7 +379,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	if (deleteBtn) {
 		deleteBtn.addEventListener('click', (event) => {
-			if (!modal) return;
 			event.preventDefault();
 			deleteForm?.requestSubmit();
 		});

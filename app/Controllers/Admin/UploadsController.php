@@ -202,11 +202,11 @@ final class UploadsController extends Controller
     public function deleteMultiple(Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/admin/uploads'));
+            Response::redirect($this->uploadsRedirect($request));
         }
         $ids = $request->post['ids'] ?? [];
         if (!is_array($ids)) {
-            Response::redirect(base_path('/admin/uploads'));
+            Response::redirect($this->uploadsRedirect($request));
         }
         foreach ($ids as $id) {
             $id = (int)$id;
@@ -214,7 +214,7 @@ final class UploadsController extends Controller
                 $this->deleteUploadById($id);
             }
         }
-        Response::redirect(base_path('/admin/uploads'));
+        Response::redirect($this->uploadsRedirect($request));
     }
 
     public function deleteFailedSelected(Request $request): void

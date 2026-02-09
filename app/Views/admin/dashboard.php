@@ -136,15 +136,12 @@ if ($diskPercent === 0 && $diskUsed > 0) {
 }
 $paymentsSeries = (array)($charts['payments_by_month'] ?? []);
 $uploadsSeries = (array)($charts['uploads_by_week'] ?? []);
-$maxPayments = 0.0;
-foreach ($paymentsSeries as $row) {
-    $maxPayments = max($maxPayments, $parseNumber((string)($row['value'] ?? '0')));
-}
+$maxPayments = 1000.0;
 $uploadsValues = [];
 foreach ($uploadsSeries as $row) {
     $uploadsValues[] = (int)round($parseNumber((string)($row['value'] ?? '0')));
 }
-$maxUploads = !empty($uploadsValues) ? max($uploadsValues) : 0;
+$maxUploads = max(8000, (!empty($uploadsValues) ? max($uploadsValues) : 0));
 $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 ?>
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
@@ -215,19 +212,19 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                     <div class="mt-3">
                                         <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Memoria PHP</span><span><?= $formatBytes($memUsage) ?> / <?= View::e((string)($server['memory_limit'] ?? '')) ?></span></div>
                                         <div class="progress" role="progressbar" aria-label="Memoria" aria-valuenow="<?= $memPercent ?>" aria-valuemin="0" aria-valuemax="100">
-                                            <div class="progress-bar" style="width: <?= $memPercent ?>%;"></div>
+                                            <div class="progress-bar" data-progress="<?= $memPercent ?>" style="width: 0%;"></div>
                                         </div>
                                     </div>
                                     <div class="mt-3">
                                         <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Memoria servidor</span><span><?= $systemMemTotal > 0 ? ($formatBytes($systemMemUsed) . ' / ' . $formatBytes($systemMemTotal)) : 'N/A' ?></span></div>
                                         <div class="progress" role="progressbar" aria-label="Memoria servidor" aria-valuenow="<?= $systemMemPercent ?>" aria-valuemin="0" aria-valuemax="100">
-                                            <div class="progress-bar bg-info" style="width: <?= $systemMemPercent ?>%;"></div>
+                                            <div class="progress-bar bg-info" data-progress="<?= $systemMemPercent ?>" style="width: 0%;"></div>
                                         </div>
                                     </div>
                                     <div class="mt-3">
                                         <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Disco</span><span><?= $formatBytes($diskUsed) ?> / <?= $formatBytes($diskTotal) ?></span></div>
                                         <div class="progress" role="progressbar" aria-label="Disco" aria-valuenow="<?= $diskPercent ?>" aria-valuemin="0" aria-valuemax="100">
-                                            <div class="progress-bar bg-success" style="width: <?= $diskPercent ?>%;"></div>
+                                            <div class="progress-bar bg-success" data-progress="<?= $diskPercent ?>" style="width: 0%;"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -311,7 +308,7 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                                         <span><?= format_brl($value) ?></span>
                                                     </div>
                                                     <div class="progress" role="progressbar" aria-valuenow="<?= $percent ?>" aria-valuemin="0" aria-valuemax="100">
-                                                        <div class="progress-bar" style="width: <?= $percent ?>%;"></div>
+                                                        <div class="progress-bar" data-progress="<?= $percent ?>" style="width: 0%;"></div>
                                                     </div>
                                                 </div>
                                             <?php endforeach; ?>
@@ -344,7 +341,7 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                                         <span><?= $formatNumber($value) ?></span>
                                                     </div>
                                                     <div class="progress" role="progressbar" aria-valuenow="<?= $percent ?>" aria-valuemin="0" aria-valuemax="100">
-                                                        <div class="progress-bar bg-info" style="width: <?= $percent ?>%;"></div>
+                                                        <div class="progress-bar bg-info" data-progress="<?= $percent ?>" style="width: 0%;"></div>
                                                     </div>
                                                 </div>
                                             <?php endforeach; ?>

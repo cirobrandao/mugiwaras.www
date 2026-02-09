@@ -209,6 +209,7 @@ body.theme-dark .progress {
 }
 .progress-bar {
 	min-width: 6px;
+	transition: width .6s ease;
 }
 body.theme-dark .text-muted,
 body.theme-dark .text-body-secondary,
