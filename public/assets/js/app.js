@@ -251,9 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 	const selectAllBulk = document.getElementById('selectAllBulk');
 	const approveForm = document.getElementById('bulkApproveForm');
-	const failedForm = document.getElementById('bulkDeleteFailedForm');
+	const deleteForm = document.getElementById('bulkDeleteForm');
 	const approveBtn = document.getElementById('bulkApproveBtn');
-	const failedBtn = document.getElementById('bulkDeleteFailedBtn');
+	const deleteBtn = document.getElementById('bulkDeleteBtn');
 	const modalEl = document.getElementById('bulkActionModal');
 	const modalTitle = document.getElementById('bulkActionTitle');
 	const modalMessage = document.getElementById('bulkActionMessage');
@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	if (selectAllBulk) {
 		selectAllBulk.addEventListener('change', () => {
-			document.querySelectorAll('.bulk-pending-checkbox, .bulk-failed-checkbox').forEach((cb) => {
+			document.querySelectorAll('.bulk-select-checkbox, .bulk-pending-checkbox').forEach((cb) => {
 				cb.checked = selectAllBulk.checked;
 			});
 		});
@@ -301,8 +301,25 @@ document.addEventListener('DOMContentLoaded', () => {
 		modal.show();
 	};
 
-	if (approveBtn && approveForm) {
-		approveBtn.addEventListener('click', () => {
+	const buildAndSubmit = (form, items) => {
+		form.querySelectorAll('input[name="ids[]"][data-generated="1"]').forEach((el) => el.remove());
+		items.forEach((item) => {
+			const hidden = document.createElement('input');
+			hidden.type = 'hidden';
+			hidden.name = 'ids[]';
+			hidden.value = item.id;
+			hidden.setAttribute('data-generated', '1');
+			form.appendChild(hidden);
+		});
+		form.setAttribute('data-confirmed', '1');
+		form.submit();
+	};
+
+	if (approveForm) {
+		approveForm.addEventListener('submit', (event) => {
+			if (approveForm.getAttribute('data-confirmed') === '1') return;
+			if (!modal) return;
+			event.preventDefault();
 			const items = collectSelected('.bulk-pending-checkbox:checked');
 			showModal({
 				title: 'Confirmar liberacao',
@@ -310,44 +327,41 @@ document.addEventListener('DOMContentLoaded', () => {
 				items,
 				confirmLabel: 'Liberar',
 				confirmClass: 'btn-success',
-				onConfirm: () => {
-					approveForm.querySelectorAll('input[name="ids[]"][data-generated="1"]').forEach((el) => el.remove());
-					items.forEach((item) => {
-						const hidden = document.createElement('input');
-						hidden.type = 'hidden';
-						hidden.name = 'ids[]';
-						hidden.value = item.id;
-						hidden.setAttribute('data-generated', '1');
-						approveForm.appendChild(hidden);
-					});
-					approveForm.submit();
-				},
+				onConfirm: () => buildAndSubmit(approveForm, items),
 			});
 		});
 	}
 
-	if (failedBtn && failedForm) {
-		failedBtn.addEventListener('click', () => {
-			const items = collectSelected('.bulk-failed-checkbox:checked');
+	if (deleteForm) {
+		deleteForm.addEventListener('submit', (event) => {
+			if (deleteForm.getAttribute('data-confirmed') === '1') return;
+			if (!modal) return;
+			event.preventDefault();
+			const items = collectSelected('.bulk-select-checkbox:checked');
 			showModal({
 				title: 'Confirmar remocao',
-				message: items.length ? 'Remover as falhas selecionadas?' : 'Nenhuma falha selecionada.',
+				message: items.length ? 'Remover os uploads selecionados?' : 'Nenhum upload selecionado.',
 				items,
 				confirmLabel: 'Remover',
 				confirmClass: 'btn-danger',
-				onConfirm: () => {
-					failedForm.querySelectorAll('input[name="ids[]"][data-generated="1"]').forEach((el) => el.remove());
-					items.forEach((item) => {
-						const hidden = document.createElement('input');
-						hidden.type = 'hidden';
-						hidden.name = 'ids[]';
-						hidden.value = item.id;
-						hidden.setAttribute('data-generated', '1');
-						failedForm.appendChild(hidden);
-					});
-					failedForm.submit();
-				},
+				onConfirm: () => buildAndSubmit(deleteForm, items),
 			});
+		});
+	}
+
+	if (approveBtn) {
+		approveBtn.addEventListener('click', (event) => {
+			if (!modal) return;
+			event.preventDefault();
+			approveForm?.requestSubmit();
+		});
+	}
+
+	if (deleteBtn) {
+		deleteBtn.addEventListener('click', (event) => {
+			if (!modal) return;
+			event.preventDefault();
+			deleteForm?.requestSubmit();
 		});
 	}
 });

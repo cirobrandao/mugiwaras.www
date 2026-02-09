@@ -50,8 +50,8 @@ if (!function_exists('time_ago_compact')) {
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="<?= url('assets/css/app.css') ?>">
-    <link rel="stylesheet" href="<?= url('assets/css/z1hd.css') ?>">
+    <link rel="stylesheet" href="<?= base_path('/assets/css/app.css') ?>">
+    <link rel="stylesheet" href="<?= base_path('/assets/css/z1hd.css') ?>">
     <link rel="stylesheet" href="<?= base_path('/assets/category-tags.css') ?>">
 </head>
 <body class="app-body">
@@ -295,7 +295,7 @@ $activePage = $activePage ?? '';
 <?php endif; ?>
 
 <script src="<?= base_path('/assets/bootstrap.bundle.min.js') ?>"></script>
-<script src="<?= url('assets/js/phone-mask.js') ?>"></script>
-<script src="<?= url('assets/js/app.js') ?>"></script>
+<script src="<?= base_path('/assets/js/phone-mask.js') ?>"></script>
+<script src="<?= base_path('/assets/js/app.js') ?>"></script>
 </body>
 </html>

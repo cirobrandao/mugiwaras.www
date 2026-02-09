@@ -143,23 +143,22 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
     <input type="hidden" name="category" value="<?= (int)($filterCategory ?? 0) ?>">
     <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
     <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
-        <button class="btn btn-sm btn-outline-success" type="button" id="bulkApproveBtn" title="Liberar pendentes selecionados">
+        <button class="btn btn-sm btn-outline-success" type="submit" id="bulkApproveBtn" title="Liberar pendentes selecionados">
             <i class="fa-solid fa-check-double"></i>
             <span class="ms-1">Liberar pendentes selecionados</span>
         </button>
     </form>
-    <form id="bulkDeleteFailedForm" method="post" action="<?= base_path('/admin/uploads/delete-failed-selected') ?>" class="m-0">
+    <form id="bulkDeleteForm" method="post" action="<?= base_path('/admin/uploads/delete-multiple') ?>" class="m-0">
         <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-        <input type="hidden" name="confirm" value="1">
         <input type="hidden" name="page" value="<?= (int)($page ?? 1) ?>">
         <input type="hidden" name="perPage" value="<?= (int)($perPage ?? 50) ?>">
         <input type="hidden" name="user" value="<?= View::e((string)($filterUser ?? '')) ?>">
         <input type="hidden" name="category" value="<?= (int)($filterCategory ?? 0) ?>">
         <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
         <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
-        <button class="btn btn-sm btn-outline-danger" type="button" id="bulkDeleteFailedBtn" title="Remover falhas selecionadas">
+        <button class="btn btn-sm btn-outline-danger" type="submit" id="bulkDeleteBtn" title="Remover selecionados">
             <i class="fa-solid fa-trash"></i>
-            <span class="ms-1">Remover falhas selecionadas</span>
+            <span class="ms-1">Remover selecionados</span>
         </button>
     </form>
 </div>
@@ -194,10 +193,9 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
             ?>
             <tr>
                 <td>
+                    <input class="form-check-input bulk-select-checkbox" type="checkbox" name="ids[]" value="<?= (int)$u['id'] ?>" data-label="<?= View::e($fileLabel) ?>" aria-label="Selecionar upload" form="bulkDeleteForm">
                     <?php if (($u['status'] ?? '') === 'pending'): ?>
                         <input class="form-check-input bulk-pending-checkbox" type="checkbox" name="ids[]" value="<?= (int)$u['id'] ?>" data-label="<?= View::e($fileLabel) ?>" aria-label="Selecionar pendente" form="bulkApproveForm">
-                    <?php elseif ($isFailed): ?>
-                        <input class="form-check-input bulk-failed-checkbox" type="checkbox" name="ids[]" value="<?= (int)$u['id'] ?>" data-label="<?= View::e($fileLabel) ?>" aria-label="Selecionar falha" form="bulkDeleteFailedForm">
                     <?php endif; ?>
                 </td>
                 <td>
