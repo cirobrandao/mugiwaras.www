@@ -65,10 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	const titleEl = document.getElementById('pdfViewerTitle');
 	const openPdf = (url, title, itemEl) => {
 		if (isIOS || isAndroid) {
-			const opened = window.open(url, '_blank', 'noopener');
-			if (!opened) {
-				window.location.href = url;
-			}
+			window.location.href = url;
 			return;
 		}
 		iframe.src = url;
