@@ -197,7 +197,11 @@ final class ReaderController extends Controller
         header('Content-Type: application/pdf');
         header('Content-Disposition: attachment; filename="' . $downloadName . '"');
         header('Content-Length: ' . filesize($abs));
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
         readfile($abs);
+        exit;
     }
 
     private function resolvePdfPathForContent(array $content): ?string
@@ -288,7 +292,11 @@ final class ReaderController extends Controller
         header('Content-Type: ' . $mime);
         header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment') . '; filename="' . $downloadName . '"');
         header('Content-Length: ' . filesize($abs));
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
         readfile($abs);
+        exit;
     }
 
     private function sanitizeDownloadFilename(string $name): string
@@ -385,32 +393,132 @@ final class ReaderController extends Controller
             Response::redirect(base_path('/reader/' . (int)$id));
         }
 
-        ContentItem::incrementView((int)$content['id']);
-        ContentEvent::log((int)$user['id'], (int)$content['id'], 'read_open', null, (new Request())->ip());
-        Audit::log('read_open', (int)$user['id'], ['content_id' => (int)$content['id'], 'type' => 'pdf']);
-
-        $ua = (string)($request->server['HTTP_USER_AGENT'] ?? '');
-        $isIos = false;
-        $token = $this->downloadToken((int)$user['id'], (int)$content['id']);
-        $downloadUrl = base_path('/download/' . (int)$id . '?token=' . urlencode($token));
-        $inlineUrl = base_path('/download/' . (int)$id . '?inline=1&token=' . urlencode($token));
-
-        if ($isIos) {
-            echo $this->view('reader/pdf', [
-                'content' => $content,
-                'error' => 'Leitor de PDF indisponível no iOS. Faça o download.',
-                'downloadUrl' => $downloadUrl,
-                'isIos' => true,
-            ]);
-            return;
+        if (!empty($content['category_id'])) {
+            $cat = Category::findByName((string)($content['category_name'] ?? ''));
+            if (!$cat) {
+                $catStmt = \App\Core\Database::connection()->prepare('SELECT * FROM categories WHERE id = :id');
+                $catStmt->execute(['id' => (int)$content['category_id']]);
+                $cat = $catStmt->fetch();
+            }
+            if ($cat) {
+                $content['category_name'] = $cat['name'] ?? null;
+            }
         }
+        if (!empty($content['series_id'])) {
+            $serStmt = \App\Core\Database::connection()->prepare('SELECT * FROM series WHERE id = :id');
+            $serStmt->execute(['id' => (int)$content['series_id']]);
+            $ser = $serStmt->fetch();
+            if ($ser) {
+                $content['series_name'] = $ser['name'] ?? null;
+            }
+        }
+
+        $limitReads = (int)Setting::get('trial_reads_per_day', '0');
+        if ($user['access_tier'] === 'trial' && $limitReads > 0) {
+            $count = ContentEvent::countToday((int)$user['id'], 'read_open');
+            if ($count >= $limitReads) {
+                echo $this->view('reader/pdf', ['error' => 'Limite diário de leitura atingido.']);
+                return;
+            }
+        }
+
+        $previousChapterUrl = '';
+        $nextChapterUrl = '';
+        if (!empty($content['series_id'])) {
+            $db = \App\Core\Database::connection();
+            $pstmt = $db->prepare('SELECT id FROM content_items WHERE series_id = :s AND id < :id ORDER BY id DESC LIMIT 1');
+            $pstmt->execute(['s' => (int)$content['series_id'], 'id' => (int)$content['id']]);
+            $prev = $pstmt->fetch();
+            if ($prev && !empty($prev['id'])) {
+                $previousChapterUrl = base_path('/reader/pdf/' . (int)$prev['id']);
+            }
+            $nstmt = $db->prepare('SELECT id FROM content_items WHERE series_id = :s AND id > :id ORDER BY id ASC LIMIT 1');
+            $nstmt->execute(['s' => (int)$content['series_id'], 'id' => (int)$content['id']]);
+            $next = $nstmt->fetch();
+            if ($next && !empty($next['id'])) {
+                $nextChapterUrl = base_path('/reader/pdf/' . (int)$next['id']);
+            }
+        }
+
+        $favIds = UserFavorite::getIdsForUser((int)$user['id'], [(int)$content['id']]);
+        $progress = UserContentStatus::getProgressForUser((int)$user['id'], [(int)$content['id']]);
+        $requestedPage = $request->get['page'] ?? null;
+        $lastPage = (int)($progress[(int)$content['id']] ?? 0);
+        if ($requestedPage !== null && is_numeric($requestedPage)) {
+            $lastPage = max(0, (int)$requestedPage);
+        }
+
+        $token = $this->downloadToken((int)$user['id'], (int)$content['id']);
+        $downloadUrl = $token !== '' ? base_path('/download/' . (int)$id . '?token=' . urlencode($token)) : '';
+        $inlineUrl = $token !== '' ? base_path('/download/' . (int)$id . '?inline=1&token=' . urlencode($token)) : '';
+
+        [$pages, $pageError] = $this->listPdfPagesWithError((string)$content['cbz_path']);
 
         echo $this->view('reader/pdf', [
             'content' => $content,
+            'pages' => $pages,
+            'error' => $pageError,
             'downloadUrl' => $downloadUrl,
             'inlineUrl' => $inlineUrl,
-            'isIos' => false,
+            'previousChapterUrl' => $previousChapterUrl,
+            'nextChapterUrl' => $nextChapterUrl,
+            'isFavorite' => !empty($favIds),
+            'lastPage' => $lastPage,
+            'csrf' => Csrf::token(),
         ]);
+    }
+
+    public function pdfPage(Request $request, string $id, string $page): void
+    {
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/'));
+        }
+        if ($msg = $this->accessError($user)) {
+            http_response_code(403);
+            return;
+        }
+        $content = ContentItem::find((int)$id);
+        if (!$content) {
+            http_response_code(404);
+            return;
+        }
+        if (!$this->canAccessCategory($user, (int)($content['category_id'] ?? 0))) {
+            http_response_code(403);
+            return;
+        }
+        $path = (string)($content['cbz_path'] ?? '');
+        if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'pdf') {
+            http_response_code(404);
+            return;
+        }
+
+        $abs = $this->resolveCbzPath($path);
+        if ($abs === null || !file_exists($abs)) {
+            http_response_code(404);
+            return;
+        }
+
+        $error = null;
+        $images = $this->pdfImages($abs, $error);
+        $pageIndex = (int)$page;
+        if (!isset($images[$pageIndex])) {
+            http_response_code(404);
+            return;
+        }
+        $imgPath = $images[$pageIndex];
+        if (!is_file($imgPath)) {
+            http_response_code(404);
+            return;
+        }
+
+        header('Content-Type: image/jpeg');
+        header('Content-Length: ' . filesize($imgPath));
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        readfile($imgPath);
+        exit;
     }
 
     private function isIos(string $ua): bool
@@ -593,6 +701,110 @@ final class ReaderController extends Controller
             return [[], 'Nenhuma página encontrada no CBZ.'];
         }
         return [$pages, null];
+    }
+
+    private function listPdfPagesWithError(string $pdfPath): array
+    {
+        $abs = $this->resolveCbzPath($pdfPath);
+        if ($abs === null || !file_exists($abs)) {
+            return [[], 'Arquivo não encontrado.'];
+        }
+        $error = null;
+        $images = $this->pdfImages($abs, $error);
+        if (!empty($error)) {
+            return [[], $error];
+        }
+        if (empty($images)) {
+            return [[], 'Nenhuma página encontrada no PDF.'];
+        }
+        return [$images, null];
+    }
+
+    private function pdfImages(string $abs, ?string &$error = null): array
+    {
+        $bin = $this->pdfToPpmBin();
+        if ($bin === '') {
+            $error = 'Conversor de PDF não configurado.';
+            return [];
+        }
+        $cacheDir = $this->pdfCacheDir($abs);
+        $images = $this->pdfImagesInDir($cacheDir);
+        if (!empty($images)) {
+            return $images;
+        }
+
+        $dpi = (int)config('converters.pdftoppm_dpi', 120);
+        if ($dpi < 72) {
+            $dpi = 72;
+        } elseif ($dpi > 300) {
+            $dpi = 300;
+        }
+        $maxPages = (int)config('converters.pdftoppm_max_pages', 0);
+        $jpegQuality = (int)config('converters.pdftoppm_jpeg_quality', 85);
+        if ($jpegQuality < 40) {
+            $jpegQuality = 40;
+        } elseif ($jpegQuality > 95) {
+            $jpegQuality = 95;
+        }
+        if (!is_dir($cacheDir)) {
+            mkdir($cacheDir, 0777, true);
+        }
+        $prefix = $cacheDir . '/page';
+        $pageArgs = $maxPages > 0 ? sprintf('-f 1 -l %d', $maxPages) : '';
+        $cmd = sprintf('"%s" -jpeg -jpegopt quality=%d -r %d %s %s %s', $bin, $jpegQuality, $dpi, $pageArgs, escapeshellarg($abs), escapeshellarg($prefix));
+        $output = [];
+        $code = 0;
+        exec($cmd . ' 2>&1', $output, $code);
+        if ($code !== 0) {
+            $error = 'Falha ao converter PDF: ' . implode(' ', $output);
+            return [];
+        }
+
+        $images = $this->pdfImagesInDir($cacheDir);
+        if (empty($images)) {
+            $error = 'Nenhuma página gerada.';
+            return [];
+        }
+        return $images;
+    }
+
+    private function pdfImagesInDir(string $dir): array
+    {
+        $images = array_merge(
+            glob($dir . '/page-*.jpg') ?: [],
+            glob($dir . '/page-*.jpeg') ?: []
+        );
+        if (!empty($images)) {
+            natsort($images);
+            $images = array_values($images);
+        }
+        return $images;
+    }
+
+    private function pdfCacheDir(string $abs): string
+    {
+        $storageRoot = dirname(__DIR__, 2) . '/' . trim((string)config('storage.path', 'storage/uploads'), '/');
+        $hash = hash('sha256', $abs . '|' . @filemtime($abs));
+        return rtrim($storageRoot, '/') . '/pdf_cache/' . $hash;
+    }
+
+    private function pdfToPpmBin(): string
+    {
+        $bin = trim((string)config('converters.pdftoppm_bin', ''));
+        if ($bin !== '' && is_executable($bin)) {
+            return $bin;
+        }
+        $candidates = [
+            '/usr/bin/pdftoppm',
+            '/usr/local/bin/pdftoppm',
+            'C:\\Program Files\\poppler\\Library\\bin\\pdftoppm.exe',
+        ];
+        foreach ($candidates as $candidate) {
+            if (is_executable($candidate)) {
+                return $candidate;
+            }
+        }
+        return '';
     }
 
     private function listPagesFromAbsolute(string $abs): array

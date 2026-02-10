@@ -89,8 +89,10 @@ body.theme-dark .theme-toggle-btn {
 .reader-header .btn-group .dropdown-menu { z-index: 3050; }
 .reader-frame { min-height: 50vh; width: 100%; max-width: 1200px; margin: 0 auto; border: 1px solid #e5e7eb; background: #111827; border-radius: 10px; display: flex; justify-content: center; align-items: flex-start; padding: 10px; overflow: auto; }
 .reader-frame img { max-width: 100%; height: auto; box-shadow: 0 8px 30px rgba(0,0,0,0.35); border-radius: 8px; transition: transform .2s ease; }
+.reader-frame canvas { max-width: 100%; height: auto; box-shadow: 0 8px 30px rgba(0,0,0,0.35); border-radius: 8px; background: #fff; }
 .reader-frame.scroll-mode { display: block; }
 .reader-frame.scroll-mode img { width: 100%; max-width: 900px; margin: 0 auto 20px; display: block; }
+.reader-frame.scroll-mode canvas { width: 100%; max-width: 900px; margin: 0 auto 20px; display: block; }
 
 /* center controls spacing refinement */
 .reader-center-controls { gap: 12px; }
