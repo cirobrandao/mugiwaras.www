@@ -58,20 +58,56 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                 </ol>
             </nav>
             <div class="d-flex align-items-center gap-2">
-                <?php $bulkAction = !empty($seriesReadAll) ? 'unread' : 'read'; ?>
-                <?php $bulkLabel = !empty($seriesReadAll) ? 'Desmarcar tudo como lido' : 'Marcar tudo como lido'; ?>
-                <?php $bulkIcon = !empty($seriesReadAll) ? 'fa-eye-slash' : 'fa-eye'; ?>
-                <form method="post" action="<?= base_path('/libraries/series/' . $bulkAction) ?>" class="m-0">
-                    <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                    <input type="hidden" name="series_id" value="<?= (int)($series['id'] ?? 0) ?>">
-                    <input type="hidden" name="format" value="<?= View::e((string)($format ?? '')) ?>">
-                    <button class="btn btn-sm btn-outline-secondary" type="submit" title="<?= View::e($bulkLabel) ?>" aria-label="<?= View::e($bulkLabel) ?>" onclick="return confirm('<?= View::e($bulkLabel) ?>?');">
-                        <i class="fa-solid <?= $bulkIcon ?>"></i>
-                    </button>
-                </form>
+                <?php $bulkLabel = 'Acoes de leitura'; ?>
+                <?php $bulkIcon = 'fa-eye'; ?>
+                <?php $bulkModalId = 'bulk-read-modal-' . (int)($series['id'] ?? 0); ?>
+                <button class="btn btn-sm btn-outline-secondary" type="button" title="<?= View::e($bulkLabel) ?>" aria-label="<?= View::e($bulkLabel) ?>" data-bs-toggle="modal" data-bs-target="#<?= $bulkModalId ?>">
+                    <i class="fa-solid <?= $bulkIcon ?>"></i>
+                </button>
                 <a class="btn btn-sm btn-outline-secondary border" href="<?= $orderUrl ?>" title="<?= View::e($orderBtnLabel) ?>" aria-label="<?= View::e($orderBtnLabel) ?>">
                     <i class="fa-solid fa-arrow-up-short-wide"></i>
                 </a>
+            </div>
+        </div>
+        <div class="modal fade" id="<?= $bulkModalId ?>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Acoes de leitura</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <form method="post" action="<?= base_path('/libraries/series/read') ?>">
+                        <div class="modal-body">
+                            <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                            <input type="hidden" name="series_id" value="<?= (int)($series['id'] ?? 0) ?>">
+                            <div class="mb-3">
+                                <div class="fw-semibold mb-2">O que voce quer fazer?</div>
+                                <div class="btn-group w-100" role="group" aria-label="Acao de leitura">
+                                    <input type="radio" class="btn-check" name="action" id="bulk-action-read" value="read" checked>
+                                    <label class="btn btn-outline-success" for="bulk-action-read">Marcar como lido</label>
+                                    <input type="radio" class="btn-check" name="action" id="bulk-action-unread" value="unread">
+                                    <label class="btn btn-outline-danger" for="bulk-action-unread">Marcar como nao lido</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="fw-semibold mb-2">Onde aplicar?</div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="scope" id="bulk-scope-all" value="all" checked>
+                                    <label class="form-check-label" for="bulk-scope-all">Serie inteira</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="scope" id="bulk-scope-upto" value="upto">
+                                    <label class="form-check-label" for="bulk-scope-upto">Ate o</label>
+                                </div>
+                                <input class="form-control" id="bulk-episode-order" type="number" name="episode_order" min="1" placeholder="Ex: 12">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button class="btn btn-primary" type="submit">Confirmar</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
         <div class="list-group list-group-flush d-none d-md-block">

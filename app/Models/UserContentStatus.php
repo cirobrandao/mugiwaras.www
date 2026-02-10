@@ -39,7 +39,7 @@ final class UserContentStatus
         $stmt->execute(['u' => $userId, 'c' => $contentId, 'p' => $page, 'p2' => $page]);
     }
 
-    public static function setReadForSeriesAndTypes(int $userId, int $seriesId, array $types): void
+    public static function setReadForSeriesAndTypes(int $userId, int $seriesId, array $types, ?int $maxOrder = null): void
     {
         $types = array_values(array_unique(array_map('strtolower', $types)));
         if (empty($types)) {
@@ -59,16 +59,22 @@ final class UserContentStatus
             return;
         }
         $where = implode(' OR ', $parts);
+        $orderSql = '';
+        $params = ['u' => $userId, 's' => $seriesId];
+        if ($maxOrder !== null && $maxOrder > 0) {
+            $orderSql = ' AND ci.content_order <= :max';
+            $params['max'] = $maxOrder;
+        }
         $sql = "INSERT INTO user_content_status (user_id, content_id, is_read, read_at, updated_at)
-                SELECT :u, ci.id, 1, NOW(), NOW()
-                FROM content_items ci
-                WHERE ci.series_id = :s AND ({$where})
-                ON DUPLICATE KEY UPDATE is_read = 1, read_at = NOW(), updated_at = NOW()";
+            SELECT :u, ci.id, 1, NOW(), NOW()
+            FROM content_items ci
+            WHERE ci.series_id = :s AND ({$where}){$orderSql}
+            ON DUPLICATE KEY UPDATE is_read = 1, read_at = NOW(), updated_at = NOW()";
         $stmt = Database::connection()->prepare($sql);
-        $stmt->execute(['u' => $userId, 's' => $seriesId]);
+        $stmt->execute($params);
     }
 
-    public static function setUnreadForSeriesAndTypes(int $userId, int $seriesId, array $types): void
+    public static function setUnreadForSeriesAndTypes(int $userId, int $seriesId, array $types, ?int $maxOrder = null): void
     {
         $types = array_values(array_unique(array_map('strtolower', $types)));
         if (empty($types)) {
@@ -88,13 +94,19 @@ final class UserContentStatus
             return;
         }
         $where = implode(' OR ', $parts);
+        $orderSql = '';
+        $params = ['u' => $userId, 's' => $seriesId];
+        if ($maxOrder !== null && $maxOrder > 0) {
+            $orderSql = ' AND ci.content_order <= :max';
+            $params['max'] = $maxOrder;
+        }
         $sql = "INSERT INTO user_content_status (user_id, content_id, is_read, read_at, updated_at)
-                SELECT :u, ci.id, 0, NULL, NOW()
-                FROM content_items ci
-                WHERE ci.series_id = :s AND ({$where})
-                ON DUPLICATE KEY UPDATE is_read = 0, read_at = NULL, updated_at = NOW()";
+            SELECT :u, ci.id, 0, NULL, NOW()
+            FROM content_items ci
+            WHERE ci.series_id = :s AND ({$where}){$orderSql}
+            ON DUPLICATE KEY UPDATE is_read = 0, read_at = NULL, updated_at = NOW()";
         $stmt = Database::connection()->prepare($sql);
-        $stmt->execute(['u' => $userId, 's' => $seriesId]);
+        $stmt->execute($params);
     }
 
     public static function countReadForSeriesAndTypes(int $userId, int $seriesId, array $types): int

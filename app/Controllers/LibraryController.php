@@ -351,17 +351,14 @@ final class LibraryController extends Controller
                 ? ContentItem::countBySeriesAndFormat((int)$ser['id'], $format)
                 : ContentItem::countBySeriesAndTypes((int)$ser['id'], $allowedTypes);
         }
-        $bulkTypes = [];
-        if ($format !== '') {
-            $bulkTypes[] = $format;
-        } else {
-            $bulkTypes = $allowedTypes;
-        }
+        $bulkTotal = !empty($allowedTypes)
+            ? ContentItem::countBySeriesAndTypes((int)$ser['id'], $allowedTypes)
+            : 0;
         $readCount = 0;
-        if (!empty($bulkTypes)) {
-            $readCount = UserContentStatus::countReadForSeriesAndTypes((int)$user['id'], (int)$ser['id'], $bulkTypes);
+        if (!empty($allowedTypes)) {
+            $readCount = UserContentStatus::countReadForSeriesAndTypes((int)$user['id'], (int)$ser['id'], $allowedTypes);
         }
-        $seriesReadAll = $total > 0 && $readCount >= $total;
+        $seriesReadAll = $bulkTotal > 0 && $readCount >= $bulkTotal;
         $offset = ($page - 1) * $perPage;
         if (empty($allowedTypes)) {
             $items = [];
@@ -663,33 +660,29 @@ final class LibraryController extends Controller
         if (!$isStaff && !$isAdultUser && (!empty($cat['adult_only']) || !empty($ser['adult_only']))) {
             Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
         }
-        $format = strtolower((string)($request->post['format'] ?? ''));
-        if (!in_array($format, ['pdf', 'cbz', 'epub'], true)) {
-            $format = '';
-        }
+        $action = (string)($request->post['action'] ?? 'read');
+        $scope = (string)($request->post['scope'] ?? 'all');
+        $maxOrder = (int)($request->post['episode_order'] ?? 0);
         $allowCbz = !empty($cat['content_cbz']);
         $allowPdf = !empty($cat['content_pdf']);
         $allowEpub = !empty($cat['content_epub']);
         $types = [];
-        if ($format === 'pdf' && $allowPdf) {
-            $types[] = 'pdf';
-        } elseif ($format === 'cbz' && $allowCbz) {
+        if ($allowCbz) {
             $types[] = 'cbz';
-        } elseif ($format === 'epub' && $allowEpub) {
+        }
+        if ($allowPdf) {
+            $types[] = 'pdf';
+        }
+        if ($allowEpub) {
             $types[] = 'epub';
-        } else {
-            if ($allowCbz) {
-                $types[] = 'cbz';
-            }
-            if ($allowPdf) {
-                $types[] = 'pdf';
-            }
-            if ($allowEpub) {
-                $types[] = 'epub';
-            }
         }
         if (!empty($types)) {
-            UserContentStatus::setReadForSeriesAndTypes((int)$user['id'], $seriesId, $types);
+            $applyOrder = ($scope === 'upto' && $maxOrder > 0) ? $maxOrder : null;
+            if ($action === 'unread') {
+                UserContentStatus::setUnreadForSeriesAndTypes((int)$user['id'], $seriesId, $types, $applyOrder);
+            } else {
+                UserContentStatus::setReadForSeriesAndTypes((int)$user['id'], $seriesId, $types, $applyOrder);
+            }
         }
         Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
     }
@@ -733,33 +726,24 @@ final class LibraryController extends Controller
         if (!$isStaff && !$isAdultUser && (!empty($cat['adult_only']) || !empty($ser['adult_only']))) {
             Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
         }
-        $format = strtolower((string)($request->post['format'] ?? ''));
-        if (!in_array($format, ['pdf', 'cbz', 'epub'], true)) {
-            $format = '';
-        }
+        $scope = (string)($request->post['scope'] ?? 'all');
+        $maxOrder = (int)($request->post['episode_order'] ?? 0);
         $allowCbz = !empty($cat['content_cbz']);
         $allowPdf = !empty($cat['content_pdf']);
         $allowEpub = !empty($cat['content_epub']);
         $types = [];
-        if ($format === 'pdf' && $allowPdf) {
-            $types[] = 'pdf';
-        } elseif ($format === 'cbz' && $allowCbz) {
+        if ($allowCbz) {
             $types[] = 'cbz';
-        } elseif ($format === 'epub' && $allowEpub) {
+        }
+        if ($allowPdf) {
+            $types[] = 'pdf';
+        }
+        if ($allowEpub) {
             $types[] = 'epub';
-        } else {
-            if ($allowCbz) {
-                $types[] = 'cbz';
-            }
-            if ($allowPdf) {
-                $types[] = 'pdf';
-            }
-            if ($allowEpub) {
-                $types[] = 'epub';
-            }
         }
         if (!empty($types)) {
-            UserContentStatus::setUnreadForSeriesAndTypes((int)$user['id'], $seriesId, $types);
+            $applyOrder = ($scope === 'upto' && $maxOrder > 0) ? $maxOrder : null;
+            UserContentStatus::setUnreadForSeriesAndTypes((int)$user['id'], $seriesId, $types, $applyOrder);
         }
         Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
     }
