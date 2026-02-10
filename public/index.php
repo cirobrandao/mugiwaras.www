@@ -145,8 +145,10 @@ $router->post('/admin/packages/update', [new App\Controllers\Admin\PackagesContr
 $router->post('/admin/packages/delete', [new App\Controllers\Admin\PackagesController(), 'delete'], [App\Core\Auth::requireAdmin()]);
 $router->get('/admin/payments', [new App\Controllers\Admin\PaymentsController(), 'index'], [App\Core\Auth::requireAdmin()]);
 $router->get('/admin/payments/proof/{id}', [new App\Controllers\Admin\PaymentsController(), 'proof'], [App\Core\Auth::requireAdmin()]);
+$router->get('/admin/payments/{id}/details', [new App\Controllers\Admin\PaymentsController(), 'details'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/payments/approve', [new App\Controllers\Admin\PaymentsController(), 'approve'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/payments/reject', [new App\Controllers\Admin\PaymentsController(), 'reject'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/payments/{id}/revoke', [new App\Controllers\Admin\PaymentsController(), 'revoke'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/payments/revoke', [new App\Controllers\Admin\PaymentsController(), 'revoke'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/payments/revoke-cancel', [new App\Controllers\Admin\PaymentsController(), 'cancelRevocation'], [App\Core\Auth::requireAdmin()]);
 

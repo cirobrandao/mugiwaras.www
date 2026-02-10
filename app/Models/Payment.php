@@ -34,7 +34,7 @@ final class Payment
             return [];
         }
         $placeholders = implode(',', array_fill(0, count($clean), '?'));
-        $sql = 'SELECT p.*, pk.title AS package_name
+        $sql = 'SELECT p.*, pk.title AS package_name, pk.price AS package_price, pk.subscription_days AS package_subscription_days
                 FROM payments p
                 LEFT JOIN packages pk ON pk.id = p.package_id
                 WHERE p.user_id IN (' . $placeholders . ')
@@ -56,15 +56,49 @@ final class Payment
 
     public static function byUserAll(int $userId): array
     {
-        $stmt = Database::connection()->prepare('SELECT p.*, pk.title AS package_name FROM payments p LEFT JOIN packages pk ON pk.id = p.package_id WHERE p.user_id = :u ORDER BY p.id DESC');
+        $stmt = Database::connection()->prepare('SELECT p.*, pk.title AS package_name, pk.price AS package_price, pk.subscription_days AS package_subscription_days FROM payments p LEFT JOIN packages pk ON pk.id = p.package_id WHERE p.user_id = :u ORDER BY p.id DESC');
         $stmt->bindValue('u', $userId, \PDO::PARAM_INT);
         $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public static function historyByUsers(array $userIds): array
+    {
+        $clean = array_values(array_unique(array_filter(array_map('intval', $userIds), static fn ($v) => $v > 0)));
+        if (empty($clean)) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($clean), '?'));
+        $sql = 'SELECT p.id, p.user_id, p.package_id, p.months, p.status, p.created_at, p.updated_at, p.proof_path, p.revoked_at, p.revoked_by, p.revoked_prev_tier, p.revoked_prev_expires_at,
+                       pk.title AS package_title, pk.price AS package_price, pk.subscription_days AS package_subscription_days
+                FROM payments p
+                INNER JOIN packages pk ON pk.id = p.package_id
+                WHERE p.user_id IN (' . $placeholders . ')
+                ORDER BY p.user_id ASC, p.id DESC';
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute($clean);
         return $stmt->fetchAll();
     }
 
     public static function find(int $id): ?array
     {
         $stmt = Database::connection()->prepare('SELECT * FROM payments WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public static function findDetails(int $id): ?array
+    {
+        $stmt = Database::connection()->prepare(
+            'SELECT p.*, u.username, u.email, u.access_tier, u.subscription_expires_at, u.credits,
+                    pk.title AS package_title, pk.price AS package_price, pk.subscription_days, pk.bonus_credits
+             FROM payments p
+             INNER JOIN users u ON u.id = p.user_id
+             INNER JOIN packages pk ON pk.id = p.package_id
+             WHERE p.id = :id
+             LIMIT 1'
+        );
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
         return $row ?: null;

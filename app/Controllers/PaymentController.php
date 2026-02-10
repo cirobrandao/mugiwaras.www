@@ -15,6 +15,7 @@ use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\Category;
 use App\Models\User;
+use App\Services\SubscriptionPricingService;
 
 final class PaymentController extends Controller
 {
@@ -54,36 +55,26 @@ final class PaymentController extends Controller
         } elseif ($months > 12) {
             $months = 12;
         }
-        $baseTotal = (float)($package['price'] ?? 0) * $months;
-        $total = $baseTotal;
-        $prorataCredit = 0.0;
+        $pricing = new SubscriptionPricingService();
         $remainingDays = 0;
         $currentPackageTitle = null;
+        $baseTotal = 0.0;
+        $total = 0.0;
+        $pricingError = null;
+        $quote = null;
 
-        $lastApproved = Payment::latestApprovedByUser((int)$user['id']);
-        if ($lastApproved) {
-            $currentPackage = Package::find((int)$lastApproved['package_id']);
+        try {
+            $quote = $pricing->quotePurchase((int)$user['id'], (int)$packageId, $months, 'now');
+            $remainingDays = (int)($quote['remaining_days'] ?? 0);
+            $baseTotal = ((int)($quote['new_term_cost_cents'] ?? 0)) / 100;
+            $total = ((int)($quote['amount_to_charge_cents'] ?? 0)) / 100;
+            $active = $pricing->getActiveSubscription((int)$user['id'], 'now');
+            $currentPackage = $active['current_package'] ?? null;
             if ($currentPackage) {
                 $currentPackageTitle = (string)($currentPackage['title'] ?? '');
             }
-            $samePackage = (int)($lastApproved['package_id'] ?? 0) === (int)($package['id'] ?? 0);
-            $isUpgrade = $currentPackage
-                && (float)($currentPackage['price'] ?? 0) < (float)($package['price'] ?? 0)
-                && !$samePackage;
-            $expiresAt = $user['subscription_expires_at'] ?? null;
-            $expiresTs = is_string($expiresAt) ? strtotime($expiresAt) : false;
-            if ($expiresTs !== false && $expiresTs > time() && $isUpgrade) {
-                $remainingDays = (int)ceil(($expiresTs - time()) / 86400);
-                $currentMonths = (int)($lastApproved['months'] ?? 1);
-                $currentMonths = max(1, min(12, $currentMonths));
-                $currentTotalDays = 30 * $currentMonths;
-                $currentTotalPrice = (float)($currentPackage['price'] ?? 0) * $currentMonths;
-                if ($currentTotalDays > 0 && $currentTotalPrice > 0) {
-                    $dailyRate = $currentTotalPrice / $currentTotalDays;
-                    $prorataCredit = $dailyRate * $remainingDays;
-                    $total = max(0.0, $baseTotal - $prorataCredit);
-                }
-            }
+        } catch (\RuntimeException $e) {
+            $pricingError = $e->getMessage();
         }
         $pixKey = (string)Setting::get('pix_key', '');
         if ($pixKey === '') {
@@ -101,7 +92,7 @@ final class PaymentController extends Controller
             'package' => $package,
             'months' => $months,
             'baseTotal' => $baseTotal,
-            'prorataCredit' => $prorataCredit,
+            'quote' => $quote,
             'remainingDays' => $remainingDays,
             'currentPackageTitle' => $currentPackageTitle,
             'total' => $total,
@@ -112,6 +103,7 @@ final class PaymentController extends Controller
             'pixHolder' => $pixHolder,
             'pixCpf' => $pixCpf,
             'error' => $error,
+            'pricingError' => $pricingError,
         ]);
     }
 
@@ -148,6 +140,12 @@ final class PaymentController extends Controller
         }
         if (!Package::find($packageId)) {
             Response::redirect(base_path('/loja?error=package'));
+        }
+        try {
+            $pricing = new SubscriptionPricingService();
+            $pricing->quotePurchase((int)$user['id'], $packageId, $months, 'now');
+        } catch (\RuntimeException $e) {
+            Response::redirect(base_path('/loja/checkout/' . $packageId . '?error=downgrade'));
         }
         $ext = $this->validateProof($file);
         $paymentId = Payment::create([
@@ -243,19 +241,14 @@ final class PaymentController extends Controller
             $up = $db->prepare('UPDATE vouchers SET uses = uses + 1 WHERE code = :c');
             $up->execute(['c' => $code]);
 
-            Payment::create([
+            $paymentId = Payment::create([
                 'uid' => (int)$user['id'],
                 'pid' => $packageId,
                 'status' => 'approved',
                 'months' => $months,
             ]);
-
-            if ($days > 0) {
-                User::extendSubscription((int)$user['id'], $days);
-            }
-            if (($user['access_tier'] ?? '') === 'restrito') {
-                User::setAccessTier((int)$user['id'], 'user');
-            }
+            $pricing = new SubscriptionPricingService();
+            $pricing->applyApprovedPayment($paymentId, 'now');
             $db->commit();
         } catch (\Throwable $e) {
             if ($db->inTransaction()) {

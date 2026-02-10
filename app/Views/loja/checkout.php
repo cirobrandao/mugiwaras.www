@@ -7,6 +7,10 @@ ob_start();
     <span class="badge bg-secondary">Pagamento</span>
 </div>
 
+<?php if (!empty($pricingError)): ?>
+    <div class="alert alert-danger small"><?= View::e((string)$pricingError) ?></div>
+<?php endif; ?>
+
 <div class="row g-3 mb-3">
     <div class="col-md-6">
         <div class="card h-100 shadow-sm loja-card">
@@ -23,15 +27,31 @@ ob_start();
                     <strong><?= (int)($months ?? 1) ?></strong>
                 </div>
                 <hr class="my-2">
-                <?php if (!empty($prorataCredit) && $prorataCredit > 0): ?>
+                <?php if (!empty($quote)): ?>
+                    <?php
+                    $newTermCostCents = (int)($quote['new_term_cost_cents'] ?? 0);
+                    $upgradeDiffCents = (int)($quote['upgrade_diff_cents'] ?? 0);
+                    $creditRemainingCents = (int)($quote['credit_current_remaining_cents'] ?? 0);
+                    $costRemainingCents = (int)($quote['cost_new_remaining_cents'] ?? 0);
+                    ?>
                     <div class="d-flex justify-content-between">
                         <span class="text-muted">Subtotal</span>
-                        <strong><?= format_brl((float)($baseTotal ?? 0)) ?></strong>
+                        <strong><?= format_brl($newTermCostCents / 100) ?></strong>
                     </div>
-                    <div class="d-flex justify-content-between">
-                        <span class="text-muted">Crédito pró-rata<?= !empty($currentPackageTitle) ? ' (' . View::e((string)$currentPackageTitle) . ')' : '' ?></span>
-                        <strong class="text-success">- <?= format_brl((float)$prorataCredit) ?></strong>
-                    </div>
+                    <?php if ($upgradeDiffCents > 0): ?>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Diferença de upgrade</span>
+                            <strong><?= format_brl($upgradeDiffCents / 100) ?></strong>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($creditRemainingCents > 0 || $costRemainingCents > 0): ?>
+                        <div class="small text-muted mt-2">
+                            Crédito restante<?= !empty($currentPackageTitle) ? ' (' . View::e((string)$currentPackageTitle) . ')' : '' ?>:
+                            <strong><?= format_brl($creditRemainingCents / 100) ?></strong>
+                            • Custo restante novo pacote:
+                            <strong><?= format_brl($costRemainingCents / 100) ?></strong>
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted">Total</span>
@@ -100,6 +120,8 @@ ob_start();
                     O arquivo ultrapassa 4MB.
                 <?php elseif ($error === 'type'): ?>
                     Formato inválido. Envie JPG, PNG ou PDF.
+                <?php elseif ($error === 'downgrade'): ?>
+                    Downgrade só após vencimento.
                 <?php else: ?>
                     Não foi possível enviar o comprovante.
                 <?php endif; ?>

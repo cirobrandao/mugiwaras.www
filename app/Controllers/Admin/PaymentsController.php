@@ -10,20 +10,50 @@ use App\Core\Response;
 use App\Core\Csrf;
 use App\Core\Audit;
 use App\Core\Auth;
+use App\Core\Database;
 use App\Models\Payment;
 use App\Models\Package;
 use App\Models\User;
+use App\Services\SubscriptionPricingService;
+use App\Services\PaymentRevocationService;
 
 final class PaymentsController extends Controller
 {
     public function index(): void
     {
         $payments = Payment::all();
+        $userIds = array_values(array_unique(array_map(static fn ($p) => (int)($p['user_id'] ?? 0), $payments)));
+        $userIds = array_values(array_filter($userIds, static fn ($id) => $id > 0));
+        $historyRows = Payment::byUsers($userIds);
+        $historyByUser = [];
+        foreach ($historyRows as $row) {
+            $uid = (int)($row['user_id'] ?? 0);
+            if ($uid <= 0) {
+                continue;
+            }
+            if (!isset($historyByUser[$uid])) {
+                $historyByUser[$uid] = [];
+            }
+            $historyByUser[$uid][] = $row;
+        }
         echo $this->view('admin/payments', [
             'payments' => $payments,
+            'historyByUser' => $historyByUser,
             'csrf' => Csrf::token(),
             'currentUser' => Auth::user(),
         ]);
+    }
+
+    public function details(Request $request, string $id): void
+    {
+        $payment = Payment::findDetails((int)$id);
+        if (!$payment) {
+            $this->respondJson(['ok' => false, 'message' => 'Pagamento nao encontrado.'], 404);
+            return;
+        }
+        $proofPath = (string)($payment['proof_path'] ?? '');
+        $payment['proof_url'] = $proofPath !== '' ? base_path('/admin/payments/proof/' . (int)$payment['id']) : null;
+        $this->respondJson(['ok' => true, 'payment' => $payment]);
     }
 
     public function approve(Request $request): void
@@ -37,26 +67,13 @@ final class PaymentsController extends Controller
             Response::redirect(base_path('/admin/payments'));
         }
 
-        $package = Package::find((int)$payment['package_id']);
-        $targetUser = User::findById((int)$payment['user_id']);
-        if ($targetUser && ($targetUser['access_tier'] ?? '') === 'restrito') {
-            User::setAccessTier((int)$payment['user_id'], 'user');
-        }
-        if ($package) {
-            if ((int)$package['bonus_credits'] > 0) {
-                User::addCredits((int)$payment['user_id'], (int)$package['bonus_credits']);
-            }
-            $months = (int)($payment['months'] ?? 1);
-            if ($months < 1) {
-                $months = 1;
-            } elseif ($months > 12) {
-                $months = 12;
-            }
-            $days = 30 * $months;
-            User::extendSubscription((int)$payment['user_id'], $days);
-        }
-
         Payment::setStatus($id, 'approved');
+        $package = Package::find((int)$payment['package_id']);
+        if ($package && (int)($package['bonus_credits'] ?? 0) > 0) {
+            User::addCredits((int)$payment['user_id'], (int)$package['bonus_credits']);
+        }
+        $pricing = new SubscriptionPricingService();
+        $pricing->applyApprovedPayment($id, 'now');
         Audit::log('payment_approve', $_SESSION['user_id'] ?? null, ['payment_id' => $id]);
         Response::redirect(base_path('/admin/payments'));
     }
@@ -76,47 +93,87 @@ final class PaymentsController extends Controller
         Response::redirect(base_path('/admin/payments'));
     }
 
-    public function revoke(Request $request): void
+    public function revoke(Request $request, ?string $id = null): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/admin/payments'));
+            $this->respondJson(['ok' => false, 'message' => 'CSRF invalido.'], 400);
+            return;
         }
-        $id = (int)($request->post['id'] ?? 0);
-        $payment = Payment::find($id);
-        $revokedAt = (string)($payment['revoked_at'] ?? '');
-        $isRevoked = $revokedAt !== '' && $revokedAt !== '0000-00-00 00:00:00' && $revokedAt !== '0000-00-00';
-        if (!$payment || $payment['status'] !== 'approved' || $isRevoked) {
-            Response::redirect(base_path('/admin/payments'));
-        }
+        $rawUri = (string)($_SERVER['REQUEST_URI'] ?? '');
+        $rawMethod = (string)($_SERVER['REQUEST_METHOD'] ?? '');
+        $rawId = $id ?? ($request->post['id'] ?? null);
+        $rawIdStr = is_scalar($rawId) ? (string)$rawId : '';
+        $normalizedId = (int)preg_replace('/\D+/', '', $rawIdStr);
+        $paymentId = $normalizedId > 0 ? $normalizedId : (int)($request->post['id'] ?? 0);
+        $reason = trim((string)($request->post['reason'] ?? ''));
+        $adminId = (int)($_SESSION['user_id'] ?? 0);
+        error_log('[revoke] method=' . $rawMethod . ' uri=' . $rawUri);
+        error_log('[revoke] id_raw=' . $rawIdStr . ' id_normalized=' . $paymentId . ' admin=' . $adminId . ' reason=' . $reason);
+        error_log('[revoke] get=' . json_encode($_GET ?? []));
+        error_log('[revoke] post=' . json_encode($_POST ?? []));
 
-        $userId = (int)($payment['user_id'] ?? 0);
-        $targetUser = User::findById($userId);
-        if (!$targetUser) {
-            Response::redirect(base_path('/admin/payments'));
-        }
-
-        $prevExpires = $targetUser['subscription_expires_at'] ?? null;
-
-        $package = Package::find((int)($payment['package_id'] ?? 0));
-        if ($package) {
-            $bonusCredits = (int)($package['bonus_credits'] ?? 0);
-            if ($bonusCredits > 0) {
-                User::removeCredits($userId, $bonusCredits);
-            }
-            $months = (int)($payment['months'] ?? 1);
-            if ($months < 1) {
-                $months = 1;
-            } elseif ($months > 12) {
-                $months = 12;
-            }
-            if ((int)($package['subscription_days'] ?? 0) > 0) {
-                User::setSubscriptionExpiresAt($userId, $prevExpires ? (string)$prevExpires : null);
-            }
+        if ($paymentId <= 0) {
+            $this->respondJson([
+                'ok' => false,
+                'message' => 'ID invalido no estorno.',
+                'result' => [
+                    'status' => 'invalid_id',
+                    'payment_id' => $paymentId,
+                    'raw_id' => $rawIdStr,
+                    'uri' => $rawUri,
+                ],
+            ], 400);
+            return;
         }
 
-        Payment::markRevoked($id, (int)($_SESSION['user_id'] ?? 0), $prevExpires ? (string)$prevExpires : null);
-        Audit::log('payment_refund', $_SESSION['user_id'] ?? null, ['payment_id' => $id, 'user_id' => $userId]);
-        Response::redirect(base_path('/admin/payments'));
+        $db = Database::connection();
+        $info = $db->query('SELECT DATABASE() AS db, @@hostname AS host, @@port AS port')->fetch();
+
+        $q1 = $db->prepare('SELECT id, user_id, package_id, status, created_at FROM payments WHERE id = :id LIMIT 1');
+        $q1->execute(['id' => $paymentId]);
+        $existsRow = $q1->fetch();
+
+        $q2 = $db->prepare('SELECT COUNT(*) AS c FROM payments WHERE id = :id');
+        $q2->execute(['id' => $paymentId]);
+        $countRow = $q2->fetch();
+        $count = (int)($countRow['c'] ?? 0);
+
+        error_log('[revoke] exists_count=' . $count . ' exists_row=' . json_encode($existsRow));
+
+        if ($count === 0) {
+            $this->respondJson([
+                'ok' => false,
+                'message' => 'Pagamento nao encontrado.',
+                'result' => [
+                    'status' => 'not_found',
+                    'payment_id' => $paymentId,
+                    'raw_id' => $rawIdStr,
+                    'db' => $info['db'] ?? null,
+                    'host' => $info['host'] ?? null,
+                    'port' => $info['port'] ?? null,
+                    'hint' => 'Verifique se admin e cliente apontam pro mesmo banco',
+                ],
+            ], 404);
+            return;
+        }
+        $service = new PaymentRevocationService();
+        $result = $service->revokePayment($paymentId, $adminId, $reason, 'now');
+        Audit::log('payment_refund', $adminId > 0 ? $adminId : null, ['payment_id' => $paymentId, 'result' => $result]);
+        if (($result['status'] ?? '') === 'revoked' || ($result['status'] ?? '') === 'already_revoked') {
+            $this->respondJson(['ok' => true, 'result' => $result]);
+            return;
+        }
+        if (($result['status'] ?? '') === 'not_found') {
+            error_log('[revoke] not_found id=' . $paymentId);
+        }
+        $this->respondJson(['ok' => false, 'message' => 'Nao foi possivel estornar.', 'result' => $result], 400);
+    }
+
+    private function respondJson(array $payload, int $status = 200): void
+    {
+        http_response_code($status);
+        header('Content-Type: application/json');
+        echo json_encode($payload);
     }
 
     public function cancelRevocation(Request $request): void

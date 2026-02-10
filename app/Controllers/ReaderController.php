@@ -741,21 +741,8 @@ final class ReaderController extends Controller
         if (Auth::isEquipe($user) && (!empty($user['uploader_agent']) || !empty($user['moderator_agent']) || !empty($user['support_agent']))) {
             return null;
         }
-        if ($user['access_tier'] !== 'vitalicio' && !empty($user['subscription_expires_at'])) {
-            $expires = strtotime((string)$user['subscription_expires_at']);
-            if ($expires !== false && $expires < time()) {
-                return 'Assinatura expirada.';
-            }
-        }
-        $isSubscriber = ($user['access_tier'] ?? '') === 'vitalicio';
-        if (!$isSubscriber && !empty($user['subscription_expires_at'])) {
-            $expires = strtotime((string)$user['subscription_expires_at']);
-            if ($expires !== false && $expires >= time()) {
-                $isSubscriber = true;
-            }
-        }
-        if (!$isSubscriber) {
-            return 'Você precisa adquirir o acesso para continuar.';
+        if (($user['access_tier'] ?? '') === 'restrito') {
+            return 'Acesso restrito.';
         }
         return null;
     }
@@ -781,6 +768,9 @@ final class ReaderController extends Controller
         if (!$requires && !$isRestricted) {
             return true;
         }
+        if (!$this->subscriptionActive($user)) {
+            return false;
+        }
         $allowedIds = $this->allowedCategoryIds($user);
         if (empty($allowedIds)) {
             return false;
@@ -789,9 +779,26 @@ final class ReaderController extends Controller
         return isset($allowedSet[$categoryId]);
     }
 
+    private function subscriptionActive(array $user): bool
+    {
+        if (($user['access_tier'] ?? '') === 'vitalicio') {
+            return true;
+        }
+        if (!empty($user['subscription_expires_at'])) {
+            $expires = strtotime((string)$user['subscription_expires_at']);
+            if ($expires !== false && $expires > time()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private function allowedCategoryIds(array $user): array
     {
         if (($user['access_tier'] ?? '') === 'vitalicio') {
+            return [];
+        }
+        if (!$this->subscriptionActive($user)) {
             return [];
         }
         $payment = Payment::latestApprovedByUser((int)($user['id'] ?? 0));

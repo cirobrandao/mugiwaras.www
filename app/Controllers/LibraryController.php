@@ -141,7 +141,7 @@ final class LibraryController extends Controller
         }
         if (!empty($user['subscription_expires_at'])) {
             $expires = strtotime((string)$user['subscription_expires_at']);
-            if ($expires !== false && $expires >= time()) {
+            if ($expires !== false && $expires > time()) {
                 return true;
             }
         }
@@ -151,6 +151,9 @@ final class LibraryController extends Controller
     private function allowedCategoryIds(array $user): array
     {
         if (($user['access_tier'] ?? '') === 'vitalicio') {
+            return [];
+        }
+        if (!$this->subscriptionActive($user)) {
             return [];
         }
         $payment = Payment::latestApprovedByUser((int)($user['id'] ?? 0));

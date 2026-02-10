@@ -181,8 +181,11 @@ $page = min($page, $pages);
 					<span class="tier-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color: <?= View::e($tierColor) ?>; border:1px solid <?= View::e($tierColor) ?>;" title="<?= View::e($tierLabels[$tier] ?? $tier) ?>"></span>
 				</td>
 				<td>
-					<a class="text-decoration-none" href="<?= base_path('/perfil/' . rawurlencode((string)($u['username'] ?? ''))) ?>">
+					<button class="btn btn-link p-0 text-decoration-none fw-semibold" type="button" data-bs-toggle="modal" data-bs-target="#paymentHistoryModal<?= (int)$u['id'] ?>">
 						<?= View::e((string)($u['username'] ?? '')) ?>
+					</button>
+					<a class="ms-2 small text-muted" href="<?= base_path('/perfil/' . rawurlencode((string)($u['username'] ?? ''))) ?>" title="Abrir perfil">
+						<i class="fa-solid fa-up-right-from-square"></i>
 					</a>
 				</td>
 				<td>
@@ -418,6 +421,94 @@ $page = min($page, $pages);
 			$modals[] = ob_get_clean();
 			ob_start();
 			?>
+			<div class="modal fade" id="paymentHistoryModal<?= (int)$u['id'] ?>" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog modal-xl modal-dialog-centered">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Historico de pagamentos</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+						</div>
+						<div class="modal-body">
+							<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+								<div><strong><?= View::e((string)$u['username']) ?></strong></div>
+								<div class="small text-muted">ID #<?= (int)$u['id'] ?></div>
+							</div>
+							<?php
+							$history = $paymentHistory[(int)$u['id']] ?? [];
+							$statusLabels = [
+								'pending' => 'Pendente',
+								'approved' => 'Aprovado',
+								'rejected' => 'Rejeitado',
+								'revoked' => 'Revogado',
+							];
+							$statusClasses = [
+								'pending' => 'bg-warning text-dark',
+								'approved' => 'bg-success',
+								'rejected' => 'bg-danger',
+								'revoked' => 'bg-secondary',
+							];
+							?>
+							<?php if (empty($history)): ?>
+								<div class="text-muted">Sem pagamentos registrados.</div>
+							<?php else: ?>
+								<div class="table-responsive">
+									<table class="table table-sm align-middle mb-0">
+										<thead class="table-light">
+										<tr>
+											<th scope="col" style="width: 70px;">ID</th>
+											<th scope="col">Pacote</th>
+											<th scope="col" style="width: 90px;">Meses</th>
+											<th scope="col" style="width: 110px;">Valor</th>
+											<th scope="col" style="width: 120px;">Status</th>
+											<th scope="col" style="width: 170px;">Criado</th>
+											<th scope="col" style="width: 170px;">Atualizado</th>
+											<th scope="col" style="width: 120px;">Acoes</th>
+										</tr>
+										</thead>
+										<tbody>
+										<?php foreach ($history as $p): ?>
+											<?php
+												$pid = (int)($p['id'] ?? 0);
+												$months = (int)($p['months'] ?? 0);
+												$price = (float)($p['package_price'] ?? 0);
+												$total = $price * max(1, $months);
+												$status = (string)($p['status'] ?? 'pending');
+												$badgeClass = $statusClasses[$status] ?? 'bg-secondary';
+											?>
+											<tr>
+												<td>#<?= $pid ?></td>
+												<td><?= View::e((string)($p['package_title'] ?? '')) ?></td>
+												<td><?= $months ?></td>
+												<td><?= format_brl($total) ?></td>
+												<td><span class="badge <?= $badgeClass ?>"><?= View::e($statusLabels[$status] ?? $status) ?></span></td>
+												<td><?= View::e((string)($p['created_at'] ?? '-')) ?></td>
+												<td><?= View::e((string)($p['updated_at'] ?? '-')) ?></td>
+												<td>
+													<?php if ($status === 'approved'): ?>
+														<button class="btn btn-sm btn-outline-danger" type="button" data-revoke-payment data-payment-id="<?= $pid ?>" data-payment-user="<?= (int)$u['id'] ?>" data-payment-label="#<?= $pid ?> - <?= View::e((string)($p['package_title'] ?? '')) ?>">
+															Revogar
+														</button>
+													<?php else: ?>
+														<span class="text-muted">-</span>
+													<?php endif; ?>
+												</td>
+											</tr>
+										<?php endforeach; ?>
+										</tbody>
+									</table>
+								</div>
+							<?php endif; ?>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<?php
+			$modals[] = ob_get_clean();
+			ob_start();
+			?>
 			<div class="modal fade" id="loginHistoryModal<?= (int)$u['id'] ?>" tabindex="-1" aria-hidden="true">
 				<div class="modal-dialog modal-dialog-centered modal-lg">
 					<div class="modal-content">
@@ -554,6 +645,62 @@ if (!empty($baseParams)) {
 		<?= $m ?>
 	<?php endforeach; ?>
 <?php endif; ?>
+
+<div class="modal fade" id="revokePaymentModal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Revogar pagamento</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+			</div>
+			<form method="post" id="revokePaymentForm">
+				<div class="modal-body">
+					<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+					<div class="small text-muted mb-2" id="revokePaymentLabel"></div>
+					<label class="form-label">Motivo</label>
+					<textarea class="form-control" name="reason" id="revokePaymentReason" rows="3" required></textarea>
+					<div class="form-text">Informe o motivo da revogacao para auditoria.</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button class="btn btn-danger" type="submit">Revogar</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const modalEl = document.getElementById('revokePaymentModal');
+	const form = document.getElementById('revokePaymentForm');
+	const reason = document.getElementById('revokePaymentReason');
+	const label = document.getElementById('revokePaymentLabel');
+	if (!modalEl || !form || !reason) return;
+	const modal = window.bootstrap ? new window.bootstrap.Modal(modalEl) : null;
+	const buttons = document.querySelectorAll('[data-revoke-payment]');
+	buttons.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const paymentId = btn.getAttribute('data-payment-id') || '';
+			const paymentLabel = btn.getAttribute('data-payment-label') || '';
+			form.setAttribute('action', `<?= base_path('/admin/payments') ?>/${paymentId}/revoke`);
+			reason.value = '';
+			if (label) {
+				label.textContent = paymentLabel ? `Pagamento ${paymentLabel}` : `Pagamento #${paymentId}`;
+			}
+			if (modal) {
+				modal.show();
+			} else {
+				const motivo = window.prompt('Motivo da revogacao:');
+				if (motivo && motivo.trim() !== '') {
+					reason.value = motivo.trim();
+					form.submit();
+				}
+			}
+		});
+	});
+});
+</script>
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../layout.php';

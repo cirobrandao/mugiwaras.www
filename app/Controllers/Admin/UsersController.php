@@ -673,6 +673,18 @@ final class UsersController extends Controller
         $users = User::pagedFiltered($page, $perPage, $filters);
         $userIds = array_map(static fn ($u) => (int)($u['id'] ?? 0), $users);
         $latestPayments = Payment::latestApprovedByUsers($userIds);
+        $historyRows = Payment::historyByUsers($userIds);
+        $paymentHistory = [];
+        foreach ($historyRows as $row) {
+            $uid = (int)($row['user_id'] ?? 0);
+            if ($uid <= 0) {
+                continue;
+            }
+            if (!isset($paymentHistory[$uid])) {
+                $paymentHistory[$uid] = [];
+            }
+            $paymentHistory[$uid][] = $row;
+        }
         $loginHistory = LoginHistory::forUsers($userIds, 10);
         $packages = Package::all();
         $packageIds = array_map(static fn ($p) => (int)($p['id'] ?? 0), $packages);
@@ -707,6 +719,7 @@ final class UsersController extends Controller
             'total' => $total,
             'pages' => $pages,
             'latestPayments' => $latestPayments,
+            'paymentHistory' => $paymentHistory,
             'loginHistory' => $loginHistory,
             'packages' => $packages,
             'packageCategories' => $packageCategories,
