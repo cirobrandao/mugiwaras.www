@@ -17,12 +17,12 @@ final class CbrToCbzConverter implements ConverterInterface
         $bin = (string)config('converters.unrar_bin', '');
         if ($bin !== '' && is_executable($bin)) {
             $tmpDir = $this->tempDir('cbr');
-            $cmd = sprintf('"%s" e -idq %s %s', $bin, escapeshellarg($sourcePath), escapeshellarg($tmpDir));
+            $cmd = sprintf('"%s" x -idq -y -o+ %s %s', $bin, escapeshellarg($sourcePath), escapeshellarg($tmpDir));
             $output = [];
             $code = 0;
             exec($cmd . ' 2>&1', $output, $code);
             if ($code === 0) {
-                $images = glob($tmpDir . '/*.{jpg,jpeg,png,gif,webp,bmp,tif,tiff,jfif}', GLOB_BRACE) ?: [];
+                $images = $this->collectImages($tmpDir);
                 if (!$images) {
                     $this->reason = 'No images extracted.';
                     $this->cleanup($tmpDir);
@@ -76,6 +76,27 @@ final class CbrToCbzConverter implements ConverterInterface
         }
         $zip->close();
         return true;
+    }
+
+    private function collectImages(string $root): array
+    {
+        if (!is_dir($root)) {
+            return [];
+        }
+        $images = [];
+        $iter = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
+        );
+        foreach ($iter as $file) {
+            if (!$file->isFile()) {
+                continue;
+            }
+            $ext = strtolower($file->getExtension());
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tif', 'tiff', 'jfif'], true)) {
+                $images[] = $file->getPathname();
+            }
+        }
+        return $images;
     }
 
     private function tempDir(string $prefix): string

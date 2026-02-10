@@ -45,7 +45,7 @@ final class SevenZipToCbzConverter implements ConverterInterface
             return false;
         }
 
-        $images = glob($tmpDir . '/*.{jpg,jpeg,png,gif,webp,bmp,tif,tiff,jfif}', GLOB_BRACE) ?: [];
+        $images = $this->collectImages($tmpDir);
         if (!$images) {
             $this->reason = 'No images extracted.';
             $this->cleanup($tmpDir);
@@ -86,6 +86,27 @@ final class SevenZipToCbzConverter implements ConverterInterface
         }
         $zip->close();
         return true;
+    }
+
+    private function collectImages(string $root): array
+    {
+        if (!is_dir($root)) {
+            return [];
+        }
+        $images = [];
+        $iter = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
+        );
+        foreach ($iter as $file) {
+            if (!$file->isFile()) {
+                continue;
+            }
+            $ext = strtolower($file->getExtension());
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tif', 'tiff', 'jfif'], true)) {
+                $images[] = $file->getPathname();
+            }
+        }
+        return $images;
     }
 
     private function tempDir(string $prefix): string
