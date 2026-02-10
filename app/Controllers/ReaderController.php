@@ -301,7 +301,7 @@ final class ReaderController extends Controller
 
     private function sanitizeDownloadFilename(string $name): string
     {
-        $clean = preg_replace('/[\x00-\x1F\x7F"\\\/<>:\\|?*]+/', ' ', $name) ?? $name;
+        $clean = preg_replace('#[\x00-\x1F\x7F"\\/<>:\\|?*]+#', ' ', $name) ?? $name;
         $clean = preg_replace('/\s+/', ' ', $clean) ?? $clean;
         $clean = trim($clean);
         if ($clean === '' || $clean === '.pdf') {
