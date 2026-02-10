@@ -68,6 +68,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php $isPdf = $itemExt === 'pdf'; ?>
             <?php $isEpub = $itemExt === 'epub'; ?>
             <?php $iosOnlyDownload = !empty($isIos); ?>
+            <?php $disablePdfPopup = !empty($disablePdfPopup); ?>
             <?php $downloadToken = !empty($downloadTokens[(int)$item['id']]) ? (string)$downloadTokens[(int)$item['id']] : ''; ?>
             <?php $pdfDownloadUrl = !empty($pdfDownloadUrls[(int)$item['id']]) ? (string)$pdfDownloadUrls[(int)$item['id']] : ''; ?>
             <?php if ($isPdf) { $hasPdf = true; } ?>
@@ -86,7 +87,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                             </button>
                         </form>
                         <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <a href="<?= $isPdf ? ($iosOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf && !$iosOnlyDownload ? 'data-open-pdf' : '' ?> <?= $isPdf && !$iosOnlyDownload ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
+                            <a href="<?= $isPdf ? ($iosOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf && !$disablePdfPopup ? 'data-open-pdf' : '' ?> <?= $isPdf && !$disablePdfPopup ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
                                 <?= View::e(str_replace('_', ' ', (string)$item['title'])) ?>
                             </a>
                             <?php if ($isPdf): ?>
@@ -148,6 +149,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php $isPdf = $itemExt === 'pdf'; ?>
             <?php $isEpub = $itemExt === 'epub'; ?>
             <?php $iosOnlyDownload = !empty($isIos); ?>
+            <?php $disablePdfPopup = !empty($disablePdfPopup); ?>
             <?php $downloadToken = !empty($downloadTokens[(int)$item['id']]) ? (string)$downloadTokens[(int)$item['id']] : ''; ?>
             <?php $pdfDownloadUrl = !empty($pdfDownloadUrls[(int)$item['id']]) ? (string)$pdfDownloadUrls[(int)$item['id']] : ''; ?>
             <?php if ($isPdf) { $hasPdf = true; } ?>
@@ -168,7 +170,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                                 </button>
                             </form>
                             <div>
-                                <a class="text-decoration-none fw-semibold" href="<?= $isPdf ? ($iosOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf && !$iosOnlyDownload ? 'data-open-pdf' : '' ?> <?= $isPdf && !$iosOnlyDownload ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
+                                <a class="text-decoration-none fw-semibold" href="<?= $isPdf ? ($iosOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf && !$disablePdfPopup ? 'data-open-pdf' : '' ?> <?= $isPdf && !$disablePdfPopup ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
                                     <?= View::e(str_replace('_', ' ', (string)$item['title'])) ?>
                                 </a>
                                 <div class="small text-muted">Clique para abrir</div>
