@@ -81,9 +81,7 @@ foreach ($jobs as $job) {
             echo "  converted: {$relative}\n";
         }
         $payload = json_decode((string)$job['payload'], true) ?: [];
-        if (!empty($payload['cleanup_source']) && !empty($payload['source']) && file_exists((string)$payload['source'])) {
-            @unlink((string)$payload['source']);
-        }
+        // Source cleanup disabled to avoid removing originals.
         Job::markDone($jobId);
         Upload::setStatusByJob($jobId, 'done');
         Audit::log('convert_job', null, ['job_id' => $jobId]);
