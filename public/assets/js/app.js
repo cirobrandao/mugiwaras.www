@@ -58,12 +58,17 @@ document.addEventListener('DOMContentLoaded', () => {
 	const openBtn = document.getElementById('pdfOpenBtn');
 	const dialog = document.getElementById('pdfViewerDialog');
 	if (!modal || !iframe) return;
-	const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+	const ua = navigator.userAgent || '';
+	const isIOS = /iphone|ipad|ipod/i.test(ua);
+	const isAndroid = /android/i.test(ua);
 
 	const titleEl = document.getElementById('pdfViewerTitle');
 	const openPdf = (url, title, itemEl) => {
-		if (isIOS) {
-			window.open(url, '_blank', 'noopener');
+		if (isIOS || isAndroid) {
+			const opened = window.open(url, '_blank', 'noopener');
+			if (!opened) {
+				window.location.href = url;
+			}
 			return;
 		}
 		iframe.src = url;
