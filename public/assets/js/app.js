@@ -184,6 +184,144 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+	const revokeModal = document.getElementById('revokeModal');
+	if (!revokeModal) return;
+	const revokeForm = revokeModal.querySelector('form');
+	const revokeConfirmBtn = document.getElementById('revokeConfirmBtn');
+	const proofLink = document.getElementById('revokeProofLink');
+	const setText = (id, value) => {
+		const el = document.getElementById(id);
+		if (el) el.textContent = value;
+	};
+	const setValue = (id, value) => {
+		const el = document.getElementById(id);
+		if (el) el.value = value;
+	};
+	const setPaymentData = (data) => {
+		revokeModal.dataset.paymentId = data.id || '';
+		revokeModal.dataset.user = data.user || '-';
+		revokeModal.dataset.package = data.package || '-';
+		revokeModal.dataset.months = data.months || '-';
+		revokeModal.dataset.status = data.status || '-';
+		revokeModal.dataset.created = data.created || '-';
+		revokeModal.dataset.tier = data.tier || '-';
+		revokeModal.dataset.subscription = data.subscription || '-';
+		revokeModal.dataset.credits = data.credits || '0';
+		revokeModal.dataset.proof = data.proof || '-';
+	};
+
+	document.addEventListener('click', (e) => {
+		const btn = e.target.closest('[data-action="open-refund"]');
+		if (!btn) return;
+		const id = btn.getAttribute('data-payment-id') || '';
+		setPaymentData({
+			id,
+			user: btn.getAttribute('data-revoke-user') || '-',
+			package: btn.getAttribute('data-revoke-package') || '-',
+			months: btn.getAttribute('data-revoke-months') || '-',
+			status: btn.getAttribute('data-revoke-status') || '-',
+			created: btn.getAttribute('data-revoke-created') || '-',
+			tier: btn.getAttribute('data-revoke-tier') || '-',
+			subscription: btn.getAttribute('data-revoke-subscription') || '-',
+			credits: btn.getAttribute('data-revoke-credits') || '0',
+			proof: btn.getAttribute('data-revoke-proof') || '-',
+		});
+		console.log('refund open payment_id:', id);
+	});
+
+	revokeModal.addEventListener('show.bs.modal', (event) => {
+		const trigger = event && event.relatedTarget ? event.relatedTarget.closest('[data-action="open-refund"]') : null;
+		if (trigger) {
+			setPaymentData({
+				id: trigger.getAttribute('data-payment-id') || '',
+				user: trigger.getAttribute('data-revoke-user') || '-',
+				package: trigger.getAttribute('data-revoke-package') || '-',
+				months: trigger.getAttribute('data-revoke-months') || '-',
+				status: trigger.getAttribute('data-revoke-status') || '-',
+				created: trigger.getAttribute('data-revoke-created') || '-',
+				tier: trigger.getAttribute('data-revoke-tier') || '-',
+				subscription: trigger.getAttribute('data-revoke-subscription') || '-',
+				credits: trigger.getAttribute('data-revoke-credits') || '0',
+				proof: trigger.getAttribute('data-revoke-proof') || '-',
+			});
+		}
+		const rawId = revokeModal.dataset.paymentId || '';
+		const paymentId = parseInt(rawId, 10);
+		console.log('revoke payment_id:', paymentId, 'raw:', rawId);
+		setValue('revokeId', Number.isFinite(paymentId) ? paymentId : 0);
+		setText('revokeUser', revokeModal.dataset.user || '-');
+		setText('revokePackage', revokeModal.dataset.package || '-');
+		setText('revokeMonths', revokeModal.dataset.months || '-');
+		setText('revokeStatus', revokeModal.dataset.status || '-');
+		setText('revokeCreated', revokeModal.dataset.created || '-');
+		setText('revokeTier', revokeModal.dataset.tier || '-');
+		setText('revokeSubscription', revokeModal.dataset.subscription || '-');
+		setText('revokeCredits', revokeModal.dataset.credits || '0');
+		setText('revokeProof', revokeModal.dataset.proof || '-');
+		if (proofLink) {
+			proofLink.style.display = 'none';
+			proofLink.href = '#';
+		}
+		if (!Number.isFinite(paymentId) || paymentId <= 0) return;
+		fetch(`/admin/payments/${paymentId}/details`, { method: 'GET', credentials: 'same-origin' })
+			.then((res) => res.json())
+			.then((data) => {
+				if (!data || !data.ok || !data.payment) return;
+				const p = data.payment;
+				setText('revokeUser', p.username || '-');
+				setText('revokePackage', p.package_title || (`#${p.package_id || ''}`));
+				setText('revokeMonths', String(p.months || '-'));
+				setText('revokeStatus', p.status || '-');
+				setText('revokeCreated', p.created_at || '-');
+				setText('revokeTier', p.access_tier || '-');
+				setText('revokeSubscription', p.subscription_expires_at || '-');
+				setText('revokeCredits', String(p.credits != null ? p.credits : '0'));
+				if (p.proof_path) {
+					setText('revokeProof', 'Sim');
+					if (proofLink && p.proof_url) {
+						proofLink.href = p.proof_url;
+						proofLink.style.display = '';
+					}
+				} else {
+					setText('revokeProof', 'Nao');
+				}
+			})
+			.catch(() => {});
+	});
+
+	if (revokeConfirmBtn && revokeForm) {
+		revokeConfirmBtn.addEventListener('click', () => {
+			const rawId = revokeModal.dataset.paymentId || '';
+			const paymentId = parseInt(rawId, 10);
+			if (!Number.isFinite(paymentId) || paymentId <= 0) {
+				window.alert('ID invalido no estorno (sem payment_id).');
+				return;
+			}
+			const formData = new FormData(revokeForm);
+			const submitUrl = `/admin/payments/${paymentId}/revoke`;
+			console.log('refund submit payment_id:', paymentId, 'url:', submitUrl);
+			fetch(submitUrl, { method: 'POST', credentials: 'same-origin', body: formData })
+				.then((res) => res.json())
+				.then((data) => {
+					if (data && data.ok) {
+						if (window.bootstrap) {
+							const modal = window.bootstrap.Modal.getInstance(revokeModal);
+							if (modal) modal.hide();
+						}
+						window.location.reload();
+						return;
+					}
+					const msg = (data && data.message) ? data.message : 'Falha ao estornar.';
+					window.alert(msg);
+				})
+				.catch(() => {
+					window.alert('Falha ao estornar.');
+				});
+		});
+	}
+});
+
+document.addEventListener('DOMContentLoaded', () => {
 	const bars = document.querySelectorAll('.progress-bar[data-progress]');
 	if (!bars.length) return;
 	requestAnimationFrame(() => {
