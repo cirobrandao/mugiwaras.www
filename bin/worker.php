@@ -11,6 +11,23 @@ use App\Core\JobProcessor;
 use App\Core\Audit;
 use App\Models\ContentItem;
 
+$lockDir = dirname(__DIR__) . '/storage/locks';
+if (!is_dir($lockDir)) {
+    @mkdir($lockDir, 0777, true);
+}
+$lockPath = $lockDir . '/worker.lock';
+$lockHandle = @fopen($lockPath, 'c');
+if (!$lockHandle || !flock($lockHandle, LOCK_EX | LOCK_NB)) {
+    echo "Worker already running.\n";
+    exit(0);
+}
+register_shutdown_function(static function () use ($lockHandle): void {
+    if (is_resource($lockHandle)) {
+        @flock($lockHandle, LOCK_UN);
+        @fclose($lockHandle);
+    }
+});
+
 $jobs = Job::pending(5);
 $startedAt = date('Y-m-d H:i:s');
 echo "Worker start: {$startedAt}\n";
