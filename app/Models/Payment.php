@@ -17,11 +17,19 @@ final class Payment
 
     public static function all(): array
     {
-        $sql = 'SELECT p.*, u.username AS user_name, u.email AS user_email, u.phone AS user_phone, u.phone_country AS user_phone_country, u.data_registro AS user_registered_at, u.access_tier AS user_tier, u.subscription_expires_at AS user_subscription_expires_at, u.credits AS user_credits, pk.title AS package_name
+        $sql = "SELECT p.*, u.username AS user_name, u.email AS user_email, u.phone AS user_phone, u.phone_country AS user_phone_country, u.data_registro AS user_registered_at, u.access_tier AS user_tier, u.subscription_expires_at AS user_subscription_expires_at, u.credits AS user_credits, pk.title AS package_name,
+                       au.id AS approved_by_id, au.username AS approved_by_name, al.created_at AS approved_at
             FROM payments p
             LEFT JOIN users u ON u.id = p.user_id
             LEFT JOIN packages pk ON pk.id = p.package_id
-            ORDER BY p.id DESC';
+            LEFT JOIN audit_log al ON al.id = (
+                SELECT MAX(id)
+                FROM audit_log
+                WHERE event = 'payment_approve'
+                  AND JSON_EXTRACT(meta, '$.payment_id') = p.id
+            )
+            LEFT JOIN users au ON au.id = al.user_id
+            ORDER BY p.id DESC";
         $stmt = Database::connection()->query($sql);
         return $stmt->fetchAll();
     }

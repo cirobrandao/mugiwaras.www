@@ -57,9 +57,22 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                     </li>
                 </ol>
             </nav>
-            <a class="btn btn-sm btn-outline-secondary border" href="<?= $orderUrl ?>" title="<?= View::e($orderBtnLabel) ?>" aria-label="<?= View::e($orderBtnLabel) ?>">
-                <i class="fa-solid fa-arrow-up-short-wide"></i>
-            </a>
+            <div class="d-flex align-items-center gap-2">
+                <?php $bulkAction = !empty($seriesReadAll) ? 'unread' : 'read'; ?>
+                <?php $bulkLabel = !empty($seriesReadAll) ? 'Desmarcar tudo como lido' : 'Marcar tudo como lido'; ?>
+                <?php $bulkIcon = !empty($seriesReadAll) ? 'fa-eye-slash' : 'fa-eye'; ?>
+                <form method="post" action="<?= base_path('/libraries/series/' . $bulkAction) ?>" class="m-0">
+                    <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                    <input type="hidden" name="series_id" value="<?= (int)($series['id'] ?? 0) ?>">
+                    <input type="hidden" name="format" value="<?= View::e((string)($format ?? '')) ?>">
+                    <button class="btn btn-sm btn-outline-secondary" type="submit" title="<?= View::e($bulkLabel) ?>" aria-label="<?= View::e($bulkLabel) ?>" onclick="return confirm('<?= View::e($bulkLabel) ?>?');">
+                        <i class="fa-solid <?= $bulkIcon ?>"></i>
+                    </button>
+                </form>
+                <a class="btn btn-sm btn-outline-secondary border" href="<?= $orderUrl ?>" title="<?= View::e($orderBtnLabel) ?>" aria-label="<?= View::e($orderBtnLabel) ?>">
+                    <i class="fa-solid fa-arrow-up-short-wide"></i>
+                </a>
+            </div>
         </div>
         <div class="list-group list-group-flush d-none d-md-block">
         <?php foreach ($items as $item): ?>

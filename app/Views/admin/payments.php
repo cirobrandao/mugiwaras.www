@@ -52,6 +52,7 @@ $isZeroDate = static function (?string $dt): bool {
 			<th scope="col">Pacote</th>
 			<th scope="col" style="width: 90px;">Meses</th>
 			<th scope="col" style="width: 140px;">Status</th>
+			<th scope="col" style="width: 160px;">Liberado por</th>
 			<th scope="col" style="width: 140px;">Comprovante</th>
 			<th scope="col" style="width: 170px;">Criado</th>
 			<th scope="col" class="text-end" style="width: 180px;">Ações</th>
@@ -67,6 +68,9 @@ $isZeroDate = static function (?string $dt): bool {
 			}
 			$stMeta = $statusMap[$st] ?? ['label' => $st !== '' ? $st : '-', 'class' => 'bg-secondary'];
 			$proofPath = (string)($p['proof_path'] ?? '');
+			$approvedByName = (string)($p['approved_by_name'] ?? '');
+			$approvedById = (int)($p['approved_by_id'] ?? 0);
+			$approvedLabel = $approvedByName !== '' ? $approvedByName : ($approvedById > 0 ? '#' . $approvedById : '-');
 			$proofUrl = base_path('/admin/payments/proof/' . (int)$p['id']);
 			$proofExt = $proofPath !== '' ? strtolower(pathinfo($proofPath, PATHINFO_EXTENSION)) : '';
 			?>
@@ -87,6 +91,7 @@ $isZeroDate = static function (?string $dt): bool {
 						<?= View::e($stMeta['label']) ?>
 					</span>
 				</td>
+				<td><?= View::e($approvedLabel) ?></td>
 				<td>
 					<?php if ($proofPath !== ''): ?>
 						<button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#proofModal<?= (int)$p['id'] ?>">Ver</button>

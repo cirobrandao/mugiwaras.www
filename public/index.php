@@ -107,6 +107,8 @@ $router->post('/libraries/content/order', [new App\Controllers\LibraryController
 $router->post('/libraries/content/delete', [new App\Controllers\LibraryController(), 'deleteContent'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->post('/libraries/favorite', [new App\Controllers\LibraryController(), 'toggleFavorite'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->post('/libraries/read', [new App\Controllers\LibraryController(), 'toggleRead'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/libraries/series/read', [new App\Controllers\LibraryController(), 'markSeriesRead'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/libraries/series/unread', [new App\Controllers\LibraryController(), 'markSeriesUnread'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->post('/libraries/progress', [new App\Controllers\LibraryController(), 'updateProgress'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->post('/libraries/series/favorite', [new App\Controllers\LibraryController(), 'toggleSeriesFavorite'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->post('/libraries/series/update', [new App\Controllers\LibraryController(), 'updateSeries'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);

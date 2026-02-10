@@ -39,6 +39,96 @@ final class UserContentStatus
         $stmt->execute(['u' => $userId, 'c' => $contentId, 'p' => $page, 'p2' => $page]);
     }
 
+    public static function setReadForSeriesAndTypes(int $userId, int $seriesId, array $types): void
+    {
+        $types = array_values(array_unique(array_map('strtolower', $types)));
+        if (empty($types)) {
+            return;
+        }
+        $parts = [];
+        if (in_array('pdf', $types, true)) {
+            $parts[] = "LOWER(ci.cbz_path) LIKE '%.pdf'";
+        }
+        if (in_array('epub', $types, true)) {
+            $parts[] = "LOWER(ci.cbz_path) LIKE '%.epub'";
+        }
+        if (in_array('cbz', $types, true)) {
+            $parts[] = "(ci.cbz_path IS NULL OR (LOWER(ci.cbz_path) NOT LIKE '%.pdf' AND LOWER(ci.cbz_path) NOT LIKE '%.epub'))";
+        }
+        if (empty($parts)) {
+            return;
+        }
+        $where = implode(' OR ', $parts);
+        $sql = "INSERT INTO user_content_status (user_id, content_id, is_read, read_at, updated_at)
+                SELECT :u, ci.id, 1, NOW(), NOW()
+                FROM content_items ci
+                WHERE ci.series_id = :s AND ({$where})
+                ON DUPLICATE KEY UPDATE is_read = 1, read_at = NOW(), updated_at = NOW()";
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute(['u' => $userId, 's' => $seriesId]);
+    }
+
+    public static function setUnreadForSeriesAndTypes(int $userId, int $seriesId, array $types): void
+    {
+        $types = array_values(array_unique(array_map('strtolower', $types)));
+        if (empty($types)) {
+            return;
+        }
+        $parts = [];
+        if (in_array('pdf', $types, true)) {
+            $parts[] = "LOWER(ci.cbz_path) LIKE '%.pdf'";
+        }
+        if (in_array('epub', $types, true)) {
+            $parts[] = "LOWER(ci.cbz_path) LIKE '%.epub'";
+        }
+        if (in_array('cbz', $types, true)) {
+            $parts[] = "(ci.cbz_path IS NULL OR (LOWER(ci.cbz_path) NOT LIKE '%.pdf' AND LOWER(ci.cbz_path) NOT LIKE '%.epub'))";
+        }
+        if (empty($parts)) {
+            return;
+        }
+        $where = implode(' OR ', $parts);
+        $sql = "INSERT INTO user_content_status (user_id, content_id, is_read, read_at, updated_at)
+                SELECT :u, ci.id, 0, NULL, NOW()
+                FROM content_items ci
+                WHERE ci.series_id = :s AND ({$where})
+                ON DUPLICATE KEY UPDATE is_read = 0, read_at = NULL, updated_at = NOW()";
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute(['u' => $userId, 's' => $seriesId]);
+    }
+
+    public static function countReadForSeriesAndTypes(int $userId, int $seriesId, array $types): int
+    {
+        $types = array_values(array_unique(array_map('strtolower', $types)));
+        if (empty($types)) {
+            return 0;
+        }
+        $parts = [];
+        if (in_array('pdf', $types, true)) {
+            $parts[] = "LOWER(ci.cbz_path) LIKE '%.pdf'";
+        }
+        if (in_array('epub', $types, true)) {
+            $parts[] = "LOWER(ci.cbz_path) LIKE '%.epub'";
+        }
+        if (in_array('cbz', $types, true)) {
+            $parts[] = "(ci.cbz_path IS NULL OR (LOWER(ci.cbz_path) NOT LIKE '%.pdf' AND LOWER(ci.cbz_path) NOT LIKE '%.epub'))";
+        }
+        if (empty($parts)) {
+            return 0;
+        }
+        $where = implode(' OR ', $parts);
+        $sql = "SELECT COUNT(*) AS c
+                FROM content_items ci
+                INNER JOIN user_content_status ucs ON ucs.content_id = ci.id
+                    AND ucs.user_id = :u
+                    AND ucs.is_read = 1
+                WHERE ci.series_id = :s AND ({$where})";
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute(['u' => $userId, 's' => $seriesId]);
+        $row = $stmt->fetch();
+        return (int)($row['c'] ?? 0);
+    }
+
     public static function getProgressForUser(int $userId, array $contentIds): array
     {
         if (empty($contentIds)) {

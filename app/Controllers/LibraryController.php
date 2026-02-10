@@ -351,6 +351,17 @@ final class LibraryController extends Controller
                 ? ContentItem::countBySeriesAndFormat((int)$ser['id'], $format)
                 : ContentItem::countBySeriesAndTypes((int)$ser['id'], $allowedTypes);
         }
+        $bulkTypes = [];
+        if ($format !== '') {
+            $bulkTypes[] = $format;
+        } else {
+            $bulkTypes = $allowedTypes;
+        }
+        $readCount = 0;
+        if (!empty($bulkTypes)) {
+            $readCount = UserContentStatus::countReadForSeriesAndTypes((int)$user['id'], (int)$ser['id'], $bulkTypes);
+        }
+        $seriesReadAll = $total > 0 && $readCount >= $total;
         $offset = ($page - 1) * $perPage;
         if (empty($allowedTypes)) {
             $items = [];
@@ -430,6 +441,7 @@ final class LibraryController extends Controller
             'iosTest' => $iosTest,
             'format' => $format,
             'order' => $order,
+            'seriesReadAll' => $seriesReadAll,
         ]);
     }
 
@@ -608,6 +620,146 @@ final class LibraryController extends Controller
         $read = (string)($request->post['read'] ?? '1') === '1';
         if ($id > 0) {
             UserContentStatus::setRead((int)$user['id'], $id, $read);
+        }
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
+    public function markSeriesRead(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $seriesId = (int)($request->post['series_id'] ?? 0);
+        if ($seriesId <= 0) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        $ser = Series::findById($seriesId);
+        if (!$ser) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        $cat = Category::findById((int)($ser['category_id'] ?? 0));
+        if (!$cat) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        $isVitalicio = ($user['access_tier'] ?? '') === 'vitalicio';
+        $restrictedIds = [4, 5, 6];
+        $allowedIds = $isVitalicio ? [] : $this->allowedCategoryIds($user);
+        $allowedSet = array_flip($allowedIds);
+        $isStaff = \App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user);
+        if (!$isStaff && !$isVitalicio) {
+            $requires = !empty($cat['requires_subscription']);
+            $isRestricted = in_array((int)($cat['id'] ?? 0), $restrictedIds, true);
+            if ($requires || $isRestricted) {
+                if (empty($allowedSet) || !isset($allowedSet[(int)($cat['id'] ?? 0)])) {
+                    Response::redirect(base_path('/loja'));
+                }
+            }
+        }
+        $isAdultUser = $this->isAdultUser($user);
+        if (!$isStaff && !$isAdultUser && (!empty($cat['adult_only']) || !empty($ser['adult_only']))) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        $format = strtolower((string)($request->post['format'] ?? ''));
+        if (!in_array($format, ['pdf', 'cbz', 'epub'], true)) {
+            $format = '';
+        }
+        $allowCbz = !empty($cat['content_cbz']);
+        $allowPdf = !empty($cat['content_pdf']);
+        $allowEpub = !empty($cat['content_epub']);
+        $types = [];
+        if ($format === 'pdf' && $allowPdf) {
+            $types[] = 'pdf';
+        } elseif ($format === 'cbz' && $allowCbz) {
+            $types[] = 'cbz';
+        } elseif ($format === 'epub' && $allowEpub) {
+            $types[] = 'epub';
+        } else {
+            if ($allowCbz) {
+                $types[] = 'cbz';
+            }
+            if ($allowPdf) {
+                $types[] = 'pdf';
+            }
+            if ($allowEpub) {
+                $types[] = 'epub';
+            }
+        }
+        if (!empty($types)) {
+            UserContentStatus::setReadForSeriesAndTypes((int)$user['id'], $seriesId, $types);
+        }
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+    }
+
+    public function markSeriesUnread(\App\Core\Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $user = Auth::user();
+        if (!$user) {
+            Response::redirect(base_path('/libraries'));
+        }
+        $seriesId = (int)($request->post['series_id'] ?? 0);
+        if ($seriesId <= 0) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        $ser = Series::findById($seriesId);
+        if (!$ser) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        $cat = Category::findById((int)($ser['category_id'] ?? 0));
+        if (!$cat) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        $isVitalicio = ($user['access_tier'] ?? '') === 'vitalicio';
+        $restrictedIds = [4, 5, 6];
+        $allowedIds = $isVitalicio ? [] : $this->allowedCategoryIds($user);
+        $allowedSet = array_flip($allowedIds);
+        $isStaff = \App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user);
+        if (!$isStaff && !$isVitalicio) {
+            $requires = !empty($cat['requires_subscription']);
+            $isRestricted = in_array((int)($cat['id'] ?? 0), $restrictedIds, true);
+            if ($requires || $isRestricted) {
+                if (empty($allowedSet) || !isset($allowedSet[(int)($cat['id'] ?? 0)])) {
+                    Response::redirect(base_path('/loja'));
+                }
+            }
+        }
+        $isAdultUser = $this->isAdultUser($user);
+        if (!$isStaff && !$isAdultUser && (!empty($cat['adult_only']) || !empty($ser['adult_only']))) {
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        }
+        $format = strtolower((string)($request->post['format'] ?? ''));
+        if (!in_array($format, ['pdf', 'cbz', 'epub'], true)) {
+            $format = '';
+        }
+        $allowCbz = !empty($cat['content_cbz']);
+        $allowPdf = !empty($cat['content_pdf']);
+        $allowEpub = !empty($cat['content_epub']);
+        $types = [];
+        if ($format === 'pdf' && $allowPdf) {
+            $types[] = 'pdf';
+        } elseif ($format === 'cbz' && $allowCbz) {
+            $types[] = 'cbz';
+        } elseif ($format === 'epub' && $allowEpub) {
+            $types[] = 'epub';
+        } else {
+            if ($allowCbz) {
+                $types[] = 'cbz';
+            }
+            if ($allowPdf) {
+                $types[] = 'pdf';
+            }
+            if ($allowEpub) {
+                $types[] = 'epub';
+            }
+        }
+        if (!empty($types)) {
+            UserContentStatus::setUnreadForSeriesAndTypes((int)$user['id'], $seriesId, $types);
         }
         Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
     }
