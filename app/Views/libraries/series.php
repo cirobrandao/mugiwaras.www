@@ -67,7 +67,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php $itemExt = strtolower(pathinfo($itemPath, PATHINFO_EXTENSION)); ?>
             <?php $isPdf = $itemExt === 'pdf'; ?>
             <?php $isEpub = $itemExt === 'epub'; ?>
-            <?php $mobileOnlyDownload = !empty($pdfInlineBlocked); ?>
+            <?php $iosOnlyDownload = !empty($isIos); ?>
             <?php $downloadToken = !empty($downloadTokens[(int)$item['id']]) ? (string)$downloadTokens[(int)$item['id']] : ''; ?>
             <?php $pdfDownloadUrl = !empty($pdfDownloadUrls[(int)$item['id']]) ? (string)$pdfDownloadUrls[(int)$item['id']] : ''; ?>
             <?php if ($isPdf) { $hasPdf = true; } ?>
@@ -86,13 +86,13 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                             </button>
                         </form>
                         <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <a href="<?= $isPdf ? ($mobileOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf && !$mobileOnlyDownload ? 'data-open-pdf' : '' ?> <?= $isPdf && !$mobileOnlyDownload ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
+                            <a href="<?= $isPdf ? ($iosOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf && !$iosOnlyDownload ? 'data-open-pdf' : '' ?> <?= $isPdf && !$iosOnlyDownload ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
                                 <?= View::e(str_replace('_', ' ', (string)$item['title'])) ?>
                             </a>
                             <?php if ($isPdf): ?>
                                 <span class="badge bg-warning text-dark ms-2">PDF</span>
-                                <?php if ($mobileOnlyDownload): ?>
-                                    <span class="badge bg-secondary ms-1">Somente download no iOS/Android</span>
+                                <?php if ($iosOnlyDownload): ?>
+                                    <span class="badge bg-secondary ms-1">Somente download no iOS</span>
                                 <?php endif; ?>
                             <?php elseif ($isEpub): ?>
                                 <span class="badge bg-info text-dark ms-2">EPUB</span>
@@ -147,7 +147,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php $itemExt = strtolower(pathinfo($itemPath, PATHINFO_EXTENSION)); ?>
             <?php $isPdf = $itemExt === 'pdf'; ?>
             <?php $isEpub = $itemExt === 'epub'; ?>
-            <?php $mobileOnlyDownload = !empty($pdfInlineBlocked); ?>
+            <?php $iosOnlyDownload = !empty($isIos); ?>
             <?php $downloadToken = !empty($downloadTokens[(int)$item['id']]) ? (string)$downloadTokens[(int)$item['id']] : ''; ?>
             <?php $pdfDownloadUrl = !empty($pdfDownloadUrls[(int)$item['id']]) ? (string)$pdfDownloadUrls[(int)$item['id']] : ''; ?>
             <?php if ($isPdf) { $hasPdf = true; } ?>
@@ -168,7 +168,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                                 </button>
                             </form>
                             <div>
-                                <a class="text-decoration-none fw-semibold" href="<?= $isPdf ? ($mobileOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf && !$mobileOnlyDownload ? 'data-open-pdf' : '' ?> <?= $isPdf && !$mobileOnlyDownload ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
+                                <a class="text-decoration-none fw-semibold" href="<?= $isPdf ? ($iosOnlyDownload ? base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) : base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken))) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf && !$iosOnlyDownload ? 'data-open-pdf' : '' ?> <?= $isPdf && !$iosOnlyDownload ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?>>
                                     <?= View::e(str_replace('_', ' ', (string)$item['title'])) ?>
                                 </a>
                                 <div class="small text-muted">Clique para abrir</div>
@@ -178,8 +178,8 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                     <div class="d-flex flex-wrap gap-1 mt-2 library-card-badges">
                         <?php if ($isPdf): ?>
                             <span class="badge bg-warning text-dark">PDF</span>
-                            <?php if ($mobileOnlyDownload): ?>
-                                <span class="badge bg-secondary">Somente download no iOS/Android</span>
+                            <?php if ($iosOnlyDownload): ?>
+                                <span class="badge bg-secondary">Somente download no iOS</span>
                             <?php endif; ?>
                         <?php elseif ($isEpub): ?>
                             <span class="badge bg-info text-dark">EPUB</span>

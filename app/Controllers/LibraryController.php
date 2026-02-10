@@ -385,8 +385,11 @@ final class LibraryController extends Controller
         $readIds = UserContentStatus::getReadIdsForUser((int)$user['id'], $contentIds);
         $progressMap = UserContentStatus::getProgressForUser((int)$user['id'], $contentIds);
         $ua = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
+        $isIos = false;
         $iosTest = isset($request->get['ios_test']) && $request->get['ios_test'] === '1' && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user));
-        $pdfInlineBlocked = $iosTest || $this->isIos($ua) || $this->isAndroid($ua);
+        if ($iosTest) {
+            $isIos = true;
+        }
         $downloadTokens = [];
         foreach ($contentIds as $contentId) {
             $downloadTokens[$contentId] = $this->downloadToken((int)$user['id'], (int)$contentId);
@@ -421,24 +424,13 @@ final class LibraryController extends Controller
             'user' => $user,
             'page' => $page,
             'pages' => (int)ceil($total / $perPage),
-            'pdfInlineBlocked' => $pdfInlineBlocked,
+            'isIos' => $isIos,
             'downloadTokens' => $downloadTokens,
             'pdfDownloadUrls' => $pdfDownloadUrls,
             'iosTest' => $iosTest,
             'format' => $format,
             'order' => $order,
         ]);
-    }
-
-    private function isIos(string $ua): bool
-    {
-        $ua = strtolower($ua);
-        return str_contains($ua, 'iphone') || str_contains($ua, 'ipad') || str_contains($ua, 'ipod');
-    }
-
-    private function isAndroid(string $ua): bool
-    {
-        return str_contains(strtolower($ua), 'android');
     }
 
     private function resolvePdfForContent(array $content, string $seriesName): ?string
