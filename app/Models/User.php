@@ -254,6 +254,58 @@ final class User
         return $row ?: null;
     }
 
+    public static function findForRecovery(string $username, string $email, string $birthDate, string $phone): ?array
+    {
+        $stmt = Database::connection()->prepare('SELECT * FROM users WHERE username = :u AND email = :e LIMIT 1');
+        $stmt->execute([
+            'u' => mb_strtolower(trim($username)),
+            'e' => mb_strtolower(trim($email)),
+        ]);
+        $row = $stmt->fetch();
+        if (!$row) {
+            return null;
+        }
+
+        $storedBirth = self::normalizeBirthDate((string)($row['birth_date'] ?? ''));
+        $inputBirth = self::normalizeBirthDate($birthDate);
+        if ($storedBirth === null || $inputBirth === null || $storedBirth !== $inputBirth) {
+            return null;
+        }
+
+        $storedPhone = self::normalizePhone((string)($row['phone'] ?? ''));
+        $inputPhone = self::normalizePhone($phone);
+        if ($storedPhone === '' || $inputPhone === '' || $storedPhone !== $inputPhone) {
+            return null;
+        }
+
+        return $row;
+    }
+
+    private static function normalizePhone(string $value): string
+    {
+        return preg_replace('/\D+/', '', $value) ?? '';
+    }
+
+    private static function normalizeBirthDate(string $value): ?string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+        $formats = ['d-m-Y', 'd/m/Y', 'Y-m-d', 'Y/m/d'];
+        foreach ($formats as $format) {
+            $dt = \DateTimeImmutable::createFromFormat($format, $value);
+            if ($dt !== false && $dt->format($format) === $value) {
+                return $dt->format('Y-m-d');
+            }
+        }
+        try {
+            return (new \DateTimeImmutable($value))->format('Y-m-d');
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
     public static function create(array $data): int
     {
         $sql = 'INSERT INTO users (username,email,phone,phone_country,phone_has_whatsapp,birth_date,password_hash,access_tier,role,referral_code,referrer_id,ip_cadastro,ip_ultimo_acesso,ip_penultimo_acesso,data_registro) VALUES (:username,:email,:phone,:phone_country,:phone_has_whatsapp,:birth_date,:password_hash,:access_tier,:role,:referral_code,:referrer_id,:ip_cadastro,:ip_ultimo_acesso,:ip_penultimo_acesso,NOW())';

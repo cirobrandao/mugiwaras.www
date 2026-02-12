@@ -32,7 +32,7 @@ ob_start();
                     <input class="form-check-input" type="checkbox" name="remember" id="remember">
                     <label class="form-check-label" for="remember">Lembrar de mim</label>
                 </div>
-                <a class="small" href="<?= base_path('/support') ?>">Esqueceu a senha?</a>
+                <a class="small" href="<?= base_path('/recover') ?>">Esqueceu a senha?</a>
             </div>
             <button class="btn btn-primary w-100" type="submit">Entrar</button>
         </form>

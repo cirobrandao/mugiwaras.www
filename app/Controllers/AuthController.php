@@ -95,6 +95,14 @@ final class AuthController extends Controller
                 $birthDate = sprintf('%02d-%02d-%04d', $day, $month, $year);
             }
         }
+        if ($birthDate === '') {
+            $day = (int)($request->post['birth_day'] ?? 0);
+            $month = (int)($request->post['birth_month'] ?? 0);
+            $year = (int)($request->post['birth_year'] ?? 0);
+            if ($day > 0 && $month > 0 && $year > 0) {
+                $birthDate = sprintf('%02d-%02d-%04d', $day, $month, $year);
+            }
+        }
 
         $data = [
             'username' => mb_strtolower(trim((string)($request->post['username'] ?? ''))),
@@ -200,6 +208,97 @@ final class AuthController extends Controller
     {
         Auth::logout();
         Response::redirect(base_path('/'));
+    }
+
+    public function recoverForm(): void
+    {
+        echo $this->view('auth/recover', [
+            'csrf' => Csrf::token(),
+            'form' => [
+                'username' => '',
+                'email' => '',
+                'phone' => '',
+                'birth_day' => '',
+                'birth_month' => '',
+                'birth_year' => '',
+            ],
+        ]);
+    }
+
+    public function recoverSubmit(Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/'));
+        }
+
+        $rate = new RateLimiter();
+        $allowed = $rate->hit('recover:' . $request->ip(), (int)config('security.rate_limit.login'), (int)config('security.rate_limit.window'));
+
+        $username = mb_strtolower(trim((string)($request->post['username'] ?? '')));
+        $email = mb_strtolower(trim((string)($request->post['email'] ?? '')));
+        $birthDay = (string)($request->post['birth_day'] ?? '');
+        $birthMonth = (string)($request->post['birth_month'] ?? '');
+        $birthYear = (string)($request->post['birth_year'] ?? '');
+        $birthDate = trim((string)($request->post['birth_date'] ?? ''));
+        if ($birthDate === '') {
+            $day = (int)$birthDay;
+            $month = (int)$birthMonth;
+            $year = (int)$birthYear;
+            if ($day > 0 && $month > 0 && $year > 0) {
+                $birthDate = sprintf('%02d-%02d-%04d', $day, $month, $year);
+            }
+        }
+        $phone = trim((string)($request->post['phone'] ?? ''));
+        $form = [
+            'username' => $username,
+            'email' => $email,
+            'phone' => $phone,
+            'birth_day' => $birthDay,
+            'birth_month' => $birthMonth,
+            'birth_year' => $birthYear,
+        ];
+
+        if (!$allowed) {
+            echo $this->view('auth/recover', [
+                'error' => 'Muitas tentativas. Tente mais tarde.',
+                'csrf' => Csrf::token(),
+                'form' => $form,
+            ]);
+            return;
+        }
+
+        $invalid = false;
+        if ($username === '' || $email === '' || $birthDate === '' || $phone === '') {
+            $invalid = true;
+        }
+        if (!Validation::email($email) || !Validation::birthDate($birthDate)) {
+            $invalid = true;
+        }
+
+        if ($invalid) {
+            echo $this->view('auth/recover', [
+                'error' => 'Dados inválidos para recuperação.',
+                'csrf' => Csrf::token(),
+                'form' => $form,
+            ]);
+            return;
+        }
+
+        $user = User::findForRecovery($username, $email, $birthDate, $phone);
+        if (!$user) {
+            Audit::log('recover_fail', null, ['username' => $username, 'ip' => $request->ip()]);
+            echo $this->view('auth/recover', [
+                'error' => 'Não foi possível validar os dados informados.',
+                'csrf' => Csrf::token(),
+                'form' => $form,
+            ]);
+            return;
+        }
+
+        $token = bin2hex(random_bytes(32));
+        PasswordReset::create((int)$user['id'], $token);
+        Audit::log('recover_success', (int)$user['id'], ['ip' => $request->ip()]);
+        Response::redirect(base_path('/reset?token=' . urlencode($token)));
     }
 
     public function resetForm(): void

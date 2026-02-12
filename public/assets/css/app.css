@@ -117,16 +117,18 @@ body.lights-off .reader-frame { background: #000; border-color: #111827; }
 #readerWrap:fullscreen .reader-toolbar .reader-progress { max-width: 1200px; margin: 0 auto; }
 #readerWrap:fullscreen .reader-frame { min-height: 88vh; }
 
-/* reader wrapper to anchor overlay footer */
+/* reader wrapper to anchor overlay controls */
 #readerWrap { position: relative; }
 
-/* footer containing the page guide — now an overlay positioned above the reader */
-.reader-footer { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 60; display: flex; justify-content: center; align-items: center; padding: 6px; }
+/* footer under reader (outside frame) */
+.reader-footer { max-width: 1200px; margin: 10px auto 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 6px 0; }
 .reader-footer .input-group { box-shadow: 0 6px 20px rgba(0,0,0,0.35); background: #ffffff; border-radius: 8px; padding: 6px; }
 .reader-footer .input-group .input-group-text { background: transparent; border: none; font-weight: 600; }
 .reader-footer .form-control { border: none; outline: none; box-shadow: none; font-size: 1rem; }
 .reader-footer #pageNumber { width: 90px; }
 .reader-footer #pageTotal { padding-left: 10px; padding-right: 10px; }
+.reader-end-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+.reader-end-actions .btn { display: inline-flex; align-items: center; }
 
 
 /* scroll-to-top overlay button (visible in scroll mode) */
@@ -137,6 +139,7 @@ body.lights-off .reader-frame { background: #000; border-color: #111827; }
 	.reader-toolbar .reader-download { display: none; }
 	.reader-toolbar { display: none; }
 	.reader-footer { display: none; }
+	.reader-end-actions { display: none; }
 	.reader-header { padding: 6px 0; justify-content: flex-start; }
 	.reader-header .reader-back { position: static; transform: none; }
 	.reader-header .reader-title { position: static; transform: none; max-width: 100%; white-space: normal; height: auto; padding: 0; text-align: left; }

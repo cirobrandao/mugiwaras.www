@@ -202,6 +202,8 @@ $router->post('/admin/categories/delete', [new App\Controllers\Admin\CategoriesC
 
 $router->get('/reset', [new App\Controllers\AuthController(), 'resetForm']);
 $router->post('/reset', [new App\Controllers\AuthController(), 'resetSubmit']);
+$router->get('/recover', [new App\Controllers\AuthController(), 'recoverForm']);
+$router->post('/recover', [new App\Controllers\AuthController(), 'recoverSubmit']);
 
 $router->get('/perfil', [new App\Controllers\ProfileController(), 'show'], [App\Core\Middleware::requireAuth()]);
 $router->get('/user/editar', [new App\Controllers\ProfileController(), 'editForm'], [App\Core\Middleware::requireAuth()]);

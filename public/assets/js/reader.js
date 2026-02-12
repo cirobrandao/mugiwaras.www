@@ -22,7 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const wheelWrap = wheelToggle ? wheelToggle.closest('.form-check') : null;
   const wrap = document.getElementById('readerWrap');
   const scrollTopBtn = document.getElementById('scrollTopBtn');
+  const bottomTopBtn = document.getElementById('readerBottomTop');
   const pageCompact = document.getElementById('pageCompact');
+  const pageGuide = document.getElementById('readerPageGuide');
+  const endActions = document.getElementById('readerEndActions');
   const isRtl = readerEl ? (readerEl.dataset.direction || 'rtl') === 'rtl' : false;
   let scrollMode = modeSelect ? modeSelect.value === 'scroll' : (modeSelectMobile ? modeSelectMobile.value === 'scroll' : false);
   let wheelPaging = wheelToggle ? wheelToggle.checked : true;
@@ -58,11 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   const syncPageGuide = () => {
-    if (!pageInput || !pageTotal) return;
     if (scrollMode) {
-      pageInput.closest('.input-group')?.classList.add('d-none');
+      pageGuide?.classList.add('d-none');
+      pageCompact?.classList.add('d-none');
+      endActions?.classList.remove('d-none');
     } else {
-      pageInput.closest('.input-group')?.classList.remove('d-none');
+      pageGuide?.classList.remove('d-none');
+      pageCompact?.classList.add('d-none');
+      endActions?.classList.add('d-none');
     }
   };
   let saveTimer = null;
@@ -103,6 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       img.style.width = '100%';
       img.style.height = 'auto';
+    }
+  };
+
+  const applyScrollDefaults = () => {
+    if (!fitMode) return;
+    if (scrollMode) {
+      fitMode.value = 'original';
+      applyFitMode();
     }
   };
 
@@ -206,13 +220,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const applyMobileMode = () => {
     if (!isMobile) return;
     document.body.classList.add('reader-mobile');
-    if (modeSelectMobile) {
-      modeSelectMobile.value = 'page';
+    if (modeSelectMobile && modeSelect) {
+      modeSelectMobile.value = modeSelect.value;
     }
-    scrollMode = false;
+    scrollMode = modeSelect ? modeSelect.value === 'scroll' : (modeSelectMobile ? modeSelectMobile.value === 'scroll' : false);
     if (wheelWrap) wheelWrap.classList.add('d-none');
     syncWheelToggle();
     syncPageGuide();
+    applyScrollDefaults();
     renderScrollMode();
   };
 
@@ -348,6 +363,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   update();
+  applyScrollDefaults();
+  syncPageGuide();
+  syncWheelToggle();
+  if (scrollMode) {
+    renderScrollMode();
+  }
 
   if (modeSelect) {
     modeSelect.addEventListener('change', () => {
@@ -355,6 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (modeSelectMobile) modeSelectMobile.value = modeSelect.value;
       syncWheelToggle();
       syncPageGuide();
+      applyScrollDefaults();
       if (scrollTopBtn) { if (scrollMode) setTimeout(() => { try { updateScrollTopVisibility(); } catch(e){} }, 80); else scrollTopBtn.classList.add('d-none'); }
       if (scrollMode) {
         renderScrollMode();
@@ -380,6 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (modeSelect) modeSelect.value = modeSelectMobile.value;
       syncWheelToggle();
       syncPageGuide();
+      applyScrollDefaults();
       if (scrollTopBtn) { if (scrollMode) setTimeout(() => { try { updateScrollTopVisibility(); } catch(e){} }, 80); else scrollTopBtn.classList.add('d-none'); }
       if (scrollMode) {
         renderScrollMode();
@@ -455,6 +478,16 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         if (typeof updateScrollTopVisibility === 'function') updateScrollTopVisibility();
       }, 60);
+    });
+  }
+
+  if (bottomTopBtn) {
+    bottomTopBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (readerEl) {
+        readerEl.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 

@@ -114,16 +114,44 @@ ob_start();
 		<button id="scrollTopBtn" class="btn btn-primary btn-sm reader-scroll-top d-none" title="Ir para o topo" aria-label="Ir para o topo">
 			<i class="fa-solid fa-arrow-up"></i>
 		</button>
-		<!-- reader footer: page guide placed after the material -->
-		<div class="reader-footer mt-2">
-			<div class="input-group input-group-sm w-auto mx-auto" role="group" aria-label="Guia de páginas">
+	</div>
+	<!-- reader footer outside reader frame -->
+	<div class="reader-footer mt-2" id="readerFooter">
+		<div class="input-group input-group-sm w-auto mx-auto" id="readerPageGuide" role="group" aria-label="Guia de páginas">
 				<span class="input-group-text">Página</span>
 				<input type="number" min="1" class="form-control" id="pageNumber" style="width: 90px;">
 				<span class="input-group-text" id="pageTotal">/ 0</span>
-			</div>
-			<div class="text-center small text-muted" id="pageCompact">0/0</div>
+		</div>
+		<div class="text-center small text-muted" id="pageCompact">0/0</div>
+		<div class="reader-end-actions mt-2" id="readerEndActions">
+				<button id="readerBottomTop" class="btn btn-sm btn-outline-secondary" type="button">
+					<i class="fa-solid fa-arrow-up me-1"></i>
+					<span>Topo</span>
+				</button>
+				<?php if (!empty($nextChapterUrl)): ?>
+					<a class="btn btn-sm btn-primary" href="<?= $nextChapterUrl ?>">
+						<i class="fa-solid fa-step-forward me-1"></i>
+						<span>Próximo capítulo</span>
+					</a>
+				<?php else: ?>
+					<button class="btn btn-sm btn-primary" type="button" disabled>
+						<i class="fa-solid fa-step-forward me-1"></i>
+						<span>Próximo capítulo</span>
+					</button>
+				<?php endif; ?>
+				<?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
+					<a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>">
+						<i class="fa-solid fa-list me-1"></i>
+						<span>Capítulos</span>
+					</a>
+				<?php endif; ?>
+				<a class="btn btn-sm btn-outline-primary" href="<?= base_path('/libraries') ?>">
+					<i class="fa-solid fa-book me-1"></i>
+					<span>Biblioteca</span>
+				</a>
 		</div>
 	</div>
+	
 	<script src="<?= url('assets/js/reader.js') ?>"></script>
 <?php endif; ?>
 <?php
