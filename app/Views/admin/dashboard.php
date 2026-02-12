@@ -141,7 +141,7 @@ $uploadsValues = [];
 foreach ($uploadsSeries as $row) {
     $uploadsValues[] = (int)round($parseNumber((string)($row['value'] ?? '0')));
 }
-$maxUploads = max(8000, (!empty($uploadsValues) ? max($uploadsValues) : 0));
+$maxUploads = max(10000, (!empty($uploadsValues) ? max($uploadsValues) : 0));
 $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 ?>
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
