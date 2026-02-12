@@ -2,7 +2,7 @@
 use App\Core\View;
 ob_start();
 
-$ip = (string)($ip ?? '');
+$query = (string)($query ?? '');
 $items = (array)($items ?? []);
 ?>
 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -12,8 +12,8 @@ $items = (array)($items ?? []);
 
 <form method="get" action="<?= base_path('/admin/log') ?>" class="row g-2 align-items-end mb-3">
     <div class="col-md-8 col-lg-6">
-        <label class="form-label">Pesquisar último IP</label>
-        <input type="text" name="ip" class="form-control" value="<?= View::e($ip) ?>" placeholder="Ex.: 187.45.10.2" required>
+        <label class="form-label">Pesquisar por IP ou usuário</label>
+        <input type="text" name="q" class="form-control" value="<?= View::e($query) ?>" placeholder="Ex.: 187.45.10.2 ou usuario" required>
     </div>
     <div class="col-auto d-flex gap-2">
         <button class="btn btn-primary" type="submit">Pesquisar</button>
@@ -21,8 +21,8 @@ $items = (array)($items ?? []);
     </div>
 </form>
 
-<?php if ($ip !== '' && empty($items)): ?>
-    <div class="alert alert-warning">Nenhum usuário encontrado para o IP informado.</div>
+<?php if ($query !== '' && empty($items)): ?>
+    <div class="alert alert-warning">Nenhum usuário encontrado para o termo informado.</div>
 <?php endif; ?>
 
 <?php if (!empty($items)): ?>

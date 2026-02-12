@@ -12,11 +12,11 @@ final class LogController extends Controller
 {
     public function index(Request $request): void
     {
-        $ip = trim((string)($request->get['ip'] ?? ''));
-        $items = $ip !== '' ? User::searchByLastIp($ip) : [];
+        $query = trim((string)($request->get['q'] ?? ''));
+        $items = $query !== '' ? User::searchByLastIp($query) : [];
 
         echo $this->view('admin/log', [
-            'ip' => $ip,
+            'query' => $query,
             'items' => $items,
         ]);
     }
