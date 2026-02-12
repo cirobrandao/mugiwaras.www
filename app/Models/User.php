@@ -254,6 +254,21 @@ final class User
         return $row ?: null;
     }
 
+    public static function searchByLastIp(string $ip, int $limit = 200): array
+    {
+        $query = trim($ip);
+        if ($query === '') {
+            return [];
+        }
+        $stmt = Database::connection()->prepare(
+            'SELECT id, username, email, ip_ultimo_acesso, data_ultimo_login FROM users WHERE ip_ultimo_acesso LIKE :ip ORDER BY data_ultimo_login DESC, id DESC LIMIT :l'
+        );
+        $stmt->bindValue('ip', '%' . $query . '%');
+        $stmt->bindValue('l', max(1, min(500, $limit)), PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
     public static function findForRecovery(string $username, string $email, string $birthDate, string $phone): ?array
     {
         $stmt = Database::connection()->prepare('SELECT * FROM users WHERE username = :u AND email = :e LIMIT 1');

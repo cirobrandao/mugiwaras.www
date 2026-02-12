@@ -199,6 +199,7 @@ $router->get('/admin/categories', [new App\Controllers\Admin\CategoriesControlle
 $router->post('/admin/categories/create', [new App\Controllers\Admin\CategoriesController(), 'create'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/categories/update', [new App\Controllers\Admin\CategoriesController(), 'update'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/categories/delete', [new App\Controllers\Admin\CategoriesController(), 'delete'], [App\Core\Auth::requireAdmin()]);
+$router->get('/admin/log', [new App\Controllers\Admin\LogController(), 'index'], [App\Core\Auth::requireAdmin()]);
 
 $router->get('/reset', [new App\Controllers\AuthController(), 'resetForm']);
 $router->post('/reset', [new App\Controllers\AuthController(), 'resetSubmit']);
