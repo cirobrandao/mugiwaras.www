@@ -13,7 +13,10 @@ ob_start();
 <h1 class="h4 mb-3">Recuperar conta</h1>
 <p class="text-muted small">Confirme usuário, email, data de nascimento e telefone para redefinir sua senha.</p>
 <?php if (!empty($error)): ?>
-    <div class="alert alert-danger"><?= View::e($error) ?></div>
+    <div class="alert alert-danger d-flex flex-column gap-2">
+        <span><?= View::e($error) ?></span>
+        <a class="btn btn-sm btn-outline-danger align-self-start" href="<?= base_path('/support') ?>">Abrir suporte</a>
+    </div>
 <?php endif; ?>
 <form method="post" action="<?= base_path('/recover') ?>">
     <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
