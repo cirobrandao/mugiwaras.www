@@ -261,9 +261,10 @@ final class User
             return [];
         }
         $stmt = Database::connection()->prepare(
-            'SELECT id, username, email, ip_ultimo_acesso, data_ultimo_login FROM users WHERE ip_ultimo_acesso LIKE :q OR username LIKE :q ORDER BY data_ultimo_login DESC, id DESC LIMIT :l'
+            'SELECT id, username, email, ip_ultimo_acesso, data_ultimo_login FROM users WHERE ip_ultimo_acesso LIKE :q1 OR username LIKE :q2 ORDER BY data_ultimo_login DESC, id DESC LIMIT :l'
         );
-        $stmt->bindValue('q', '%' . $query . '%');
+        $stmt->bindValue('q1', '%' . $query . '%');
+        $stmt->bindValue('q2', '%' . $query . '%');
         $stmt->bindValue('l', max(1, min(500, $limit)), PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll();
