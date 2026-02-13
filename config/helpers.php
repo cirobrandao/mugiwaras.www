@@ -43,6 +43,19 @@ if (!function_exists('url')) {
     }
 }
 
+if (!function_exists('upload_url')) {
+    function upload_url(string $path = ''): string
+    {
+        $uploadBaseUrl = rtrim((string)config('app.upload_url', ''), '/');
+        if ($uploadBaseUrl === '') {
+            return url($path);
+        }
+        $basePath = rtrim((string)config('app.base_path', ''), '/');
+        $path = '/' . ltrim($path, '/');
+        return $uploadBaseUrl . $basePath . $path;
+    }
+}
+
 if (!function_exists('format_brl')) {
     function format_brl(float $value): string
     {

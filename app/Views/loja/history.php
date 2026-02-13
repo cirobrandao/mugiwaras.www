@@ -39,7 +39,7 @@ ob_start();
                     <?php if (!empty($p['proof_path'])): ?>
                         <span class="text-success">Enviado</span>
                     <?php elseif ($p['status'] === 'pending'): ?>
-                        <form method="post" action="<?= base_path('/loja/proof') ?>" enctype="multipart/form-data" class="proofForm">
+                        <form method="post" action="<?= upload_url('/loja/proof') ?>" enctype="multipart/form-data" class="proofForm">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                             <input type="hidden" name="payment_id" value="<?= (int)$p['id'] ?>">
                             <input type="file" name="proof" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.pdf" required>

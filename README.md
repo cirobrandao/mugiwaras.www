@@ -85,3 +85,11 @@ Ver detalhes em docs/ARCHITECTURE.md.
 ## Notas
 - Não hardcode de base path: use APP_BASE_PATH.
 - Conversores reais estão implementados e dependem de binários externos configurados.
+
+## Upload em subdomínio dedicado
+Para enviar uploads via host separado (ex.: `https://dash.mugiverso.com`) e manter o restante no domínio principal:
+
+- Configure `APP_UPLOAD_URL=https://dash.mugiverso.com`
+- Configure `SESSION_COOKIE_DOMAIN=.mugiverso.com` para compartilhar sessão entre subdomínios
+
+Sem `APP_UPLOAD_URL`, o sistema continua usando `APP_URL` normalmente.

@@ -13,7 +13,7 @@ $statusBadgeMap = [
 ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h4 mb-0">Meus uploads</h1>
-    <a class="btn btn-sm btn-primary" href="<?= base_path('/upload') ?>">Enviar arquivo</a>
+    <a class="btn btn-sm btn-primary" href="<?= upload_url('/upload') ?>">Enviar arquivo</a>
 </div>
 <div class="table-responsive">
     <table class="table table-hover align-middle">

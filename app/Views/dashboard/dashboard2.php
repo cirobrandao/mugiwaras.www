@@ -12,7 +12,7 @@ $canUpload = Auth::canUpload($user ?? null);
         <div class="list-group">
             <a class="list-group-item list-group-item-action" href="<?= base_path('/libraries') ?>">Bibliotecas</a>
             <?php if ($canUpload): ?>
-                <a class="list-group-item list-group-item-action" href="<?= base_path('/upload') ?>">Enviar arquivo</a>
+                <a class="list-group-item list-group-item-action" href="<?= upload_url('/upload') ?>">Enviar arquivo</a>
             <?php endif; ?>
             <a class="list-group-item list-group-item-action" href="<?= base_path('/loja') ?>">Loja</a>
             <a class="list-group-item list-group-item-action" href="<?= base_path('/support') ?>">Suporte</a>

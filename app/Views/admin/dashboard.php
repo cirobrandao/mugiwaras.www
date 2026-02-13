@@ -257,6 +257,9 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/news') ?>">Noticias</a>
                                         </div>
                                         <div class="col-md-6 d-grid">
+                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/log') ?>">Logs de IP</a>
+                                        </div>
+                                        <div class="col-md-6 d-grid">
                                             <a class="btn btn-outline-primary" href="<?= base_path('/admin/uploads') ?>">Uploads</a>
                                         </div>
                                         <div class="col-md-6 d-grid">

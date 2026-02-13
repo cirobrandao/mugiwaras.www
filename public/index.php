@@ -22,11 +22,18 @@ if ($debug) {
 $security = config('security');
 
 session_name((string)$security['session_cookie']);
-session_set_cookie_params([
+$sessionDomain = trim((string)($security['session_domain'] ?? ''));
+$sessionParams = [
     'path' => base_path('/'),
     'secure' => (bool)$security['session_secure'],
     'httponly' => true,
     'samesite' => (string)$security['session_samesite'],
+];
+if ($sessionDomain !== '') {
+    $sessionParams['domain'] = $sessionDomain;
+}
+session_set_cookie_params([
+    ...$sessionParams,
 ]);
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();

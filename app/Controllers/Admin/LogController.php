@@ -8,7 +8,7 @@ use App\Core\Controller;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Auth;
-use App\Models\User;
+use App\Models\LoginHistory;
 
 final class LogController extends Controller
 {
@@ -20,11 +20,25 @@ final class LogController extends Controller
         }
 
         $query = trim((string)($request->get['q'] ?? ''));
-        $items = $query !== '' ? User::searchByLastIp($query) : [];
+        $perPage = (int)($request->get['perPage'] ?? 100);
+        $perPage = max(10, min(500, $perPage));
+        $page = (int)($request->get['page'] ?? 1);
+        $page = max(1, $page);
+
+        $total = LoginHistory::countAccessLogs($query);
+        $pages = max(1, (int)ceil($total / max(1, $perPage)));
+        if ($page > $pages) {
+            $page = $pages;
+        }
+        $items = LoginHistory::accessLogs($query, $page, $perPage);
 
         echo $this->view('admin/log', [
             'query' => $query,
             'items' => $items,
+            'page' => $page,
+            'pages' => $pages,
+            'perPage' => $perPage,
+            'total' => $total,
         ]);
     }
 }

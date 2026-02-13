@@ -44,7 +44,7 @@ ob_start();
         </div>
         <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="5368709120" data-max-files="50">0 B / 5 GB · 0 / 50 arquivos</div>
     </div>
-    <form method="post" action="<?= base_path('/upload') ?>" enctype="multipart/form-data">
+    <form method="post" action="<?= upload_url('/upload') ?>" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="<?= \App\Core\View::e($csrf ?? '') ?>">
         <div class="row g-3">
             <div class="col-md-6">
@@ -163,29 +163,29 @@ $statusBadgeMap = [
             <nav>
                 <ul class="pagination pagination-sm">
                     <li class="page-item <?= $curr <= 1 ? 'disabled' : '' ?>">
-                        <a class="page-link" href="<?= base_path('/upload?page=1') ?>" aria-label="Primeira">«</a>
+                        <a class="page-link" href="<?= upload_url('/upload?page=1') ?>" aria-label="Primeira">«</a>
                     </li>
                     <li class="page-item <?= $curr <= 1 ? 'disabled' : '' ?>">
-                        <a class="page-link" href="<?= base_path('/upload?page=' . $prev) ?>" aria-label="Anterior">‹</a>
+                        <a class="page-link" href="<?= upload_url('/upload?page=' . $prev) ?>" aria-label="Anterior">‹</a>
                     </li>
                     <?php if ($start > 1): ?>
-                        <li class="page-item"><a class="page-link" href="<?= base_path('/upload?page=1') ?>">1</a></li>
+                        <li class="page-item"><a class="page-link" href="<?= upload_url('/upload?page=1') ?>">1</a></li>
                         <?php if ($start > 2): ?><li class="page-item disabled"><span class="page-link">…</span></li><?php endif; ?>
                     <?php endif; ?>
                     <?php for ($p = $start; $p <= $end; $p++): ?>
                         <li class="page-item <?= $p === $curr ? 'active' : '' ?>">
-                            <a class="page-link" href="<?= base_path('/upload?page=' . $p) ?>"><?= $p ?></a>
+                            <a class="page-link" href="<?= upload_url('/upload?page=' . $p) ?>"><?= $p ?></a>
                         </li>
                     <?php endfor; ?>
                     <?php if ($end < $pages): ?>
                         <?php if ($end < $pages - 1): ?><li class="page-item disabled"><span class="page-link">…</span></li><?php endif; ?>
-                        <li class="page-item"><a class="page-link" href="<?= base_path('/upload?page=' . $pages) ?>"><?= $pages ?></a></li>
+                        <li class="page-item"><a class="page-link" href="<?= upload_url('/upload?page=' . $pages) ?>"><?= $pages ?></a></li>
                     <?php endif; ?>
                     <li class="page-item <?= $curr >= $pages ? 'disabled' : '' ?>">
-                        <a class="page-link" href="<?= base_path('/upload?page=' . $next) ?>" aria-label="Próxima">›</a>
+                        <a class="page-link" href="<?= upload_url('/upload?page=' . $next) ?>" aria-label="Próxima">›</a>
                     </li>
                     <li class="page-item <?= $curr >= $pages ? 'disabled' : '' ?>">
-                        <a class="page-link" href="<?= base_path('/upload?page=' . $pages) ?>" aria-label="Última">»</a>
+                        <a class="page-link" href="<?= upload_url('/upload?page=' . $pages) ?>" aria-label="Última">»</a>
                     </li>
                 </ul>
             </nav>

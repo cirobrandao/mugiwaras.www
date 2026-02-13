@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'session_cookie' => env('SESSION_COOKIE_NAME', 'mws_session'),
+    'session_domain' => env('SESSION_COOKIE_DOMAIN', ''),
     'session_secure' => env('SESSION_SECURE', 'true') === 'true',
     'session_samesite' => env('SESSION_SAMESITE', 'Lax'),
     'remember_days' => (int)env('REMEMBER_ME_DAYS', '30'),

@@ -128,7 +128,7 @@ ob_start();
             </div>
         <?php endif; ?>
         <div class="form-text mb-3">Formatos aceitos: JPG, PNG ou PDF. Tamanho máximo: 4MB.</div>
-        <form method="post" action="<?= base_path('/loja/request') ?>" enctype="multipart/form-data" id="proofForm">
+        <form method="post" action="<?= upload_url('/loja/request') ?>" enctype="multipart/form-data" id="proofForm">
             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
             <input type="hidden" name="package_id" value="<?= (int)$package['id'] ?>">
             <input type="hidden" name="months" value="<?= (int)($months ?? 1) ?>">

@@ -83,4 +83,74 @@ final class LoginHistory
         $stmt->execute();
         return $stmt->fetchAll();
     }
+
+    public static function countAccessLogs(string $query = ''): int
+    {
+        $sql = 'SELECT COUNT(*) AS c FROM login_history lh INNER JOIN users u ON u.id = lh.user_id';
+        $params = [];
+        $where = self::searchWhere($query, $params);
+        if ($where !== '') {
+            $sql .= ' WHERE ' . $where;
+        }
+        $stmt = Database::connection()->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+        $stmt->execute();
+        $row = $stmt->fetch();
+        return (int)($row['c'] ?? 0);
+    }
+
+    public static function accessLogs(string $query = '', int $page = 1, int $perPage = 100): array
+    {
+        $page = max(1, $page);
+        $perPage = max(10, min(500, $perPage));
+        $offset = ($page - 1) * $perPage;
+
+        $sql = 'SELECT lh.id, lh.user_id, lh.ip_address, lh.user_agent, lh.logged_at, u.username, u.email, u.role, u.access_tier FROM login_history lh INNER JOIN users u ON u.id = lh.user_id';
+        $params = [];
+        $where = self::searchWhere($query, $params);
+        if ($where !== '') {
+            $sql .= ' WHERE ' . $where;
+        }
+        $sql .= ' ORDER BY lh.logged_at DESC, lh.id DESC LIMIT :l OFFSET :o';
+
+        $stmt = Database::connection()->prepare($sql);
+        foreach ($params as $key => $value) {
+            if (is_int($value)) {
+                $stmt->bindValue(':' . $key, $value, \PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue(':' . $key, $value);
+            }
+        }
+        $stmt->bindValue('l', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue('o', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    private static function searchWhere(string $query, array &$params): string
+    {
+        $query = trim($query);
+        if ($query === '') {
+            return '';
+        }
+        $params['q1'] = '%' . $query . '%';
+        $params['q2'] = '%' . $query . '%';
+        $params['q3'] = '%' . $query . '%';
+        $params['q4'] = '%' . $query . '%';
+        $parts = [
+            'u.username LIKE :q1',
+            'u.email LIKE :q2',
+            'lh.ip_address LIKE :q3',
+            'lh.user_agent LIKE :q4',
+        ];
+        if (ctype_digit($query)) {
+            $params['uid'] = (int)$query;
+            $params['lid'] = (int)$query;
+            $parts[] = 'lh.user_id = :uid';
+            $parts[] = 'lh.id = :lid';
+        }
+        return '(' . implode(' OR ', $parts) . ')';
+    }
 }

@@ -229,7 +229,7 @@ if (function_exists('sys_getloadavg')) {
                                 <span class="badge bg-danger ms-auto"><?= (int)$pendingUploads ?></span>
                             <?php endif; ?>
                         </a>
-                        <a class="nav-link" href="<?= base_path('/upload') ?>">
+                        <a class="nav-link" href="<?= upload_url('/upload') ?>">
                             <i class="bi bi-cloud-arrow-up"></i>
                             <span>Enviar arquivo</span>
                         </a>
@@ -238,10 +238,6 @@ if (function_exists('sys_getloadavg')) {
                         <a class="nav-link" href="<?= base_path('/admin/news') ?>">
                             <i class="bi bi-megaphone"></i>
                             <span>Noticias</span>
-                        </a>
-                        <a class="nav-link" href="<?= base_path('/admin/log') ?>">
-                            <i class="bi bi-journal-text"></i>
-                            <span>Logs de IP</span>
                         </a>
                     <?php endif; ?>
                 <?php endif; ?>
