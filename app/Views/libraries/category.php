@@ -102,7 +102,7 @@ $seriesCount = is_array($series ?? null) ? count($series) : 0;
                                 <input type="hidden" name="id" value="<?= $seriesId ?>">
                                 <input class="form-control form-control-sm" type="number" name="pin_order" value="<?= (int)($s['pin_order'] ?? 0) ?>" style="width: 70px;" min="0">
                                 <button class="btn btn-sm btn-outline-primary" type="submit" title="Salvar ordem" aria-label="Salvar ordem">
-                                    <i class="fa-solid fa-floppy-disk"></i>
+                                    <i class="bi bi-floppy"></i>
                                 </button>
                             </form>
                         <?php endif; ?>
@@ -112,15 +112,15 @@ $seriesCount = is_array($series ?? null) ? count($series) : 0;
                                 <input type="hidden" name="id" value="<?= $seriesId ?>">
                                 <input type="hidden" name="adult_only" value="<?= $isAdultSeries ? 0 : 1 ?>">
                                 <button class="btn btn-sm <?= $isAdultSeries ? 'btn-danger' : 'btn-outline-secondary' ?>" type="submit" title="<?= $isAdultSeries ? 'Remover 18+' : 'Definir 18+' ?>" aria-pressed="<?= $isAdultSeries ? 'true' : 'false' ?>">
-                                    <i class="fa-solid <?= $isAdultSeries ? 'fa-circle-check' : 'fa-circle' ?>"></i>
+                                    <i class="bi <?= $isAdultSeries ? 'bi-check-circle-fill' : 'bi-circle' ?>"></i>
                                     <span class="badge bg-light text-danger ms-1">18+</span>
                                 </button>
                             </form>
                             <button class="btn btn-sm btn-outline-secondary" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#<?= $editModalId ?>">
-                                <i class="fa-solid fa-pen-to-square"></i>
+                                <i class="bi bi-pencil-square"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#<?= $deleteModalId ?>" title="Excluir" aria-label="Excluir">
-                                <i class="fa-solid fa-trash"></i>
+                                <i class="bi bi-trash"></i>
                             </button>
                         <?php endif; ?>
                     </div>
@@ -227,7 +227,7 @@ $seriesCount = is_array($series ?? null) ? count($series) : 0;
                                     <input type="hidden" name="id" value="<?= $seriesId ?>">
                                     <input class="form-control form-control-sm" type="number" name="pin_order" value="<?= (int)($s['pin_order'] ?? 0) ?>" style="width: 70px;" min="0">
                                     <button class="btn btn-sm btn-outline-primary" type="submit" title="Salvar ordem" aria-label="Salvar ordem">
-                                        <i class="fa-solid fa-floppy-disk"></i>
+                                        <i class="bi bi-floppy"></i>
                                     </button>
                                 </form>
                             <?php endif; ?>
@@ -237,15 +237,15 @@ $seriesCount = is_array($series ?? null) ? count($series) : 0;
                                     <input type="hidden" name="id" value="<?= $seriesId ?>">
                                     <input type="hidden" name="adult_only" value="<?= $isAdultSeries ? 0 : 1 ?>">
                                     <button class="btn btn-sm <?= $isAdultSeries ? 'btn-danger' : 'btn-outline-secondary' ?>" type="submit" title="<?= $isAdultSeries ? 'Remover 18+' : 'Definir 18+' ?>" aria-pressed="<?= $isAdultSeries ? 'true' : 'false' ?>">
-                                        <i class="fa-solid <?= $isAdultSeries ? 'fa-circle-check' : 'fa-circle' ?>"></i>
+                                        <i class="bi <?= $isAdultSeries ? 'bi-check-circle-fill' : 'bi-circle' ?>"></i>
                                         <span class="badge bg-light text-danger ms-1">18+</span>
                                     </button>
                                 </form>
                                 <button class="btn btn-sm btn-outline-secondary" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#<?= $editModalId ?>">
-                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    <i class="bi bi-pencil-square"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#<?= $deleteModalId ?>" title="Excluir" aria-label="Excluir">
-                                    <i class="fa-solid fa-trash"></i>
+                                    <i class="bi bi-trash"></i>
                                 </button>
                             <?php endif; ?>
                         </div>

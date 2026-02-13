@@ -59,13 +59,13 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             </nav>
             <div class="d-flex align-items-center gap-2">
                 <?php $bulkLabel = 'Acoes de leitura'; ?>
-                <?php $bulkIcon = 'fa-eye'; ?>
+                <?php $bulkIcon = 'bi-eye'; ?>
                 <?php $bulkModalId = 'bulk-read-modal-' . (int)($series['id'] ?? 0); ?>
                 <button class="btn btn-sm btn-outline-secondary" type="button" title="<?= View::e($bulkLabel) ?>" aria-label="<?= View::e($bulkLabel) ?>" data-bs-toggle="modal" data-bs-target="#<?= $bulkModalId ?>">
-                    <i class="fa-solid <?= $bulkIcon ?>"></i>
+                    <i class="bi <?= $bulkIcon ?>"></i>
                 </button>
                 <a class="btn btn-sm btn-outline-secondary border" href="<?= $orderUrl ?>" title="<?= View::e($orderBtnLabel) ?>" aria-label="<?= View::e($orderBtnLabel) ?>">
-                    <i class="fa-solid fa-arrow-up-short-wide"></i>
+                    <i class="bi bi-sort-numeric-down"></i>
                 </a>
             </div>
         </div>
@@ -150,11 +150,11 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                     <div class="d-flex align-items-center gap-2 flex-wrap">
                         <?php if ($pdfDownloadUrl !== ''): ?>
                             <a class="btn btn-sm btn-outline-primary" href="<?= $pdfDownloadUrl ?>" title="Download PDF">
-                                <i class="fa-solid fa-download"></i>
+                                <i class="bi bi-download"></i>
                             </a>
                         <?php elseif ($isPdf && $downloadToken !== ''): ?>
                             <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) ?>" title="Download">
-                                <i class="fa-solid fa-download"></i>
+                                <i class="bi bi-download"></i>
                             </a>
                         <?php endif; ?>
                         <form method="post" action="<?= base_path('/libraries/read') ?>">
@@ -163,7 +163,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                             <input type="hidden" name="read" value="<?= (!empty($read) && in_array((int)$item['id'], $read, true)) ? '0' : '1' ?>">
                             <?php $isRead = !empty($read) && in_array((int)$item['id'], $read, true); ?>
                             <button class="btn btn-sm btn-outline-secondary" type="submit" title="<?= $isRead ? 'Marcar não lido' : 'Marcar lido' ?>">
-                                <i class="fa-solid <?= $isRead ? 'fa-eye-slash' : 'fa-eye' ?>"></i>
+                                <i class="bi <?= $isRead ? 'bi-eye-slash' : 'bi-eye' ?>"></i>
                             </button>
                         </form>
                         <?php if (!empty($user) && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))): ?>
@@ -175,10 +175,10 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                                 <button class="btn btn-sm btn-outline-primary" type="submit">Salvar</button>
                             </form>
                             <button class="btn btn-sm btn-outline-secondary" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#<?= $editModalId ?>">
-                                <i class="fa-solid fa-pen-to-square"></i>
+                                <i class="bi bi-pencil-square"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger" type="button" title="Excluir" data-bs-toggle="modal" data-bs-target="#<?= $deleteModalId ?>">
-                                <i class="fa-solid fa-trash"></i>
+                                <i class="bi bi-trash"></i>
                             </button>
                         <?php endif; ?>
                     </div>
@@ -234,11 +234,11 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                     <div class="d-flex flex-wrap align-items-center gap-2">
                         <?php if ($pdfDownloadUrl !== ''): ?>
                             <a class="btn btn-sm btn-outline-primary" href="<?= $pdfDownloadUrl ?>" title="Download PDF">
-                                <i class="fa-solid fa-download"></i>
+                                <i class="bi bi-download"></i>
                             </a>
                         <?php elseif ($isPdf && $downloadToken !== ''): ?>
                             <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) ?>" title="Download">
-                                <i class="fa-solid fa-download"></i>
+                                <i class="bi bi-download"></i>
                             </a>
                         <?php endif; ?>
                         <form method="post" action="<?= base_path('/libraries/read') ?>">
@@ -246,7 +246,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                             <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
                             <input type="hidden" name="read" value="<?= $isRead ? '0' : '1' ?>">
                             <button class="btn btn-sm btn-outline-secondary" type="submit" title="<?= $isRead ? 'Marcar não lido' : 'Marcar lido' ?>">
-                                <i class="fa-solid <?= $isRead ? 'fa-eye-slash' : 'fa-eye' ?>"></i>
+                                <i class="bi <?= $isRead ? 'bi-eye-slash' : 'bi-eye' ?>"></i>
                             </button>
                         </form>
                         <?php if (!empty($user) && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))): ?>
@@ -257,10 +257,10 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                                 <button class="btn btn-sm btn-outline-primary" type="submit">Salvar</button>
                             </form>
                             <button class="btn btn-sm btn-outline-secondary" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#<?= $editModalId ?>">
-                                <i class="fa-solid fa-pen-to-square"></i>
+                                <i class="bi bi-pencil-square"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger" type="button" title="Excluir" data-bs-toggle="modal" data-bs-target="#<?= $deleteModalId ?>">
-                                <i class="fa-solid fa-trash"></i>
+                                <i class="bi bi-trash"></i>
                             </button>
                         <?php endif; ?>
                     </div>

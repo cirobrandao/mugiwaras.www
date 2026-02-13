@@ -53,7 +53,7 @@ foreach ($messages ?? [] as $m) {
                             <?= View::e((string)$m['username']) ?>
                         <?php else: ?>
                             <?php $externalName = explode('@', (string)($m['email'] ?? ''))[0] ?? ''; ?>
-                            <span class="text-danger me-1" title="Usuário externo"><i class="fa-solid fa-flag"></i></span>
+                            <span class="text-danger me-1" title="Usuário externo"><i class="bi bi-flag-fill"></i></span>
                             <?= View::e($externalName) ?>
                         <?php endif; ?>
                     </td>
@@ -70,14 +70,14 @@ foreach ($messages ?? [] as $m) {
                     </td>
                     <td class="text-end">
                         <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/admin/support/' . (int)$m['id']) ?>" title="Ver">
-                            <i class="fa-solid fa-eye"></i>
+                            <i class="bi bi-eye"></i>
                         </a>
                         <form method="post" action="<?= base_path('/admin/support/status') ?>" class="d-inline">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
                             <input type="hidden" name="id" value="<?= (int)$m['id'] ?>">
                             <input type="hidden" name="status" value="in_progress">
                             <button class="btn btn-sm btn-outline-secondary" type="submit" title="Em andamento">
-                                <i class="fa-solid fa-clock"></i>
+                                <i class="bi bi-clock"></i>
                             </button>
                         </form>
                         <form method="post" action="<?= base_path('/admin/support/status') ?>" class="d-inline">
@@ -85,7 +85,7 @@ foreach ($messages ?? [] as $m) {
                             <input type="hidden" name="id" value="<?= (int)$m['id'] ?>">
                             <input type="hidden" name="status" value="closed">
                             <button class="btn btn-sm btn-outline-success" type="submit" title="Fechar">
-                                <i class="fa-solid fa-check"></i>
+                                <i class="bi bi-check-lg"></i>
                             </button>
                         </form>
                     </td>
@@ -120,7 +120,7 @@ foreach ($messages ?? [] as $m) {
                             <?= View::e((string)$m['username']) ?>
                         <?php else: ?>
                             <?php $externalName = explode('@', (string)($m['email'] ?? ''))[0] ?? ''; ?>
-                            <span class="text-danger me-1" title="Usuário externo"><i class="fa-solid fa-flag"></i></span>
+                            <span class="text-danger me-1" title="Usuário externo"><i class="bi bi-flag-fill"></i></span>
                             <?= View::e($externalName) ?>
                         <?php endif; ?>
                     </td>
@@ -137,14 +137,14 @@ foreach ($messages ?? [] as $m) {
                     </td>
                     <td class="text-end">
                         <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/admin/support/' . (int)$m['id']) ?>" title="Ver">
-                            <i class="fa-solid fa-eye"></i>
+                            <i class="bi bi-eye"></i>
                         </a>
                         <form method="post" action="<?= base_path('/admin/support/status') ?>" class="d-inline">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
                             <input type="hidden" name="id" value="<?= (int)$m['id'] ?>">
                             <input type="hidden" name="status" value="open">
                             <button class="btn btn-sm btn-outline-secondary" type="submit" title="Reabrir">
-                                <i class="fa-solid fa-arrow-rotate-left"></i>
+                                <i class="bi bi-arrow-clockwise"></i>
                             </button>
                         </form>
                     </td>

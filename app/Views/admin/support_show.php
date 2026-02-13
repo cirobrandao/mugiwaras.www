@@ -34,7 +34,7 @@ $labelMap = [
             <input type="hidden" name="id" value="<?= (int)$ticket['id'] ?>">
             <input type="text" name="admin_note" class="form-control form-control-sm" value="<?= View::e((string)($ticket['admin_note'] ?? '')) ?>" placeholder="Nota">
             <button class="btn btn-sm btn-primary" type="submit" title="Salvar">
-                <i class="fa-solid fa-floppy-disk"></i>
+                <i class="bi bi-floppy"></i>
             </button>
         </form>
     </div>

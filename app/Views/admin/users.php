@@ -185,7 +185,7 @@ $page = min($page, $pages);
 						<?= View::e((string)($u['username'] ?? '')) ?>
 					</button>
 					<a class="ms-2 small text-muted" href="<?= base_path('/perfil/' . rawurlencode((string)($u['username'] ?? ''))) ?>" title="Abrir perfil">
-						<i class="fa-solid fa-up-right-from-square"></i>
+						<i class="bi bi-box-arrow-up-right"></i>
 					</a>
 				</td>
 				<td>
@@ -197,7 +197,7 @@ $page = min($page, $pages);
 					<?= View::e($phone !== '' ? phone_mask($phone) : '-') ?>
 					<?php if (!empty($u['phone_has_whatsapp']) && $digits !== ''): ?>
 						<a class="ms-2 text-success" href="https://wa.me/<?= View::e($digits) ?>" target="_blank" rel="noopener" title="WhatsApp">
-							<i class="fa-brands fa-whatsapp"></i>
+							<i class="bi bi-whatsapp"></i>
 						</a>
 					<?php endif; ?>
 				</td>
@@ -240,12 +240,12 @@ $page = min($page, $pages);
 				<td class="text-end">
 					<div class="d-inline-flex gap-2 admin-actions">
 					<button class="btn btn-sm btn-outline-secondary px-2" type="button" data-bs-toggle="modal" data-bs-target="#editUserModal<?= (int)$u['id'] ?>" title="Editar">
-						<i class="fa-solid fa-pen-to-square"></i>
+						<i class="bi bi-pencil-square"></i>
 						<span class="visually-hidden">Editar</span>
 					</button>
 
 					<button class="btn btn-sm btn-outline-info px-2" type="button" data-bs-toggle="modal" data-bs-target="#loginHistoryModal<?= (int)$u['id'] ?>" title="Historico de login">
-						<i class="fa-solid fa-clock-rotate-left"></i>
+						<i class="bi bi-clock-history"></i>
 						<span class="visually-hidden">Historico de login</span>
 					</button>
 
@@ -253,7 +253,7 @@ $page = min($page, $pages);
 						<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
 						<input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
 						<button class="btn btn-sm px-2 <?= $isRestricted ? 'btn-danger' : 'btn-outline-danger' ?>" type="submit" <?= $isSuper ? 'disabled' : '' ?> title="Restringir acesso">
-							<i class="fa-solid fa-user-slash"></i>
+							<i class="bi bi-person-slash"></i>
 							<span class="visually-hidden">Restringir acesso</span>
 						</button>
 					</form>
@@ -263,7 +263,7 @@ $page = min($page, $pages);
 							<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
 							<input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
 							<button class="btn btn-sm btn-warning px-2 lock-toggle-btn" type="submit" <?= $isSuper ? 'disabled' : '' ?> title="Desbloquear">
-								<i class="fa-solid fa-lock"></i>
+								<i class="bi bi-lock-fill"></i>
 								<span class="visually-hidden">Desbloquear</span>
 							</button>
 						</form>
@@ -273,7 +273,7 @@ $page = min($page, $pages);
 							<input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
 							<input type="hidden" name="lock_until" value="2099-12-31 00:00:00">
 							<button class="btn btn-sm btn-outline-warning px-2 lock-toggle-btn" type="submit" <?= $isSuper ? 'disabled' : '' ?> title="Bloquear">
-								<i class="fa-solid fa-lock-open"></i>
+								<i class="bi bi-unlock-fill"></i>
 								<span class="visually-hidden">Bloquear</span>
 							</button>
 						</form>
@@ -340,15 +340,15 @@ $page = min($page, $pages);
 									<hr class="my-3">
 									<div class="d-flex flex-wrap gap-2">
 										<button class="btn btn-sm btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#assignPackageModal<?= (int)$u['id'] ?>">
-											<i class="fa-solid fa-box"></i>
+											<i class="bi bi-box-seam"></i>
 											<span class="ms-1">Definir pacote</span>
 										</button>
 										<button class="btn btn-sm <?= $isTeam ? 'btn-outline-secondary' : 'btn-outline-warning' ?>" type="submit" formaction="<?= base_path('/admin/users/team-toggle') ?>" formmethod="post" formnovalidate onclick="return confirm('Alterar equipe deste usuario?');">
-											<i class="fa-solid fa-people-group"></i>
+											<i class="bi bi-people-fill"></i>
 											<span class="ms-1"><?= $isTeam ? 'Remover equipe' : 'Tornar equipe' ?></span>
 										</button>
 										<button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#resetUserModal<?= (int)$u['id'] ?>">
-											<i class="fa-solid fa-key"></i>
+											<i class="bi bi-key-fill"></i>
 											<span class="ms-1">Trocar senha</span>
 										</button>
 									</div>

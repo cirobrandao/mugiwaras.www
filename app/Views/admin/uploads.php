@@ -144,7 +144,7 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
     <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
     <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
         <button class="btn btn-sm btn-outline-success" type="submit" id="bulkApproveBtn" title="Liberar pendentes selecionados">
-            <i class="fa-solid fa-check-double"></i>
+            <i class="bi bi-check2-all"></i>
             <span class="ms-1">Liberar pendentes selecionados</span>
         </button>
     </form>
@@ -157,7 +157,7 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
         <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
         <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
         <button class="btn btn-sm btn-outline-danger" type="submit" id="bulkDeleteBtn" title="Remover selecionados">
-            <i class="fa-solid fa-trash"></i>
+            <i class="bi bi-trash"></i>
             <span class="ms-1">Remover selecionados</span>
         </button>
     </form>
@@ -200,13 +200,13 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
                 </td>
                 <td>
                     <?php
-                    $icon = 'fa-circle'; $cls = 'text-secondary';
-                    if ($st === 'queued' || $st === 'pending') { $icon = 'fa-clock'; $cls = 'text-muted'; }
-                    elseif ($st === 'processing') { $icon = 'fa-spinner fa-spin'; $cls = 'text-primary'; }
-                    elseif ($st === 'done' || $st === 'completed') { $icon = 'fa-check-circle'; $cls = 'text-success'; }
-                    elseif ($st === 'failed') { $icon = 'fa-triangle-exclamation'; $cls = 'text-danger'; }
+                    $icon = 'bi-circle-fill'; $cls = 'text-secondary';
+                    if ($st === 'queued' || $st === 'pending') { $icon = 'bi-clock'; $cls = 'text-muted'; }
+                    elseif ($st === 'processing') { $icon = 'bi-arrow-repeat'; $cls = 'text-primary'; }
+                    elseif ($st === 'done' || $st === 'completed') { $icon = 'bi-check-circle-fill'; $cls = 'text-success'; }
+                    elseif ($st === 'failed') { $icon = 'bi-exclamation-triangle-fill'; $cls = 'text-danger'; }
                     ?>
-                    <i class="fa-solid <?= $icon ?> <?= $cls ?>" title="<?= View::e($st) ?>"></i>
+                    <i class="bi <?= $icon ?> <?= $cls ?>" title="<?= View::e($st) ?>"></i>
                 </td>
                 <td>
                     <span class="uploads-pill" style="display:inline-block;max-width:180px;padding:2px 8px;border:1px solid #dee2e6;border-radius:6px;background:#f8f9fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= View::e($fileName) ?>">
@@ -250,17 +250,17 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
                             <input type="hidden" name="series" value="<?= (int)($filterSeries ?? 0) ?>">
                             <input type="hidden" name="status" value="<?= View::e((string)($filterStatus ?? '')) ?>">
                             <button class="btn btn-sm btn-outline-success me-1 uploads-action-btn" type="submit" title="Aprovar">
-                                <i class="fa-solid fa-check"></i>
+                                <i class="bi bi-check-lg"></i>
                                 <span class="visually-hidden">Aprovar</span>
                             </button>
                         </form>
                     <?php endif; ?>
                     <button class="btn btn-sm btn-outline-secondary me-1 uploads-action-btn" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#editUploadModal<?= (int)$u['id'] ?>">
-                        <i class="fa-solid fa-pen-to-square"></i>
+                        <i class="bi bi-pencil-square"></i>
                         <span class="visually-hidden">Editar</span>
                     </button>
                     <button class="btn btn-sm btn-outline-danger uploads-action-btn" type="button" title="Excluir" data-bs-toggle="modal" data-bs-target="#deleteUploadModal<?= (int)$u['id'] ?>">
-                        <i class="fa-solid fa-trash"></i>
+                        <i class="bi bi-trash"></i>
                         <span class="visually-hidden">Excluir</span>
                     </button>
                 </td>

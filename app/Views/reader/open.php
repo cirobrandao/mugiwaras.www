@@ -13,7 +13,7 @@ ob_start();
 		<div class="reader-header-left">
 			<?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
 				<a class="btn btn-sm btn-outline-secondary reader-back" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>">
-					<i class="fa-solid fa-chevron-left me-1"></i>
+					<i class="bi bi-chevron-left me-1"></i>
 					<span>Voltar aos capítulos</span>
 				</a>
 			<?php endif; ?>
@@ -38,12 +38,12 @@ ob_start();
 			<div class="toolbar-row">
 				<div class="reader-toolbar-left">
 					<?php if (!empty($previousChapterUrl)): ?>
-						<a class="btn btn-sm btn-outline-secondary" href="<?= $previousChapterUrl ?>" title="Voltar ao capítulo anterior" aria-label="Voltar ao capítulo anterior"><i class="fa-solid fa-step-backward"></i></a>
+						<a class="btn btn-sm btn-outline-secondary" href="<?= $previousChapterUrl ?>" title="Voltar ao capítulo anterior" aria-label="Voltar ao capítulo anterior"><i class="bi bi-skip-backward-fill"></i></a>
 					<?php else: ?>
-						<button class="btn btn-sm btn-outline-secondary" disabled title="Voltar ao capítulo anterior" aria-hidden="true"><i class="fa-solid fa-step-backward"></i></button>
+						<button class="btn btn-sm btn-outline-secondary" disabled title="Voltar ao capítulo anterior" aria-hidden="true"><i class="bi bi-skip-backward-fill"></i></button>
 					<?php endif; ?>
-					<button class="btn btn-sm btn-secondary" id="readerFirst" type="button" title="Primeira página" aria-label="Primeira página"><i class="fa-solid fa-angle-double-left"></i></button>
-					<button class="btn btn-sm btn-secondary" id="prevPage" type="button" title="Anterior" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+					<button class="btn btn-sm btn-secondary" id="readerFirst" type="button" title="Primeira página" aria-label="Primeira página"><i class="bi bi-chevron-double-left"></i></button>
+					<button class="btn btn-sm btn-secondary" id="prevPage" type="button" title="Anterior" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
 				</div>
 				<div class="reader-toolbar-center">
 					<div class="reader-center-controls d-flex align-items-center">
@@ -67,19 +67,19 @@ ob_start();
 					</div>
 				</div>
 				<div class="reader-toolbar-right ms-auto">
-					<button class="btn btn-sm btn-outline-secondary" id="readerExpand" type="button" title="Expandir leitor" aria-label="Expandir leitor"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+					<button class="btn btn-sm btn-outline-secondary" id="readerExpand" type="button" title="Expandir leitor" aria-label="Expandir leitor"><i class="bi bi-arrows-fullscreen"></i></button>
 					<?php $favBtnClass = !empty($isFavorite) ? 'btn-warning' : 'btn-outline-warning'; ?>
-					<?php $favIconClass = !empty($isFavorite) ? 'fa-solid' : 'fa-regular'; ?>
+					<?php $favIconClass = !empty($isFavorite) ? 'bi-star-fill' : 'bi-star'; ?>
 					<form method="post" action="<?= base_path('/libraries/favorite') ?>" class="m-0">
 						<input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
 						<input type="hidden" name="id" value="<?= (int)($content['id'] ?? 0) ?>">
 						<input type="hidden" name="action" value="<?= !empty($isFavorite) ? 'remove' : 'add' ?>">
-						<button class="btn btn-sm <?= $favBtnClass ?>" type="submit" title="Favoritar" data-favorited="<?= !empty($isFavorite) ? '1' : '0' ?>" aria-label="Favoritar"><i class="<?= $favIconClass ?> fa-star"></i></button>
+						<button class="btn btn-sm <?= $favBtnClass ?>" type="submit" title="Favoritar" data-favorited="<?= !empty($isFavorite) ? '1' : '0' ?>" aria-label="Favoritar"><i class="bi <?= $favIconClass ?>"></i></button>
 					</form>
 					<?php if (!empty($downloadToken)): ?>
 						<div class="btn-group reader-download">
 							<button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Download" aria-label="Download">
-								<i class="fa-solid fa-download"></i>
+								<i class="bi bi-download"></i>
 							</button>
 							<ul class="dropdown-menu dropdown-menu-end">
 								<li><a class="dropdown-item" href="<?= base_path('/download/' . (int)$content['id'] . '?token=' . urlencode((string)$downloadToken)) ?>">*.cbz</a></li>
@@ -92,12 +92,12 @@ ob_start();
 							</ul>
 						</div>
 					<?php endif; ?>
-					<button class="btn btn-sm btn-secondary" id="nextPage" type="button" title="Próxima" aria-label="Próxima"><i class="fa-solid fa-chevron-right"></i></button>
-					<button class="btn btn-sm btn-secondary" id="readerLast" type="button" title="Última página" aria-label="Última página"><i class="fa-solid fa-angle-double-right"></i></button>
+					<button class="btn btn-sm btn-secondary" id="nextPage" type="button" title="Próxima" aria-label="Próxima"><i class="bi bi-chevron-right"></i></button>
+					<button class="btn btn-sm btn-secondary" id="readerLast" type="button" title="Última página" aria-label="Última página"><i class="bi bi-chevron-double-right"></i></button>
 					<?php if (!empty($nextChapterUrl)): ?>
-						<a class="btn btn-sm btn-outline-secondary" href="<?= $nextChapterUrl ?>" title="Avançar para o próximo capítulo" aria-label="Avançar para o próximo capítulo"><i class="fa-solid fa-step-forward"></i></a>
+						<a class="btn btn-sm btn-outline-secondary" href="<?= $nextChapterUrl ?>" title="Avançar para o próximo capítulo" aria-label="Avançar para o próximo capítulo"><i class="bi bi-skip-forward-fill"></i></a>
 					<?php else: ?>
-						<button class="btn btn-sm btn-outline-secondary" disabled title="Avançar para o próximo capítulo" aria-hidden="true"><i class="fa-solid fa-step-forward"></i></button>
+						<button class="btn btn-sm btn-outline-secondary" disabled title="Avançar para o próximo capítulo" aria-hidden="true"><i class="bi bi-skip-forward-fill"></i></button>
 					<?php endif; ?>
 				</div>
 			</div>
@@ -112,14 +112,14 @@ ob_start();
 
 		<!-- scroll-mode: overlay button to go to top -->
 		<button id="scrollTopBtn" class="btn btn-primary btn-sm reader-scroll-top d-none" title="Ir para o topo" aria-label="Ir para o topo">
-			<i class="fa-solid fa-arrow-up"></i>
+			<i class="bi bi-arrow-up"></i>
 		</button>
 	</div>
 	<!-- reader footer outside reader frame -->
 	<div class="reader-footer mt-2" id="readerFooter">
 		<div class="d-flex align-items-center gap-2">
 			<div class="reader-desktop-only">
-				<button class="btn btn-sm btn-secondary" id="prevPageFooter" type="button" title="Anterior" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+				<button class="btn btn-sm btn-secondary" id="prevPageFooter" type="button" title="Anterior" aria-label="Anterior"><i class="bi bi-chevron-left"></i></button>
 			</div>
 			<div class="input-group input-group-sm w-auto mx-auto" id="readerPageGuide" role="group" aria-label="Guia de páginas">
 					<span class="input-group-text">Página</span>
@@ -127,34 +127,34 @@ ob_start();
 					<span class="input-group-text" id="pageTotal">/ 0</span>
 			</div>
 			<div class="reader-desktop-only">
-				<button class="btn btn-sm btn-secondary" id="nextPageFooter" type="button" title="Próxima" aria-label="Próxima"><i class="fa-solid fa-chevron-right"></i></button>
+				<button class="btn btn-sm btn-secondary" id="nextPageFooter" type="button" title="Próxima" aria-label="Próxima"><i class="bi bi-chevron-right"></i></button>
 			</div>
 		</div>
 		<div class="text-center small text-muted" id="pageCompact">0/0</div>
 		<div class="reader-end-actions mt-2" id="readerEndActions">
 				<button id="readerBottomTop" class="btn btn-sm btn-outline-secondary" type="button">
-					<i class="fa-solid fa-arrow-up me-1"></i>
+					<i class="bi bi-arrow-up me-1"></i>
 					<span>Topo</span>
 				</button>
 				<?php if (!empty($nextChapterUrl)): ?>
 					<a class="btn btn-sm btn-primary" href="<?= $nextChapterUrl ?>">
-						<i class="fa-solid fa-step-forward me-1"></i>
+						<i class="bi bi-skip-forward-fill me-1"></i>
 						<span>Próximo capítulo</span>
 					</a>
 				<?php else: ?>
 					<button class="btn btn-sm btn-primary" type="button" disabled>
-						<i class="fa-solid fa-step-forward me-1"></i>
+						<i class="bi bi-skip-forward-fill me-1"></i>
 						<span>Próximo capítulo</span>
 					</button>
 				<?php endif; ?>
 				<?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
 					<a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>">
-						<i class="fa-solid fa-list me-1"></i>
+						<i class="bi bi-list-ul me-1"></i>
 						<span>Capítulos</span>
 					</a>
 				<?php endif; ?>
 				<a class="btn btn-sm btn-outline-primary" href="<?= base_path('/libraries') ?>">
-					<i class="fa-solid fa-book me-1"></i>
+					<i class="bi bi-book me-1"></i>
 					<span>Biblioteca</span>
 				</a>
 		</div>

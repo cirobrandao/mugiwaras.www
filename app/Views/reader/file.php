@@ -22,7 +22,7 @@ ob_start();
 		<div class="d-flex flex-wrap align-items-center gap-2">
 			<button class="btn btn-sm btn-secondary" id="prevPage">Anterior</button>
 			<button class="btn btn-sm btn-secondary" id="nextPage">Próxima</button>
-			<button class="btn btn-sm btn-secondary" id="readerFirst" type="button" title="Voltar ao início"><i class="fa-solid fa-backward"></i></button>
+			<button class="btn btn-sm btn-secondary" id="readerFirst" type="button" title="Voltar ao início"><i class="bi bi-skip-backward-fill"></i></button>
 			<div class="input-group input-group-sm w-auto">
 				<span class="input-group-text">Página</span>
 				<input type="number" min="1" class="form-control" id="pageNumber" style="width: 90px;">
@@ -44,7 +44,7 @@ ob_start();
 					<input class="form-check-input" type="checkbox" id="readerWheel" checked>
 					<label class="form-check-label small" for="readerWheel">Scroll do mouse</label>
 				</div>
-				<button class="btn btn-sm btn-outline-secondary" id="readerLights" type="button" title="Apagar as luzes"><i class="fa-solid fa-moon"></i></button>
+				<button class="btn btn-sm btn-outline-secondary" id="readerLights" type="button" title="Apagar as luzes"><i class="bi bi-moon-fill"></i></button>
 			</div>
 		</div>
 		<div class="reader-progress mt-2">

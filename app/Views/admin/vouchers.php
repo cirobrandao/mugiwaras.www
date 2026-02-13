@@ -69,13 +69,31 @@ ob_start();
 
 <div class="table-responsive">
     <table class="table table-sm">
-        <thead><tr><th>Código</th><th>Pacote</th><th>Dias</th><th>Usos</th><th>Expira</th><th>Status</th><th class="text-end">Ações</th></tr></thead>
+        <thead><tr><th>Código</th><th>Pacote</th><th>Quem criou</th><th>Uso</th><th>Dias adicionados</th><th>Usos</th><th>Expira</th><th>Status</th><th class="text-end">Ações</th></tr></thead>
         <tbody>
         <?php foreach (($vouchers ?? []) as $v): ?>
+            <?php
+                $redeemedUsers = $v['redeemed_users'] ?? [];
+                if (!is_array($redeemedUsers)) {
+                    $redeemedUsers = [];
+                }
+            ?>
             <tr>
                 <td><?= View::e((string)$v['code']) ?></td>
                 <td><?= View::e((string)($v['package_title'] ?? '')) ?></td>
-                <td><?= (int)($v['days'] ?? 0) ?></td>
+                <td><?= View::e((string)($v['creator_username'] ?? '-')) ?></td>
+                <td>
+                    <?php if (!empty($v['is_used'])): ?>
+                        <?php if (!empty($redeemedUsers)): ?>
+                            <?= View::e(implode(', ', $redeemedUsers)) ?>
+                        <?php else: ?>
+                            Usado
+                        <?php endif; ?>
+                    <?php else: ?>
+                        Não usado
+                    <?php endif; ?>
+                </td>
+                <td><?= (int)($v['added_days'] ?? 0) ?></td>
                 <td><?= (int)($v['uses'] ?? 0) ?><?= !empty($v['max_uses']) ? ' / ' . (int)$v['max_uses'] : '' ?></td>
                 <td><?= View::e((string)($v['expires_at'] ?? '-')) ?></td>
                 <td><?= !empty($v['is_active']) ? 'Ativo' : 'Inativo' ?></td>

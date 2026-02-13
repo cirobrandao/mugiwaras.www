@@ -8,6 +8,8 @@ use App\Core\Controller;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Csrf;
+use App\Core\Auth;
+use App\Core\Audit;
 use App\Models\Voucher;
 use App\Models\Package;
 
@@ -64,6 +66,17 @@ final class VouchersController extends Controller
             'expires_at' => $expiresAt,
             'is_active' => $isActive,
         ]);
+
+        $currentUser = Auth::user();
+        Audit::log('voucher_saved', (int)($currentUser['id'] ?? 0) ?: null, [
+            'code' => $code,
+            'package_id' => $packageId,
+            'days' => $days,
+            'max_uses' => $maxUses > 0 ? $maxUses : null,
+            'expires_at' => $expiresAt,
+            'is_active' => $isActive,
+        ]);
+
         Response::redirect(base_path('/admin/vouchers'));
     }
 
