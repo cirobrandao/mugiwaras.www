@@ -28,8 +28,23 @@ final class Validation
 
     public static function phone(string $value): bool
     {
+        return self::phoneByCountry($value, '55');
+    }
+
+    public static function phoneByCountry(string $value, string $country): bool
+    {
         $digits = self::normalizePhone($value);
-        return (bool)preg_match('/^\d{11}$/', $digits);
+        $countryDigits = self::normalizePhone($country);
+        if ($countryDigits === '' || $countryDigits === '55') {
+            return (bool)preg_match('/^\d{11}$/', $digits);
+        }
+        return (bool)preg_match('/^\d{6,15}$/', $digits);
+    }
+
+    public static function phoneCountry(string $value): bool
+    {
+        $digits = self::normalizePhone($value);
+        return (bool)preg_match('/^\d{1,4}$/', $digits);
     }
 
     public static function normalizePhone(string $value): string

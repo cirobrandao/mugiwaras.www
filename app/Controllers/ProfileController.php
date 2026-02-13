@@ -114,22 +114,22 @@ final class ProfileController extends Controller
             return;
         }
 
-        if ($needsUpdate && ($phone === '' || !Validation::phone($phone))) {
-            echo $this->view('profile/edit', $this->editViewData($user, (array)$request->post, 'Telefone invalido. Use o formato 11 9 9999-9999.'));
+        if ($needsUpdate && ($phone === '' || !Validation::phoneByCountry($phone, $phoneCountry))) {
+            echo $this->view('profile/edit', $this->editViewData($user, (array)$request->post, 'Telefone invalido para o DDI informado.'));
             return;
         }
 
-        if ($phone !== '' && !Validation::phone($phone)) {
-            echo $this->view('profile/edit', $this->editViewData($user, (array)$request->post, 'Telefone invalido. Use o formato 11 9 9999-9999.'));
+        if ($phone !== '' && !Validation::phoneByCountry($phone, $phoneCountry)) {
+            echo $this->view('profile/edit', $this->editViewData($user, (array)$request->post, 'Telefone invalido para o DDI informado.'));
             return;
         }
 
-        if ($needsUpdate && $phoneCountry === '') {
+        if ($needsUpdate && ($phoneCountry === '' || !Validation::phoneCountry($phoneCountry))) {
             echo $this->view('profile/edit', $this->editViewData($user, (array)$request->post, 'Informe o DDI do telefone.'));
             return;
         }
 
-        if ($phone !== '' && $phoneCountry === '') {
+        if ($phone !== '' && ($phoneCountry === '' || !Validation::phoneCountry($phoneCountry))) {
             echo $this->view('profile/edit', $this->editViewData($user, (array)$request->post, 'Informe o DDI do telefone.'));
             return;
         }

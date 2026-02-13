@@ -66,7 +66,11 @@ final class Auth
             return true;
         }
         $phone = trim((string)($user['phone'] ?? ''));
-        if ($phone === '' || !Validation::phone($phone)) {
+        $phoneCountry = trim((string)($user['phone_country'] ?? ''));
+        if ($phoneCountry === '' || !Validation::phoneCountry($phoneCountry)) {
+            return true;
+        }
+        if ($phone === '' || !Validation::phoneByCountry($phone, $phoneCountry)) {
             return true;
         }
         $birth = trim((string)($user['birth_date'] ?? ''));

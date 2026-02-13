@@ -133,8 +133,11 @@ final class AuthController extends Controller
         if (UsernameBlocklist::isBlocked($data['username'])) {
             $errors[] = 'Nome de usuario bloqueado.';
         }
-        if (!Validation::phone($data['phone'])) {
-            $errors[] = 'Telefone inválido.';
+        if (!Validation::phoneCountry($data['phone_country'])) {
+            $errors[] = 'DDI inválido.';
+        }
+        if (!Validation::phoneByCountry($data['phone'], $data['phone_country'])) {
+            $errors[] = 'Telefone inválido para o DDI informado.';
         }
         if (!Validation::birthDate($data['birth_date'])) {
             $errors[] = 'Data de nascimento inválida.';

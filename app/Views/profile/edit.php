@@ -52,7 +52,7 @@ if ($birthDate === '0000-00-00') {
 				</div>
 				<div class="col-md-3">
 					<label class="form-label">DDI</label>
-					<input class="form-control" name="phone_country" value="<?= View::e($phoneCountry) ?>" placeholder="55">
+					<input class="form-control" name="phone_country" value="<?= View::e($phoneCountry) ?>" placeholder="55" maxlength="4" inputmode="numeric" pattern="[0-9]{1,4}">
 				</div>
 				<div class="col-md-6">
 					<label class="form-label">Telefone</label>
