@@ -55,7 +55,9 @@ $uploadHost = mb_strtolower((string)(parse_url($uploadUrl, PHP_URL_HOST) ?? ''))
 
 if ($appUrl !== '' && $uploadUrl !== '' && $appHost !== '' && $uploadHost !== '' && $appHost !== $uploadHost) {
     $isUploadRoute = preg_match('#^/upload($|/|\?)#', $reqPath) === 1;
-    if ($currentHost === $uploadHost && !$isUploadRoute) {
+    $isAssetRoute = preg_match('#^/assets($|/)#', $reqPath) === 1;
+    $isPublicFileRoute = preg_match('#^/(uploads|favicon\.ico)($|/)#', $reqPath) === 1;
+    if ($currentHost === $uploadHost && !$isUploadRoute && !$isAssetRoute && !$isPublicFileRoute) {
         $target = rtrim($appUrl, '/') . '/' . ltrim($request->uri, '/');
         header('Location: ' . $target, true, 302);
         exit;

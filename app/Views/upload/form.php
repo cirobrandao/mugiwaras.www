@@ -202,7 +202,7 @@ $statusBadgeMap = [
         <?php endif; ?>
     <?php endif; ?>
 </div>
-<script src="<?= url('assets/js/upload.js') ?>"></script>
+<script src="<?= base_path('/assets/js/upload.js') ?>"></script>
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../layout.php';
