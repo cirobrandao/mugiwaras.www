@@ -53,50 +53,71 @@ $canEditProfile = $canEditProfile ?? (($user['access_tier'] ?? '') !== 'restrito
         <div class="card h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h2 class="h6 mb-0">Historico de compras</h2>
-                    <?php if (!empty($paymentsMore)): ?>
+                    <h2 class="h6 mb-0">Historico de compras e vouchers</h2>
+                    <?php if (!empty($commerceHistoryMore)): ?>
                         <button class="btn btn-sm btn-link" type="button" data-bs-toggle="modal" data-bs-target="#paymentsModal">Ver mais</button>
                     <?php endif; ?>
                 </div>
-                <?php if (empty($payments)): ?>
+                <?php if (empty($commerceHistory)): ?>
                     <div class="text-muted">Sem registros.</div>
                 <?php else: ?>
-                    <div class="table-responsive">
+                    <div class="table-responsive overflow-auto" style="max-height: 320px;">
                         <table class="table table-sm align-middle mb-0 small">
                             <thead class="table-light">
                             <tr>
                                 <th scope="col" style="width: 140px;">Data</th>
-                                <th scope="col">Pacote</th>
-                                <th scope="col" class="text-center" style="width: 90px;">Status</th>
+                                <th scope="col" class="text-center" style="width: 70px;">Tipo</th>
+                                <th scope="col">Detalhes</th>
+                                <th scope="col" class="text-center" style="width: 70px;">Status</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <?php foreach ($payments as $p): ?>
+                            <?php foreach ($commerceHistory as $entry): ?>
                                 <?php
-                                $dt = (string)($p['created_at'] ?? '');
+                                $isPayment = (string)($entry['type'] ?? 'payment') === 'payment';
+                                $dt = (string)($entry['date'] ?? '');
                                 $date = $dt !== '' ? date('Y-m-d', strtotime($dt)) : '-';
-                                $pkg = $packageMap[(int)($p['package_id'] ?? 0)] ?? null;
-                                $status = (string)($p['status'] ?? '');
-                                $statusLabel = '';
-                                $statusIcon = '';
+                                $typeIcon = $isPayment ? 'bi-bag-check-fill text-primary' : 'bi-ticket-perforated-fill text-info';
+                                $typeLabel = $isPayment ? 'Compra' : 'Voucher';
+                                if ($isPayment) {
+                                    $p = (array)($entry['payment'] ?? []);
+                                    $pkg = $packageMap[(int)($p['package_id'] ?? 0)] ?? null;
+                                    $pkgTitle = (string)($pkg['title'] ?? ('#' . (int)($p['package_id'] ?? 0)));
+                                    $status = (string)($p['status'] ?? '');
+                                    $reference = '#' . (int)($p['id'] ?? 0);
+                                    $days = (int)($p['package_subscription_days'] ?? 0) * max(1, (int)($p['months'] ?? 1));
+                                } else {
+                                    $v = (array)($entry['voucher'] ?? []);
+                                    $pkgTitle = (string)($v['package_title'] ?? '-');
+                                    $status = 'approved';
+                                    $reference = (string)($v['voucher_code'] ?? '-');
+                                    $days = (int)($v['added_days'] ?? 0);
+                                }
+                                $statusIcon = 'bi-question-circle text-muted';
+                                $statusLabel = 'Desconhecido';
                                 if ($status === 'approved') {
-                                    $statusIcon = 'fa-circle-check text-success';
-                                    $statusLabel = 'Aprovado';
+                                    $statusIcon = 'bi-check-circle-fill text-success';
+                                    $statusLabel = $isPayment ? 'Aprovado' : 'Ativado';
                                 } elseif ($status === 'pending') {
-                                    $statusIcon = 'fa-clock text-warning';
+                                    $statusIcon = 'bi-clock-fill text-warning';
                                     $statusLabel = 'Pendente';
                                 } elseif ($status === 'rejected') {
-                                    $statusIcon = 'fa-circle-xmark text-danger';
+                                    $statusIcon = 'bi-x-circle-fill text-danger';
                                     $statusLabel = 'Rejeitado';
+                                } elseif ($status === 'revoked') {
+                                    $statusIcon = 'bi-slash-circle-fill text-secondary';
+                                    $statusLabel = 'Revogado';
                                 }
                                 ?>
                                 <tr>
                                     <td><?= View::e($date) ?></td>
-                                    <td><?= View::e((string)($pkg['title'] ?? ('#' . (int)($p['package_id'] ?? 0)))) ?></td>
+                                    <td class="text-center"><i class="bi <?= $typeIcon ?>" aria-hidden="true" title="<?= View::e($typeLabel) ?>"></i></td>
+                                    <td>
+                                        <div class="fw-medium"><?= View::e($pkgTitle) ?></div>
+                                        <div class="text-muted"><?= View::e($reference) ?> · <?= $days > 0 ? ($days . ' dias') : '-' ?></div>
+                                    </td>
                                     <td class="text-center">
-                                        <?php if ($statusIcon !== ''): ?>
-                                            <i class="fa-solid <?= $statusIcon ?> me-1" aria-hidden="true"></i>
-                                        <?php endif; ?>
+                                        <i class="bi <?= $statusIcon ?>" aria-hidden="true" title="<?= View::e($statusLabel) ?>"></i>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -253,47 +274,72 @@ $canEditProfile = $canEditProfile ?? (($user['access_tier'] ?? '') !== 'restrito
     </div>
 </div>
 
-<?php if (!empty($paymentsMore)): ?>
+<?php if (!empty($commerceHistoryMore)): ?>
 <div class="modal fade" id="paymentsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Historico de compras (restante)</h5>
+                <h5 class="modal-title">Historico de compras e vouchers (restante)</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
-                <div class="table-responsive">
+                <div class="table-responsive overflow-auto" style="max-height: 420px;">
                     <table class="table table-sm align-middle mb-0 small">
                         <thead class="table-light">
                         <tr>
                             <th scope="col" style="width: 140px;">Data</th>
-                            <th scope="col">Pacote</th>
-                            <th scope="col" class="text-center" style="width: 90px;">Status</th>
+                            <th scope="col" class="text-center" style="width: 70px;">Tipo</th>
+                            <th scope="col">Detalhes</th>
+                            <th scope="col" class="text-center" style="width: 70px;">Status</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($paymentsMore as $p): ?>
+                        <?php foreach ($commerceHistoryMore as $entry): ?>
                             <?php
-                            $dt = (string)($p['created_at'] ?? '');
+                            $isPayment = (string)($entry['type'] ?? 'payment') === 'payment';
+                            $dt = (string)($entry['date'] ?? '');
                             $date = $dt !== '' ? date('Y-m-d', strtotime($dt)) : '-';
-                            $pkg = $packageMap[(int)($p['package_id'] ?? 0)] ?? null;
-                            $status = (string)($p['status'] ?? '');
-                            $statusIcon = '';
+                            $typeIcon = $isPayment ? 'bi-bag-check-fill text-primary' : 'bi-ticket-perforated-fill text-info';
+                            $typeLabel = $isPayment ? 'Compra' : 'Voucher';
+                            if ($isPayment) {
+                                $p = (array)($entry['payment'] ?? []);
+                                $pkg = $packageMap[(int)($p['package_id'] ?? 0)] ?? null;
+                                $pkgTitle = (string)($pkg['title'] ?? ('#' . (int)($p['package_id'] ?? 0)));
+                                $status = (string)($p['status'] ?? '');
+                                $reference = '#' . (int)($p['id'] ?? 0);
+                                $days = (int)($p['package_subscription_days'] ?? 0) * max(1, (int)($p['months'] ?? 1));
+                            } else {
+                                $v = (array)($entry['voucher'] ?? []);
+                                $pkgTitle = (string)($v['package_title'] ?? '-');
+                                $status = 'approved';
+                                $reference = (string)($v['voucher_code'] ?? '-');
+                                $days = (int)($v['added_days'] ?? 0);
+                            }
+                            $statusIcon = 'bi-question-circle text-muted';
+                            $statusLabel = 'Desconhecido';
                             if ($status === 'approved') {
-                                $statusIcon = 'fa-circle-check text-success';
+                                $statusIcon = 'bi-check-circle-fill text-success';
+                                $statusLabel = $isPayment ? 'Aprovado' : 'Ativado';
                             } elseif ($status === 'pending') {
-                                $statusIcon = 'fa-clock text-warning';
+                                $statusIcon = 'bi-clock-fill text-warning';
+                                $statusLabel = 'Pendente';
                             } elseif ($status === 'rejected') {
-                                $statusIcon = 'fa-circle-xmark text-danger';
+                                $statusIcon = 'bi-x-circle-fill text-danger';
+                                $statusLabel = 'Rejeitado';
+                            } elseif ($status === 'revoked') {
+                                $statusIcon = 'bi-slash-circle-fill text-secondary';
+                                $statusLabel = 'Revogado';
                             }
                             ?>
                             <tr>
                                 <td><?= View::e($date) ?></td>
-                                <td><?= View::e((string)($pkg['title'] ?? ('#' . (int)($p['package_id'] ?? 0)))) ?></td>
+                                <td class="text-center"><i class="bi <?= $typeIcon ?>" aria-hidden="true" title="<?= View::e($typeLabel) ?>"></i></td>
+                                <td>
+                                    <div class="fw-medium"><?= View::e($pkgTitle) ?></div>
+                                    <div class="text-muted"><?= View::e($reference) ?> · <?= $days > 0 ? ($days . ' dias') : '-' ?></div>
+                                </td>
                                 <td class="text-center">
-                                    <?php if ($statusIcon !== ''): ?>
-                                        <i class="fa-solid <?= $statusIcon ?>" aria-hidden="true"></i>
-                                    <?php endif; ?>
+                                    <i class="bi <?= $statusIcon ?>" aria-hidden="true" title="<?= View::e($statusLabel) ?>"></i>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

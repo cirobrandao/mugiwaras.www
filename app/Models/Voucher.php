@@ -37,6 +37,7 @@ final class Voucher
             $row['creator_at'] = $creatorMap[$code]['created_at'] ?? null;
             $row['redeemed_count'] = (int)($usageMap[$code]['count'] ?? 0);
             $row['redeemed_users'] = $usageMap[$code]['users'] ?? [];
+            $row['redeemed_users_detailed'] = $usageMap[$code]['users_detailed'] ?? [];
             $row['is_used'] = $row['redeemed_count'] > 0 ? 1 : 0;
         }
         unset($row);
@@ -88,7 +89,7 @@ final class Voucher
         }
 
         $placeholders = implode(',', array_fill(0, count($codes), '?'));
-        $sql = "SELECT vr.voucher_code, u.username
+        $sql = "SELECT vr.voucher_code, vr.user_id, u.username
                 FROM voucher_redemptions vr
                 INNER JOIN users u ON u.id = vr.user_id
                 WHERE vr.voucher_code IN ($placeholders)
@@ -107,17 +108,74 @@ final class Voucher
                 $result[$code] = [
                     'count' => 0,
                     'users' => [],
+                    'users_detailed' => [],
                 ];
             }
 
             $result[$code]['count']++;
+            $userId = (int)($row['user_id'] ?? 0);
             $username = trim((string)($row['username'] ?? ''));
             if ($username !== '' && !in_array($username, $result[$code]['users'], true)) {
                 $result[$code]['users'][] = $username;
             }
+            if ($userId > 0 && $username !== '') {
+                $alreadyAdded = false;
+                foreach ($result[$code]['users_detailed'] as $item) {
+                    if ((int)($item['id'] ?? 0) === $userId) {
+                        $alreadyAdded = true;
+                        break;
+                    }
+                }
+                if (!$alreadyAdded) {
+                    $result[$code]['users_detailed'][] = [
+                        'id' => $userId,
+                        'username' => $username,
+                    ];
+                }
+            }
         }
 
         return $result;
+    }
+
+    public static function redemptionHistoryByUser(int $userId): array
+    {
+        if ($userId <= 0) {
+            return [];
+        }
+        return self::redemptionHistoryByUsers([$userId]);
+    }
+
+    public static function redemptionHistoryByUsers(array $userIds): array
+    {
+        $clean = array_values(array_unique(array_filter(array_map('intval', $userIds), static fn ($v) => $v > 0)));
+        if (empty($clean)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($clean), '?'));
+        $sql = "SELECT vr.user_id, vr.voucher_code, vr.redeemed_at,
+                       v.days AS voucher_days,
+                       p.id AS package_id,
+                       p.title AS package_title,
+                       p.subscription_days AS package_subscription_days
+                FROM voucher_redemptions vr
+                INNER JOIN vouchers v ON v.code = vr.voucher_code
+                LEFT JOIN packages p ON p.id = v.package_id
+                WHERE vr.user_id IN ($placeholders)
+                ORDER BY vr.redeemed_at DESC";
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute($clean);
+        $rows = $stmt->fetchAll();
+
+        foreach ($rows as &$row) {
+            $voucherDays = (int)($row['voucher_days'] ?? 0);
+            $packageDays = (int)($row['package_subscription_days'] ?? 0);
+            $row['added_days'] = $voucherDays > 0 ? $voucherDays : $packageDays;
+        }
+        unset($row);
+
+        return $rows;
     }
 
     public static function findByCode(string $code): ?array

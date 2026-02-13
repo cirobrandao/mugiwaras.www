@@ -18,6 +18,7 @@ use App\Models\ContentEvent;
 use App\Models\User;
 use App\Models\AvatarGallery;
 use App\Models\AuditLog;
+use App\Models\Voucher;
 
 final class ProfileController extends Controller
 {
@@ -249,8 +250,30 @@ final class ProfileController extends Controller
         $readPerPage = 10;
 
         $paymentsAll = Payment::byUserAll((int)$user['id']);
-        $paymentsPreview = array_slice($paymentsAll, 0, 10);
-        $paymentsMore = array_slice($paymentsAll, 10);
+        $voucherAll = Voucher::redemptionHistoryByUser((int)$user['id']);
+        $commerceHistoryAll = [];
+        foreach ($paymentsAll as $payment) {
+            $commerceHistoryAll[] = [
+                'type' => 'payment',
+                'date' => (string)($payment['created_at'] ?? ''),
+                'payment' => $payment,
+            ];
+        }
+        foreach ($voucherAll as $voucher) {
+            $commerceHistoryAll[] = [
+                'type' => 'voucher',
+                'date' => (string)($voucher['redeemed_at'] ?? ''),
+                'voucher' => $voucher,
+            ];
+        }
+        usort($commerceHistoryAll, static function (array $a, array $b): int {
+            $aDate = strtotime((string)($a['date'] ?? '')) ?: 0;
+            $bDate = strtotime((string)($b['date'] ?? '')) ?: 0;
+            return $bDate <=> $aDate;
+        });
+
+        $commerceHistoryPreview = array_slice($commerceHistoryAll, 0, 10);
+        $commerceHistoryMore = array_slice($commerceHistoryAll, 10);
         $packages = Package::all();
         $packageMap = [];
         foreach ($packages as $pkg) {
@@ -271,8 +294,8 @@ final class ProfileController extends Controller
 
         return [
             'user' => $user,
-            'payments' => $paymentsPreview,
-            'paymentsMore' => $paymentsMore,
+            'commerceHistory' => $commerceHistoryPreview,
+            'commerceHistoryMore' => $commerceHistoryMore,
             'packageMap' => $packageMap,
             'loginHistory' => $loginHistoryPreview,
             'loginHistoryMore' => $loginHistoryMore,

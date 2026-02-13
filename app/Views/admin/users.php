@@ -422,10 +422,10 @@ $page = min($page, $pages);
 			ob_start();
 			?>
 			<div class="modal fade" id="paymentHistoryModal<?= (int)$u['id'] ?>" tabindex="-1" aria-hidden="true">
-				<div class="modal-dialog modal-xl modal-dialog-centered">
+				<div class="modal-dialog modal-lg modal-dialog-centered">
 					<div class="modal-content">
 						<div class="modal-header">
-							<h5 class="modal-title">Historico de pagamentos</h5>
+							<h5 class="modal-title">Historico de compras e vouchers</h5>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
 						</div>
 						<div class="modal-body">
@@ -449,42 +449,59 @@ $page = min($page, $pages);
 							];
 							?>
 							<?php if (empty($history)): ?>
-								<div class="text-muted">Sem pagamentos registrados.</div>
+								<div class="text-muted">Sem compras ou ativações de voucher.</div>
 							<?php else: ?>
-								<div class="table-responsive">
-									<table class="table table-sm align-middle mb-0">
+								<div class="table-responsive overflow-auto" style="max-height: 360px;">
+									<table class="table table-sm align-middle mb-0 small">
 										<thead class="table-light">
 										<tr>
-											<th scope="col" style="width: 70px;">ID</th>
-											<th scope="col">Pacote</th>
-											<th scope="col" style="width: 90px;">Meses</th>
-											<th scope="col" style="width: 110px;">Valor</th>
-											<th scope="col" style="width: 120px;">Status</th>
-											<th scope="col" style="width: 170px;">Criado</th>
-											<th scope="col" style="width: 170px;">Atualizado</th>
+											<th scope="col" style="width: 90px;">Tipo</th>
+											<th scope="col">Detalhes</th>
+											<th scope="col" style="width: 110px;">Status</th>
+											<th scope="col" style="width: 160px;">Data</th>
 											<th scope="col" style="width: 120px;">Acoes</th>
 										</tr>
 										</thead>
 										<tbody>
-										<?php foreach ($history as $p): ?>
+										<?php foreach ($history as $entry): ?>
 											<?php
-												$pid = (int)($p['id'] ?? 0);
-												$months = (int)($p['months'] ?? 0);
-												$price = (float)($p['package_price'] ?? 0);
-												$total = $price * max(1, $months);
-												$status = (string)($p['status'] ?? 'pending');
-												$badgeClass = $statusClasses[$status] ?? 'bg-secondary';
+												$entryType = (string)($entry['history_type'] ?? 'payment');
+												$isPayment = $entryType === 'payment';
+												if ($isPayment) {
+													$p = (array)($entry['payment'] ?? []);
+													$pid = (int)($p['id'] ?? 0);
+													$months = (int)($p['months'] ?? 0);
+													$days = (int)($p['package_subscription_days'] ?? 0) * max(1, $months);
+													$price = (float)($p['package_price'] ?? 0);
+													$total = $price * max(1, $months);
+													$status = (string)($p['status'] ?? 'pending');
+													$badgeClass = $statusClasses[$status] ?? 'bg-secondary';
+													$date = (string)($p['created_at'] ?? '-');
+													$packageTitle = (string)($p['package_title'] ?? '');
+													$reference = '#' . $pid;
+												} else {
+													$v = (array)($entry['voucher'] ?? []);
+													$pid = 0;
+													$months = 0;
+													$days = (int)($v['added_days'] ?? 0);
+													$total = 0.0;
+													$status = 'approved';
+													$badgeClass = 'bg-success';
+													$date = (string)($v['redeemed_at'] ?? '-');
+													$packageTitle = (string)($v['package_title'] ?? '');
+													$reference = (string)($v['voucher_code'] ?? '-');
+												}
 											?>
 											<tr>
-												<td>#<?= $pid ?></td>
-												<td><?= View::e((string)($p['package_title'] ?? '')) ?></td>
-												<td><?= $months ?></td>
-												<td><?= format_brl($total) ?></td>
-												<td><span class="badge <?= $badgeClass ?>"><?= View::e($statusLabels[$status] ?? $status) ?></span></td>
-												<td><?= View::e((string)($p['created_at'] ?? '-')) ?></td>
-												<td><?= View::e((string)($p['updated_at'] ?? '-')) ?></td>
+												<td><?= $isPayment ? 'Compra' : 'Voucher' ?></td>
 												<td>
-													<?php if ($status === 'approved'): ?>
+													<div class="fw-medium"><?= View::e($packageTitle !== '' ? $packageTitle : '-') ?></div>
+													<div class="text-muted"><?= View::e($reference) ?> · <?= $days > 0 ? ($days . ' dias') : '-' ?><?= $months > 0 ? (' · ' . $months . ' meses') : '' ?><?= $total > 0 ? (' · ' . format_brl($total)) : '' ?></div>
+												</td>
+												<td><span class="badge <?= $badgeClass ?>"><?= View::e($statusLabels[$status] ?? ($isPayment ? $status : 'Ativado')) ?></span></td>
+												<td><?= View::e($date) ?></td>
+												<td>
+													<?php if ($isPayment && $status === 'approved'): ?>
 														<button class="btn btn-sm btn-outline-danger" type="button" data-revoke-payment data-payment-id="<?= $pid ?>" data-payment-user="<?= (int)$u['id'] ?>" data-payment-label="#<?= $pid ?> - <?= View::e((string)($p['package_title'] ?? '')) ?>">
 															Revogar
 														</button>
