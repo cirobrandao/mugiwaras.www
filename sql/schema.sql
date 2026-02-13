@@ -350,6 +350,7 @@ CREATE TABLE IF NOT EXISTS news (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(190) NOT NULL,
     body TEXT NOT NULL,
+    featured_image_path VARCHAR(255) NULL,
     is_published TINYINT(1) NOT NULL DEFAULT 0,
     category_id INT NULL,
     published_at DATETIME NULL,
@@ -357,6 +358,22 @@ CREATE TABLE IF NOT EXISTS news (
     updated_at DATETIME NULL,
     INDEX (category_id),
     FOREIGN KEY (category_id) REFERENCES news_categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(190) NOT NULL,
+    body TEXT NOT NULL,
+    priority ENUM('high','medium','low') NOT NULL DEFAULT 'low',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    starts_at DATETIME NULL,
+    ends_at DATETIME NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NULL,
+    INDEX (is_active),
+    INDEX (priority),
+    INDEX (starts_at),
+    INDEX (ends_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS search_logs (

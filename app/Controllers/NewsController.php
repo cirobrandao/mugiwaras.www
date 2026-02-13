@@ -13,6 +13,7 @@ use App\Models\ContentItem;
 use App\Models\Payment;
 use App\Models\Package;
 use App\Models\Category;
+use App\Models\Notification;
 
 final class NewsController extends Controller
 {
@@ -34,6 +35,7 @@ final class NewsController extends Controller
             'expires_at' => null,
         ];
         $activePackageTitle = null;
+        $notifications = Notification::activeForUsers(5);
 
         if (!empty($user)) {
             if (($user['access_tier'] ?? '') === 'vitalicio') {
@@ -81,8 +83,10 @@ final class NewsController extends Controller
 
         echo $this->view('news/show', [
             'newsItem' => $newsItem,
+            'viewer' => $user,
             'accessInfo' => $accessInfo,
             'activePackageTitle' => $activePackageTitle,
+            'notifications' => $notifications,
             'mostReadSeries' => $mostReadSeries,
             'recentContent' => $recentContent,
             'recentNews' => $recentNews,

@@ -239,6 +239,10 @@ if (function_exists('sys_getloadavg')) {
                             <i class="bi bi-megaphone"></i>
                             <span>Noticias</span>
                         </a>
+                        <a class="nav-link" href="<?= base_path('/admin/notifications') ?>">
+                            <i class="bi bi-bell"></i>
+                            <span>Notificacoes</span>
+                        </a>
                     <?php endif; ?>
                 <?php endif; ?>
 

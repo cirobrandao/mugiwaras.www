@@ -13,13 +13,13 @@ use App\Models\Category;
 use App\Models\Payment;
 use App\Models\Package;
 use App\Models\ContentItem;
+use App\Models\Notification;
 
 final class DashboardController extends Controller
 {
     public function index(): void
     {
         $user = Auth::user();
-        $news = News::latestPublishedSidebar(5);
         $newsBelowMostRead = News::latestPublishedBelowMostRead(5);
         $favoriteSeries = [];
         $mostReadSeries = [];
@@ -33,12 +33,13 @@ final class DashboardController extends Controller
             'expires_at' => null,
         ];
         $activePackageTitle = null;
+        $notifications = Notification::activeForUsers(5);
 
         if (!empty($user['id'])) {
             $favoriteSeries = Series::favoritesForUser((int)$user['id'], 8);
         }
 
-        $mostReadSeries = Series::mostRead(5);
+        $mostReadSeries = Series::mostRead(10);
 
         if ($isAdmin) {
             $recentUsers = User::recentLogins(10);
@@ -123,12 +124,12 @@ final class DashboardController extends Controller
 
         echo $this->view('dashboard/index', [
             'user' => $user,
-            'news' => $news,
             'newsBelowMostRead' => $newsBelowMostRead,
             'favoriteSeries' => $favoriteSeries,
             'mostReadSeries' => $mostReadSeries,
             'recentUsers' => $recentUsers,
             'recentContent' => $recentContent,
+            'notifications' => $notifications,
             'accessInfo' => $accessInfo,
             'activePackageTitle' => $activePackageTitle,
             'isAdmin' => $isAdmin,

@@ -1,5 +1,7 @@
 <?php
 use App\Core\View;
+use App\Core\Markdown;
+use App\Core\Auth;
 ob_start();
 
 if (!function_exists('time_ago')) {
@@ -31,20 +33,74 @@ if (!function_exists('time_ago')) {
     }
 }
 
-$metaParts = [];
-if (!empty($newsItem['published_at'])) {
-    $metaParts[] = (string)$newsItem['published_at'];
-} elseif (!empty($newsItem['created_at'])) {
-    $metaParts[] = (string)$newsItem['created_at'];
+$publishedRaw = (string)($newsItem['published_at'] ?? $newsItem['created_at'] ?? '');
+$publishedLabel = $publishedRaw !== '' ? date('d/m/Y H:i', strtotime($publishedRaw)) : '-';
+$publishedAgo = $publishedRaw !== '' ? time_ago($publishedRaw) : 'nunca';
+$author = (string)($newsItem['author_name'] ?? $newsItem['author'] ?? 'Equipe');
+$bodyRaw = (string)($newsItem['body'] ?? '');
+$bodyHtml = Markdown::toHtml($bodyRaw);
+
+$viewer = (array)($viewer ?? []);
+$notifications = (array)($notifications ?? []);
+$tier = (string)($viewer['access_tier'] ?? '');
+$isFreeAccess = Auth::isAdmin($viewer) || Auth::isEquipe($viewer) || in_array($tier, ['vitalicio', 'especial'], true);
+
+$accessAlertClass = 'secondary';
+$accessAlertText = (string)($accessInfo['label'] ?? 'Sem acesso ativo');
+$accessAlertCountdown = null;
+$accessAlertExpires = null;
+$accessAlertShowCountdown = false;
+
+if ($isFreeAccess) {
+    $accessAlertClass = 'success';
+    $accessAlertText = 'Acesso livre e sem vencimento.';
+} elseif (!empty($accessInfo['expires_at'])) {
+    $expTs = strtotime((string)$accessInfo['expires_at']);
+    if ($expTs !== false) {
+        $remaining = $expTs - time();
+        $remDays = (int)floor(max(0, $remaining) / 86400);
+        $remHours = (int)floor((max(0, $remaining) % 86400) / 3600);
+        $accessAlertCountdown = $remDays . 'd ' . $remHours . 'h';
+        $accessAlertExpires = (string)$accessInfo['expires_at'];
+        if ($remaining <= 0) {
+            $accessAlertClass = 'danger';
+            $accessAlertText = 'Acesso expirado.';
+        } elseif ($remaining <= 172800) {
+            $accessAlertClass = 'warning';
+            $accessAlertText = 'Acesso ativo, vencendo em até 48h.';
+            $accessAlertShowCountdown = true;
+        } else {
+            $accessAlertClass = 'success';
+            $accessAlertText = 'Acesso ativo.';
+            $accessAlertShowCountdown = true;
+        }
+    }
 }
-$author = (string)($newsItem['author_name'] ?? $newsItem['author'] ?? '');
-if ($author !== '') {
-    $metaParts[] = $author;
-}
-$metaLine = implode(' · ', array_filter($metaParts));
+
+$accessIconMap = [
+    'success' => 'bi-check-circle-fill',
+    'warning' => 'bi-exclamation-triangle-fill',
+    'danger' => 'bi-x-octagon-fill',
+    'secondary' => 'bi-info-circle-fill',
+];
+$accessIcon = (string)($accessIconMap[$accessAlertClass] ?? 'bi-info-circle-fill');
+$alertCookieUserId = (int)($viewer['id'] ?? 0);
 ?>
 
-<?php if (!empty($accessInfo['expires_at'])): ?>
+<style>
+    .news-article-body img {
+        display: block;
+        max-width: 100%;
+        width: auto;
+        height: auto;
+        max-height: min(70vh, 560px);
+        object-fit: contain;
+        border-radius: .5rem;
+        margin: .75rem auto;
+    }
+</style>
+
+<?php if ($accessAlertShowCountdown && !empty($accessAlertExpires)): ?>
     <script>
         (function () {
             const el = document.getElementById('accessCountdown');
@@ -84,47 +140,90 @@ $metaLine = implode(' · ', array_filter($metaParts));
 
 <div class="row g-3">
     <div class="col-12 col-xl-8">
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-        <div>
-            <h1 class="h4 mb-1"><?= View::e((string)($newsItem['title'] ?? 'Noticia')) ?></h1>
-        </div>
-    </div>
-
-            <?php if (!empty($newsItem['category_name'])): ?>
-                <div class="mb-2">
+        <article class="section-card">
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
+                <h1 class="h4 mb-0"><?= View::e((string)($newsItem['title'] ?? 'Noticia')) ?></h1>
+                <?php if (!empty($newsItem['category_name'])): ?>
                     <span class="badge bg-secondary"><?= View::e((string)$newsItem['category_name']) ?></span>
+                <?php endif; ?>
+            </div>
+
+            <div class="small text-muted d-flex flex-wrap gap-3 mb-3">
+                <span><i class="bi bi-calendar-event me-1"></i><?= View::e($publishedLabel) ?></span>
+                <span><i class="bi bi-clock-history me-1"></i><?= View::e($publishedAgo) ?></span>
+                <span><i class="bi bi-person-circle me-1"></i><?= View::e($author) ?></span>
+            </div>
+
+            <?php if (!empty($newsItem['featured_image_path'])): ?>
+                <div class="mb-3">
+                    <img src="<?= base_path('/' . ltrim((string)$newsItem['featured_image_path'], '/')) ?>" alt="Imagem de destaque" class="img-fluid rounded border w-100" style="max-height: 300px; object-fit: cover;">
                 </div>
             <?php endif; ?>
-            
-            <div><?= nl2br(View::e((string)($newsItem['body'] ?? ''))) ?></div>
-            <hr class="text-success" />
-            <?php if ($metaLine !== ''): ?>
-                <div class="small text-muted mb-3"><?= View::e($metaLine) ?></div>
-            <?php endif; ?>
+
+            <div class="news-article-body">
+                <?php if ($bodyHtml === ''): ?>
+                    <p class="mb-0 text-muted">Sem conteúdo.</p>
+                <?php else: ?>
+                    <?= $bodyHtml ?>
+                <?php endif; ?>
+            </div>
+        </article>
 
     </div>
 
     <div class="col-12 col-xl-4">
         <section class="section-card">
             <div class="news-title-box">
-                <div class="section-title news-title">➧ Plano Ativo</div>
+                <div class="section-title news-title">➧ Avisos</div>
             </div>
-            <?php if (!empty($activePackageTitle) && !empty($accessInfo['expires_at'])): ?>
+            <div class="alert alert-<?= View::e($accessAlertClass) ?> py-2 mb-2 border-0 small d-flex align-items-start gap-2" role="alert">
+                <i class="bi <?= View::e($accessIcon) ?> align-self-start"></i>
+                <div class="flex-grow-1">
+                    <?= View::e($accessAlertText) ?>
+                <?php if ($accessAlertShowCountdown && !empty($accessAlertExpires) && !empty($accessAlertCountdown)): ?>
+                    <?php if (!empty($activePackageTitle)): ?>
+                        Pacote: <?= View::e((string)$activePackageTitle) ?>.
+                    <?php endif; ?>
+                    Restante: <span id="accessCountdown" data-expires="<?= View::e($accessAlertExpires) ?>"><?= View::e($accessAlertCountdown) ?></span>.
+                <?php endif; ?>
+                </div>
+            </div>
+
+            <?php if (!empty($notifications)): ?>
                 <?php
-                $expTs = strtotime((string)$accessInfo['expires_at']);
-                $remaining = $expTs !== false ? max(0, $expTs - time()) : 0;
-                $remDays = (int)floor($remaining / 86400);
-                $remHours = (int)floor(($remaining % 86400) / 3600);
-                $initialCountdown = $remDays . 'd ' . $remHours . 'h';
+                $prioMap = [
+                    'high' => 'danger',
+                    'medium' => 'warning',
+                    'low' => 'info',
+                ];
+                $prioIconMap = [
+                    'high' => 'bi-exclamation-octagon-fill',
+                    'medium' => 'bi-exclamation-triangle-fill',
+                    'low' => 'bi-info-circle-fill',
+                ];
                 ?>
-                <div class="alert alert-warning py-2 mb-0 border-0 small">
-                    Acesso: <?= View::e((string)$activePackageTitle) ?> expira em <span id="accessCountdown" data-expires="<?= View::e((string)$accessInfo['expires_at']) ?>"><?= View::e($initialCountdown) ?></span>.
-                </div>
-            <?php else: ?>
-                <div class="alert alert-secondary py-2 mb-0 border-0 small">
-                    <?= View::e((string)($accessInfo['label'] ?? '')) ?>
-                </div>
+                <?php foreach ($notifications as $notification): ?>
+                    <?php
+                    $priority = (string)($notification['priority'] ?? 'low');
+                    $priorityClass = (string)($prioMap[$priority] ?? 'info');
+                    $priorityIcon = (string)($prioIconMap[$priority] ?? 'bi-info-circle-fill');
+                    $notifId = (int)($notification['id'] ?? 0);
+                    ?>
+                    <div class="alert alert-<?= View::e($priorityClass) ?> py-2 mb-2 border-0 small d-flex align-items-start gap-2 js-dismissible-alert" data-alert-key="notification-<?= $notifId ?>" role="alert">
+                        <i class="bi <?= View::e($priorityIcon) ?> align-self-start"></i>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold"><?= View::e((string)($notification['title'] ?? 'Notificação')) ?></div>
+                            <div><?= View::e((string)($notification['body'] ?? '')) ?></div>
+                        </div>
+                        <button type="button" class="btn btn-sm text-reset p-0 border-0 bg-transparent js-alert-close" aria-label="Fechar alerta">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                <?php endforeach; ?>
             <?php endif; ?>
+            <div class="text-end d-none js-restore-wrapper">
+                <a href="#" class="small text-decoration-none js-restore-notifications">Recuperar notificações fechadas</a>
+            </div>
         </section>
 
         <section class="section-card mt-3">
@@ -230,6 +329,81 @@ $metaLine = implode(' · ', array_filter($metaParts));
         </section>
     </div>
 </div>
+<script>
+    (function () {
+        const userId = <?= (int)$alertCookieUserId ?>;
+        const cookiePrefix = 'mw_alert_closed_u' + userId + '_';
+
+        function getCookie(name) {
+            const parts = document.cookie ? document.cookie.split('; ') : [];
+            for (const part of parts) {
+                if (part.indexOf(name + '=') === 0) {
+                    return decodeURIComponent(part.substring(name.length + 1));
+                }
+            }
+            return null;
+        }
+
+        function setCookie(name, value, days) {
+            const maxAge = days * 24 * 60 * 60;
+            document.cookie = name + '=' + encodeURIComponent(value) + '; path=/; max-age=' + maxAge + '; samesite=lax';
+        }
+
+        function removeCookie(name) {
+            document.cookie = name + '=; path=/; max-age=0; samesite=lax';
+        }
+
+        function hasClosedNotifications() {
+            const parts = document.cookie ? document.cookie.split('; ') : [];
+            for (const part of parts) {
+                const eqIndex = part.indexOf('=');
+                const name = eqIndex > 0 ? part.substring(0, eqIndex) : part;
+                const value = eqIndex > 0 ? decodeURIComponent(part.substring(eqIndex + 1)) : '';
+                if (name.indexOf(cookiePrefix + 'notification-') === 0 && value === '1') {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        document.querySelectorAll('.js-dismissible-alert').forEach(function (alertEl) {
+            const key = alertEl.getAttribute('data-alert-key');
+            if (!key) return;
+            const cookieName = cookiePrefix + key;
+            if (getCookie(cookieName) === '1') {
+                alertEl.remove();
+                return;
+            }
+            const closeBtn = alertEl.querySelector('.js-alert-close');
+            if (!closeBtn) return;
+            closeBtn.addEventListener('click', function () {
+                setCookie(cookieName, '1', 30);
+                alertEl.remove();
+            });
+        });
+
+        document.querySelectorAll('.js-restore-notifications').forEach(function (restoreLink) {
+            restoreLink.addEventListener('click', function (event) {
+                event.preventDefault();
+                const parts = document.cookie ? document.cookie.split('; ') : [];
+                parts.forEach(function (part) {
+                    const eqIndex = part.indexOf('=');
+                    const name = eqIndex > 0 ? part.substring(0, eqIndex) : part;
+                    if (name.indexOf(cookiePrefix + 'notification-') === 0) {
+                        removeCookie(name);
+                    }
+                });
+                window.location.reload();
+            });
+        });
+
+        if (hasClosedNotifications()) {
+            document.querySelectorAll('.js-restore-wrapper').forEach(function (wrapper) {
+                wrapper.classList.remove('d-none');
+            });
+        }
+    })();
+</script>
 
 <?php
 $content = ob_get_clean();

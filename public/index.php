@@ -215,8 +215,16 @@ $router->post('/admin/vouchers/save', [new App\Controllers\Admin\VouchersControl
 $router->post('/admin/vouchers/remove', [new App\Controllers\Admin\VouchersController(), 'remove'], [App\Core\Auth::requireAdmin()]);
 
 $router->get('/admin/news', [new App\Controllers\Admin\NewsController(), 'index'], [App\Core\Auth::requireAdmin()]);
+$router->get('/admin/news/create', [new App\Controllers\Admin\NewsController(), 'createForm'], [App\Core\Auth::requireAdmin()]);
+$router->get('/admin/news/edit/{id}', [new App\Controllers\Admin\NewsController(), 'editForm'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/news/create', [new App\Controllers\Admin\NewsController(), 'create'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/news/update', [new App\Controllers\Admin\NewsController(), 'update'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/news/body-image', [new App\Controllers\Admin\NewsController(), 'uploadBodyImage'], [App\Core\Auth::requireAdmin()]);
+$router->get('/admin/images', [new App\Controllers\Admin\NewsController(), 'images'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/images/delete', [new App\Controllers\Admin\NewsController(), 'deleteImage'], [App\Core\Auth::requireAdmin()]);
+$router->get('/admin/notifications', [new App\Controllers\Admin\NotificationsController(), 'index'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/notifications/save', [new App\Controllers\Admin\NotificationsController(), 'save'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/notifications/delete', [new App\Controllers\Admin\NotificationsController(), 'delete'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/news/delete', [new App\Controllers\Admin\NewsController(), 'delete'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/news/category/create', [new App\Controllers\Admin\NewsController(), 'createCategory'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/news/category/update', [new App\Controllers\Admin\NewsController(), 'updateCategory'], [App\Core\Auth::requireAdmin()]);

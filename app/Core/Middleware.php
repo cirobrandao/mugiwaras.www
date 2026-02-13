@@ -45,13 +45,13 @@ final class Middleware
             }
             $isAdmin = in_array($user['role'], ['admin', 'superadmin'], true);
             $isEquipe = ($user['role'] ?? '') === 'equipe';
-            if ($isAdmin || ($isEquipe && (!empty($user['uploader_agent']) || !empty($user['moderator_agent']) || !empty($user['support_agent'])))) {
+            if ($isAdmin || $isEquipe) {
                 return;
             }
             if (($user['access_tier'] ?? '') === 'restrito') {
                 Response::abort404('Voce nao tem acesso a esta pagina.');
             }
-            if ($user['access_tier'] === 'vitalicio') {
+            if (in_array((string)($user['access_tier'] ?? ''), ['vitalicio', 'especial'], true)) {
                 return;
             }
             if (!empty($user['subscription_expires_at'])) {
