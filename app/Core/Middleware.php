@@ -10,11 +10,16 @@ final class Middleware
     {
         return function (Request $request): void {
             if (!Auth::user()) {
-                Response::abort404('Voce nao tem acesso a esta pagina.');
+                $path = parse_url($request->uri, PHP_URL_PATH) ?: '/';
+                $query = parse_url($request->uri, PHP_URL_QUERY) ?: '';
+                if ($path !== '/' && !str_starts_with($path, '/login')) {
+                    $_SESSION['intended_url'] = $path . ($query !== '' ? ('?' . $query) : '');
+                }
+                Response::redirect(base_path('/'));
             }
             $user = Auth::user();
             if (!$user) {
-                Response::abort404('Voce nao tem acesso a esta pagina.');
+                Response::redirect(base_path('/'));
             }
             if (Auth::needsProfileUpdate($user)) {
                 $path = parse_url($request->uri, PHP_URL_PATH) ?: '/';
@@ -31,7 +36,12 @@ final class Middleware
         return function (Request $request): void {
             $user = Auth::user();
             if (!$user) {
-                Response::abort404('Voce nao tem acesso a esta pagina.');
+                $path = parse_url($request->uri, PHP_URL_PATH) ?: '/';
+                $query = parse_url($request->uri, PHP_URL_QUERY) ?: '';
+                if ($path !== '/' && !str_starts_with($path, '/login')) {
+                    $_SESSION['intended_url'] = $path . ($query !== '' ? ('?' . $query) : '');
+                }
+                Response::redirect(base_path('/'));
             }
             $isAdmin = in_array($user['role'], ['admin', 'superadmin'], true);
             $isEquipe = ($user['role'] ?? '') === 'equipe';

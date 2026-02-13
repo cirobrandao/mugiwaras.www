@@ -44,6 +44,24 @@ foreach ($security['headers'] as $k => $v) {
 }
 
 $request = new Request();
+
+$appUrl = trim((string)config('app.url', ''));
+$uploadUrl = trim((string)config('app.upload_url', ''));
+$reqPath = parse_url($request->uri, PHP_URL_PATH) ?: '/';
+$currentHost = mb_strtolower((string)($request->server['HTTP_HOST'] ?? ''));
+$currentHost = explode(':', $currentHost)[0] ?? $currentHost;
+$appHost = mb_strtolower((string)(parse_url($appUrl, PHP_URL_HOST) ?? ''));
+$uploadHost = mb_strtolower((string)(parse_url($uploadUrl, PHP_URL_HOST) ?? ''));
+
+if ($appUrl !== '' && $uploadUrl !== '' && $appHost !== '' && $uploadHost !== '' && $appHost !== $uploadHost) {
+    $isUploadRoute = preg_match('#^/upload($|/|\?)#', $reqPath) === 1;
+    if ($currentHost === $uploadHost && !$isUploadRoute) {
+        $target = rtrim($appUrl, '/') . '/' . ltrim($request->uri, '/');
+        header('Location: ' . $target, true, 302);
+        exit;
+    }
+}
+
 Auth::checkRemember($request);
 
 $router = new Router();

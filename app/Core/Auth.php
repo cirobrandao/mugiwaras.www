@@ -11,6 +11,41 @@ use App\Core\Validation;
 
 final class Auth
 {
+    private static function rememberFingerprint(Request $request): string
+    {
+        $ua = mb_strtolower(trim($request->userAgent()));
+        $ua = preg_replace('/\s+/', ' ', $ua) ?? $ua;
+        return hash('sha256', $ua);
+    }
+
+    private static function rememberIntended(Request $request): void
+    {
+        $path = parse_url($request->uri, PHP_URL_PATH) ?: '/';
+        $query = parse_url($request->uri, PHP_URL_QUERY) ?: '';
+        $disallow = ['/', '/login', '/logout', '/register', '/recover'];
+        if (in_array($path, $disallow, true)) {
+            return;
+        }
+        if (!str_starts_with($path, '/')) {
+            return;
+        }
+        $target = $path . ($query !== '' ? ('?' . $query) : '');
+        $_SESSION['intended_url'] = $target;
+    }
+
+    public static function pullIntendedUrl(): ?string
+    {
+        $value = (string)($_SESSION['intended_url'] ?? '');
+        unset($_SESSION['intended_url']);
+        if ($value === '' || !str_starts_with($value, '/')) {
+            return null;
+        }
+        if (str_starts_with($value, '//')) {
+            return null;
+        }
+        return $value;
+    }
+
     public static function isSuperadmin(?array $user): bool
     {
         return !empty($user) && ($user['role'] ?? '') === 'superadmin';
@@ -126,8 +161,12 @@ final class Auth
         $_SESSION['user_id'] = $user['id'];
 
         if ($remember) {
+            if (!empty($request->cookies['remember_me'])) {
+                UserToken::revoke((string)$request->cookies['remember_me'], self::rememberFingerprint($request));
+            }
             $token = bin2hex(random_bytes(32));
-            UserToken::create((int)$user['id'], $token);
+            $fingerprint = self::rememberFingerprint($request);
+            UserToken::create((int)$user['id'], $token, $fingerprint);
             setcookie('remember_me', $token, [
                 'expires' => time() + (int)config('security.remember_days', 30) * 86400,
                 'path' => base_path('/'),
@@ -147,19 +186,27 @@ final class Auth
         }
         $token = $request->cookies['remember_me'] ?? null;
         if ($token) {
-            $userId = UserToken::validate($token);
+            $fingerprint = self::rememberFingerprint($request);
+            $userId = UserToken::validate($token, $fingerprint);
             if ($userId) {
                 $_SESSION['user_id'] = $userId;
-                UserToken::rotate($userId, $token);
+                UserToken::rotate($userId, $token, $fingerprint);
             }
         }
     }
 
-    public static function logout(): void
+    public static function logout(?Request $request = null): void
     {
+        $fingerprint = $request ? self::rememberFingerprint($request) : '';
         if (isset($_COOKIE['remember_me'])) {
-            UserToken::revoke($_COOKIE['remember_me']);
-            setcookie('remember_me', '', time() - 3600, base_path('/'));
+            UserToken::revoke((string)$_COOKIE['remember_me'], $fingerprint);
+            setcookie('remember_me', '', [
+                'expires' => time() - 3600,
+                'path' => base_path('/'),
+                'secure' => (bool)config('security.session_secure', true),
+                'httponly' => true,
+                'samesite' => (string)config('security.session_samesite', 'Lax'),
+            ]);
         }
         session_destroy();
     }
@@ -169,7 +216,8 @@ final class Auth
         return function (Request $request) use ($roles): void {
             $user = self::user();
             if (!$user || !in_array($user['role'], $roles, true)) {
-                Response::abort404('Voce nao tem acesso a esta pagina.');
+                self::rememberIntended($request);
+                Response::redirect(base_path('/'));
             }
             self::enforceProfileComplete($request, $user);
         };
@@ -180,7 +228,8 @@ final class Auth
         return function (Request $request): void {
             $user = self::user();
             if (!self::isAdmin($user)) {
-                Response::abort404('Voce nao tem acesso a esta pagina.');
+                self::rememberIntended($request);
+                Response::redirect(base_path('/'));
             }
             self::enforceProfileComplete($request, $user);
         };
@@ -191,7 +240,8 @@ final class Auth
         return function (Request $request): void {
             $user = self::user();
             if (!self::isAdmin($user) && !self::isModerator($user)) {
-                Response::abort404('Voce nao tem acesso a esta pagina.');
+                self::rememberIntended($request);
+                Response::redirect(base_path('/'));
             }
             self::enforceProfileComplete($request, $user);
         };
@@ -202,7 +252,8 @@ final class Auth
         return function (Request $request): void {
             $user = self::user();
             if (!self::canUpload($user)) {
-                Response::abort404('Voce nao tem acesso a esta pagina.');
+                self::rememberIntended($request);
+                Response::redirect(base_path('/'));
             }
             self::enforceProfileComplete($request, $user);
         };
@@ -213,7 +264,8 @@ final class Auth
         return function (Request $request): void {
             $user = self::user();
             if (!self::isSupportStaff($user)) {
-                Response::abort404('Voce nao tem acesso a esta pagina.');
+                self::rememberIntended($request);
+                Response::redirect(base_path('/'));
             }
             self::enforceProfileComplete($request, $user);
         };

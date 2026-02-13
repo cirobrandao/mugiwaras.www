@@ -41,7 +41,7 @@ final class AuthController extends Controller
 
         $username = mb_strtolower(trim((string)($request->post['username'] ?? '')));
         $password = (string)($request->post['password'] ?? '');
-        $remember = isset($request->post['remember']);
+        $remember = true;
 
         if (!Auth::attempt($username, $password, $remember, $request)) {
             Audit::log('login_fail', null, ['username' => $username, 'ip' => $request->ip()]);
@@ -53,6 +53,10 @@ final class AuthController extends Controller
         $user = Auth::user();
         if ($user && Auth::needsProfileUpdate($user)) {
             Response::redirect(base_path('/user/editar?force=1'));
+        }
+        $intendedUrl = Auth::pullIntendedUrl();
+        if ($intendedUrl) {
+            Response::redirect($intendedUrl);
         }
         Response::redirect(base_path('/dashboard'));
     }
@@ -207,9 +211,9 @@ final class AuthController extends Controller
         }
     }
 
-    public function logout(): void
+    public function logout(Request $request): void
     {
-        Auth::logout();
+        Auth::logout($request);
         Response::redirect(base_path('/'));
     }
 
