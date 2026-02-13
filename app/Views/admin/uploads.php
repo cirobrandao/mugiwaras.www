@@ -187,11 +187,14 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
             if ($jobStatus === 'failed') {
                 $st = 'failed';
             }
+            $createdAtRaw = (string)($u['created_at'] ?? '');
+            $createdAtTs = $createdAtRaw !== '' ? strtotime($createdAtRaw) : false;
+            $isStaleQueue = ($st === 'queued' || $st === 'pending') && $createdAtTs !== false && (time() - $createdAtTs) >= (3 * 86400);
             $isFailed = $st === 'failed';
             $fileName = (string)($u['original_name'] ?? '');
             $fileLabel = $shortFileName($fileName);
             ?>
-            <tr data-select-row>
+            <tr data-select-row class="<?= $isStaleQueue ? 'table-warning' : '' ?>">
                 <td>
                     <input class="form-check-input bulk-select-checkbox" type="checkbox" name="ids[]" value="<?= (int)$u['id'] ?>" data-label="<?= View::e($fileLabel) ?>" aria-label="Selecionar upload" form="bulkDeleteForm">
                     <?php if (($u['status'] ?? '') === 'pending'): ?>
@@ -205,8 +208,9 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
                     elseif ($st === 'processing') { $icon = 'bi-arrow-repeat'; $cls = 'text-primary'; }
                     elseif ($st === 'done' || $st === 'completed') { $icon = 'bi-check-circle-fill'; $cls = 'text-success'; }
                     elseif ($st === 'failed') { $icon = 'bi-exclamation-triangle-fill'; $cls = 'text-danger'; }
+                    if ($isStaleQueue) { $icon = 'bi-exclamation-triangle-fill'; $cls = 'text-warning'; }
                     ?>
-                    <i class="bi <?= $icon ?> <?= $cls ?>" title="<?= View::e($st) ?>"></i>
+                    <i class="bi <?= $icon ?> <?= $cls ?>" title="<?= View::e($isStaleQueue ? ($st . ' (3+ dias)') : $st) ?>"></i>
                 </td>
                 <td>
                     <span class="uploads-pill" style="display:inline-block;max-width:180px;padding:2px 8px;border:1px solid #dee2e6;border-radius:6px;background:#f8f9fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= View::e($fileName) ?>">
@@ -224,15 +228,30 @@ $shortFileName = static function (string $name) use ($midEllipsis): string {
                 <td>
                     <?php
                     $seriesName = (string)($u['series_name'] ?? '');
+                    $categoryNameForSeries = (string)($u['category_name'] ?? '');
                     $seriesId = (int)($u['series_id'] ?? 0);
                     $seriesLabel = $seriesName !== '' ? $seriesName : ($seriesId > 0 ? ('#' . $seriesId) : '—');
+                    $seriesUrl = ($seriesName !== '' && $categoryNameForSeries !== '')
+                        ? base_path('/libraries/' . rawurlencode($categoryNameForSeries) . '/' . rawurlencode($seriesName))
+                        : '';
                     ?>
-                    <span class="uploads-pill" style="display:inline-block;max-width:180px;padding:2px 8px;border:1px solid #dee2e6;border-radius:6px;background:#f8f9fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= View::e($seriesLabel) ?>">
-                        <?= View::e($midEllipsis($seriesLabel, 28, 6)) ?>
-                    </span>
+                    <div class="d-inline-flex align-items-center gap-1" style="max-width: 190px;">
+                        <span class="uploads-pill" style="display:inline-block;max-width:160px;padding:2px 8px;border:1px solid #dee2e6;border-radius:6px;background:#f8f9fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= View::e($seriesLabel) ?>">
+                            <?= View::e($midEllipsis($seriesLabel, 28, 6)) ?>
+                        </span>
+                        <?php if ($seriesUrl !== ''): ?>
+                            <a class="btn btn-sm btn-outline-secondary uploads-action-btn" href="<?= View::e($seriesUrl) ?>" target="_blank" rel="noopener" title="Abrir série em nova aba">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                                <span class="visually-hidden">Abrir série</span>
+                            </a>
+                        <?php endif; ?>
+                    </div>
                 </td>
                 <td class="text-nowrap" style="width: 150px;">
                     <?= View::e((string)$u['created_at']) ?>
+                    <?php if ($isStaleQueue): ?>
+                        <div><span class="badge bg-warning text-dark">3+ dias na fila</span></div>
+                    <?php endif; ?>
                 </td>
                 <td>
                     <?php $userLabel = $u['username_display'] ?? ('#' . (int)$u['user_id']); ?>
