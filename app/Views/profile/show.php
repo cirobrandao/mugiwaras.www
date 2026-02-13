@@ -4,6 +4,23 @@ ob_start();
 $profileTitle = $profileTitle ?? 'Meu perfil';
 $profileBase = $profileBase ?? '/perfil';
 $canEditProfile = $canEditProfile ?? (($user['access_tier'] ?? '') !== 'restrito');
+$tier = (string)($user['access_tier'] ?? 'user');
+$tierIconMap = [
+    'trial' => 'bi-hourglass-split',
+    'assinante' => 'bi-star-fill',
+    'vitalicio' => 'bi-gem',
+    'restrito' => 'bi-shield-lock-fill',
+    'user' => 'bi-person-fill',
+];
+$tierLabelMap = [
+    'trial' => 'Trial',
+    'assinante' => 'Assinante',
+    'vitalicio' => 'Vitalício',
+    'restrito' => 'Restrito',
+    'user' => 'Usuário',
+];
+$tierIcon = $tierIconMap[$tier] ?? 'bi-person-fill';
+$tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
 ?>
 <h1 class="h4 mb-3"><?= View::e($profileTitle) ?></h1>
 <div class="card">
@@ -22,7 +39,10 @@ $canEditProfile = $canEditProfile ?? (($user['access_tier'] ?? '') !== 'restrito
             <div class="col">
                 <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
                     <div class="d-flex flex-column gap-1">
-                        <div class="fw-semibold fs-5"><?= View::e((string)($user['username'] ?? '')) ?></div>
+                        <div class="fw-semibold fs-5 d-flex align-items-center gap-2">
+                            <span><?= View::e((string)($user['username'] ?? '')) ?></span>
+                            <i class="bi <?= View::e($tierIcon) ?>" title="<?= View::e($tierLabel) ?>" aria-label="<?= View::e($tierLabel) ?>"></i>
+                        </div>
                         <div class="text-body-secondary small">Perfil do usuario</div>
                     </div>
                     <?php if (!empty($canEditProfile)): ?>
