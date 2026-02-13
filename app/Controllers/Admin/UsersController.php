@@ -676,6 +676,7 @@ final class UsersController extends Controller
         $latestPayments = Payment::latestApprovedByUsers($userIds);
         $paymentRows = Payment::historyByUsers($userIds);
         $voucherRows = Voucher::redemptionHistoryByUsers($userIds);
+        $paymentRows = Voucher::removeVoucherBackedPayments($paymentRows, $voucherRows);
         $paymentHistory = [];
         foreach ($paymentRows as $row) {
             $uid = (int)($row['user_id'] ?? 0);

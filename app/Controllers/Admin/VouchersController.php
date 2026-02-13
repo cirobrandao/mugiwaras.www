@@ -40,6 +40,7 @@ final class VouchersController extends Controller
         $redeemerIds = array_values($redeemerIds);
         $paymentsByUser = Payment::historyByUsers($redeemerIds);
         $vouchersByUser = Voucher::redemptionHistoryByUsers($redeemerIds);
+        $paymentsByUser = Voucher::removeVoucherBackedPayments($paymentsByUser, $vouchersByUser);
         $userCommerceHistory = [];
 
         foreach ($paymentsByUser as $payment) {

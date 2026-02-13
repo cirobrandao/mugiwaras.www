@@ -251,6 +251,7 @@ final class ProfileController extends Controller
 
         $paymentsAll = Payment::byUserAll((int)$user['id']);
         $voucherAll = Voucher::redemptionHistoryByUser((int)$user['id']);
+        $paymentsAll = Voucher::removeVoucherBackedPayments($paymentsAll, $voucherAll);
         $commerceHistoryAll = [];
         foreach ($paymentsAll as $payment) {
             $commerceHistoryAll[] = [

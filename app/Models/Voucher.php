@@ -178,6 +178,67 @@ final class Voucher
         return $rows;
     }
 
+    public static function removeVoucherBackedPayments(array $paymentRows, array $voucherRows, int $windowSeconds = 300): array
+    {
+        if (empty($paymentRows) || empty($voucherRows)) {
+            return $paymentRows;
+        }
+
+        $windowSeconds = max(0, $windowSeconds);
+        $voucherBuckets = [];
+        foreach ($voucherRows as $voucher) {
+            $uid = (int)($voucher['user_id'] ?? 0);
+            $packageId = (int)($voucher['package_id'] ?? 0);
+            $redeemedAt = (string)($voucher['redeemed_at'] ?? '');
+            $ts = strtotime($redeemedAt);
+            if ($uid <= 0 || $packageId <= 0 || $ts === false) {
+                continue;
+            }
+            if (!isset($voucherBuckets[$uid])) {
+                $voucherBuckets[$uid] = [];
+            }
+            if (!isset($voucherBuckets[$uid][$packageId])) {
+                $voucherBuckets[$uid][$packageId] = [];
+            }
+            $voucherBuckets[$uid][$packageId][] = [
+                'ts' => $ts,
+                'used' => false,
+            ];
+        }
+
+        $filtered = [];
+        foreach ($paymentRows as $payment) {
+            $uid = (int)($payment['user_id'] ?? 0);
+            $packageId = (int)($payment['package_id'] ?? 0);
+            $createdAt = (string)($payment['created_at'] ?? '');
+            $paymentTs = strtotime($createdAt);
+
+            if ($uid <= 0 || $packageId <= 0 || $paymentTs === false || empty($voucherBuckets[$uid][$packageId])) {
+                $filtered[] = $payment;
+                continue;
+            }
+
+            $matched = false;
+            foreach ($voucherBuckets[$uid][$packageId] as $index => $candidate) {
+                if (!empty($candidate['used'])) {
+                    continue;
+                }
+                $voucherTs = (int)($candidate['ts'] ?? 0);
+                if (abs($paymentTs - $voucherTs) <= $windowSeconds) {
+                    $voucherBuckets[$uid][$packageId][$index]['used'] = true;
+                    $matched = true;
+                    break;
+                }
+            }
+
+            if (!$matched) {
+                $filtered[] = $payment;
+            }
+        }
+
+        return $filtered;
+    }
+
     public static function findByCode(string $code): ?array
     {
         $stmt = Database::connection()->prepare('SELECT * FROM vouchers WHERE code = :c');
