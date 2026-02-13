@@ -31,6 +31,7 @@
 # Environment overrides
 .env.local
 .env.*.local
+.nginx.conf
 
 # PHPUnit / test artifacts
 .phpunit.result.cache
