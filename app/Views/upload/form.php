@@ -37,14 +37,16 @@ ob_start();
         <h1 class="h4 mb-1">Enviar arquivos</h1>
     </div>
 </div>
-<section class="section-card mb-3">
+<section class="section-card mb-3 upload-card">
     <div class="mb-3">
         <div class="progress" style="height: 6px;">
             <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>
         </div>
-        <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="5368709120" data-max-files="50">0 B / 5 GB · 0 / 50 arquivos</div>
+        <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="5368709120" data-max-files="100">0 B / 5 GB · 0 / 100 arquivos</div>
     </div>
-    <form method="post" action="<?= upload_url('/upload') ?>" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-lg-7">
+            <form method="post" action="<?= upload_url('/upload') ?>" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="<?= \App\Core\View::e($csrf ?? '') ?>">
         <div class="row g-3">
             <div class="col-md-6">
@@ -63,7 +65,7 @@ ob_start();
         </div>
         <div class="mb-3">
             <label class="form-label">Arquivos</label>
-            <input type="file" name="file[]" class="form-control" multiple required data-max-bytes="5368709120" data-max-files="50">
+            <input type="file" name="file[]" class="form-control" multiple required data-max-bytes="5368709120" data-max-files="100">
             <div class="form-text">Formatos aceitos: *.epub, *.cbr, *.cbz, *.zip (imagens).</div>
             <div class="form-text">PDF: sem leitor, apenas download (aparece sinalizado na biblioteca).</div>
         </div>
@@ -74,8 +76,16 @@ ob_start();
             </div>
             <div class="small text-muted mt-2 d-none" id="uploadWait">Aguarde... finalizando o upload.</div>
         </div>
-        <button class="btn btn-primary" type="submit" id="uploadSubmit" <?= !empty($noCategories) ? 'disabled' : '' ?>>Enviar</button>
-    </form>
+            <button class="btn btn-primary" type="submit" id="uploadSubmit" <?= !empty($noCategories) ? 'disabled' : '' ?>>Enviar</button>
+            </form>
+        </div>
+        <div class="col-lg-5">
+            <div class="upload-log-box" id="uploadLogBox">
+                <div class="fw-semibold mb-2">Log de envios</div>
+                <div id="uploadLog" class="small text-muted"></div>
+            </div>
+        </div>
+    </div>
 </section>
 <hr class="my-4">
 

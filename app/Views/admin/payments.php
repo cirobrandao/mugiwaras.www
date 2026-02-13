@@ -197,8 +197,9 @@ foreach (($payments ?? []) as $p):
 	$renderedUsers[$uid] = true;
 	$userName = (string)($p['user_name'] ?? ('#' . $uid));
 	$userEmail = (string)($p['user_email'] ?? '-');
-	$userPhone = (string)($p['user_phone'] ?? '-');
+	$userPhone = (string)($p['user_phone'] ?? '');
 	$userCountry = (string)($p['user_phone_country'] ?? '');
+	$displayPhone = trim((($userCountry !== '' ? ('+' . ltrim($userCountry, '+') . ' ') : '') . phone_mask($userPhone)));
 	$userTier = (string)($p['user_tier'] ?? '-');
 	$userCredits = (string)($p['user_credits'] ?? '0');
 	$userSub = (string)($p['user_subscription_expires_at'] ?? '-');
@@ -218,7 +219,7 @@ foreach (($payments ?? []) as $p):
 					<div class="col-md-4">
 						<div class="small text-muted">Contato</div>
 						<div><strong>Email:</strong> <?= View::e($userEmail) ?></div>
-						<div><strong>Telefone:</strong> <?= View::e(trim($userCountry . ' ' . $userPhone)) ?></div>
+						<div><strong>Telefone:</strong> <?= View::e($displayPhone !== '' ? $displayPhone : '-') ?></div>
 					</div>
 					<div class="col-md-4">
 						<div class="small text-muted">Conta</div>

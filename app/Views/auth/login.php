@@ -25,7 +25,10 @@ ob_start();
             </div>
             <div class="mb-3">
                 <label class="form-label" for="login-password">Senha</label>
-                <input id="login-password" type="password" name="password" class="form-control" required>
+                <div class="input-group">
+                    <input id="login-password" type="password" name="password" class="form-control" required>
+                    <button type="button" class="btn btn-outline-secondary" id="togglePassword" aria-label="Mostrar senha" title="Mostrar senha">👁️</button>
+                </div>
             </div>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="form-check">
@@ -40,4 +43,26 @@ ob_start();
 </div>
 <?php
 $content = ob_get_clean();
+?>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var pwd = document.getElementById('login-password');
+    var btn = document.getElementById('togglePassword');
+    if (!pwd || !btn) return;
+    btn.addEventListener('click', function(){
+        if (pwd.type === 'password'){
+            pwd.type = 'text';
+            btn.textContent = '🙈';
+            btn.setAttribute('aria-label','Ocultar senha');
+            btn.title = 'Ocultar senha';
+        } else {
+            pwd.type = 'password';
+            btn.textContent = '👁️';
+            btn.setAttribute('aria-label','Mostrar senha');
+            btn.title = 'Mostrar senha';
+        }
+    });
+});
+</script>
+<?php
 require __DIR__ . '/../layout.php';

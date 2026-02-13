@@ -36,7 +36,7 @@ $canEditProfile = $canEditProfile ?? (($user['access_tier'] ?? '') !== 'restrito
                     </div>
                     <div class="col-md-6 col-lg-4">
                         <div class="text-muted small">Telefone</div>
-                        <div class="fw-medium"><?= View::e((string)($user['phone'] ?? '')) ?></div>
+                            <div class="fw-medium"><?= View::e(phone_mask((string)($user['phone'] ?? ''))) ?></div>
                     </div>
                     <div class="col-md-6 col-lg-4">
                         <div class="text-muted small">Nascimento</div>

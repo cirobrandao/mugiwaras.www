@@ -454,6 +454,13 @@ body.theme-dark .topbar-search input::placeholder {
   z-index: auto;
 }
 
+/* Compact upload card variant */
+.upload-card { padding: 12px; min-height: 260px; }
+.upload-log-box { background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px; }
+.upload-log-box .entry { padding: 6px 8px; border-bottom: 1px dashed rgba(0,0,0,0.06); }
+.upload-log-box .entry:last-child { border-bottom: none; }
+.upload-log-box #uploadLog { max-height: 200px; overflow-y: auto; }
+
 .news-card {
   z-index: 1;
 }
@@ -667,6 +674,17 @@ body.theme-dark .reader-shell .reader-toolbar {
   max-width: 100%;
   border-radius: var(--radius-lg);
   border-color: #d7e0ea;
+}
+
+/* Ensure scroll-mode forces block layout so images stack vertically */
+.reader-shell .reader-frame.scroll-mode {
+  display: block;
+}
+.reader-shell .reader-frame.scroll-mode img {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 20px;
+  display: block;
 }
 
 .reader-shell .reader-frame img {

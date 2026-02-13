@@ -107,8 +107,8 @@ final class AuthController extends Controller
         $data = [
             'username' => mb_strtolower(trim((string)($request->post['username'] ?? ''))),
             'email' => mb_strtolower(trim((string)($request->post['email'] ?? ''))),
-            'phone' => trim((string)($request->post['phone'] ?? '')),
-            'phone_country' => trim((string)($request->post['phone_country'] ?? '')),
+            'phone' => Validation::normalizePhone(trim((string)($request->post['phone'] ?? ''))),
+            'phone_country' => preg_replace('/\D+/', '', trim((string)($request->post['phone_country'] ?? ''))) ?? '',
             'phone_has_whatsapp' => isset($request->post['no_whatsapp']) ? 0 : 1,
             'birth_date' => $birthDate,
             'password' => (string)($request->post['password'] ?? ''),

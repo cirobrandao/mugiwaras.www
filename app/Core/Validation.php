@@ -28,7 +28,13 @@ final class Validation
 
     public static function phone(string $value): bool
     {
-        return (bool)preg_match('/^\d{2}\s\d\s\d{4}-\d{4}$/', $value);
+        $digits = self::normalizePhone($value);
+        return (bool)preg_match('/^\d{11}$/', $digits);
+    }
+
+    public static function normalizePhone(string $value): string
+    {
+        return preg_replace('/\D+/', '', $value) ?? '';
     }
 
     public static function birthDate(string $value): bool

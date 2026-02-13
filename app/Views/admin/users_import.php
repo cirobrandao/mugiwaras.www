@@ -105,7 +105,7 @@ ob_start();
 						</td>
 						<td><?= View::e((string)($mapped['username'] ?? '-')) ?></td>
 						<td><?= View::e((string)($mapped['email'] ?? '-')) ?></td>
-						<td><?= View::e((string)($mapped['phone'] ?? '-')) ?></td>
+						<td><?= View::e(phone_mask((string)($mapped['phone'] ?? ''))) ?></td>
 						<td><?= View::e((string)($mapped['birth_date'] ?? '-')) ?></td>
 						<td><?= View::e((string)($mapped['access_tier'] ?? '-')) ?></td>
 						<td><?= View::e((string)($mapped['role'] ?? '-')) ?></td>

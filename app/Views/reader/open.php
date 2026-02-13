@@ -105,7 +105,7 @@ ob_start();
 			<div class="reader-progress-bar" id="readerProgress" style="width: 0%"></div>
 		</div>
 	</div>
-		<div id="reader" class="reader-frame" data-total="<?= count($pages ?? []) ?>" data-base-url="<?= base_path('/reader/' . (int)($content['id'] ?? 0) . '/page') ?>" data-content-id="<?= (int)($content['id'] ?? 0) ?>" data-csrf="<?= View::e($csrf ?? '') ?>" data-last-page="<?= (int)($lastPage ?? 0) ?>" data-direction="<?= View::e((string)($cbzDirection ?? 'rtl')) ?>">
+		<div id="reader" class="reader-frame" data-total="<?= count($pages ?? []) ?>" data-base-url="<?= base_path('/reader/' . (int)($content['id'] ?? 0) . '/page') ?>" data-content-id="<?= (int)($content['id'] ?? 0) ?>" data-csrf="<?= View::e($csrf ?? '') ?>" data-last-page="<?= (int)($lastPage ?? 0) ?>" data-direction="<?= View::e((string)($cbzDirection ?? 'rtl')) ?>" data-previous-chapter-url="<?= View::e($previousChapterUrl ?? '') ?>" data-next-chapter-url="<?= View::e($nextChapterUrl ?? '') ?>">
 		<div class="reader-overlay d-none" id="readerOverlay">Carregando...</div>
 		<img id="readerImage" alt="Página">
 	</div>
@@ -117,10 +117,18 @@ ob_start();
 	</div>
 	<!-- reader footer outside reader frame -->
 	<div class="reader-footer mt-2" id="readerFooter">
-		<div class="input-group input-group-sm w-auto mx-auto" id="readerPageGuide" role="group" aria-label="Guia de páginas">
-				<span class="input-group-text">Página</span>
-				<input type="number" min="1" class="form-control" id="pageNumber" style="width: 90px;">
-				<span class="input-group-text" id="pageTotal">/ 0</span>
+		<div class="d-flex align-items-center gap-2">
+			<div class="reader-desktop-only">
+				<button class="btn btn-sm btn-secondary" id="prevPageFooter" type="button" title="Anterior" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+			</div>
+			<div class="input-group input-group-sm w-auto mx-auto" id="readerPageGuide" role="group" aria-label="Guia de páginas">
+					<span class="input-group-text">Página</span>
+					<input type="number" min="1" class="form-control" id="pageNumber" style="width: 90px;">
+					<span class="input-group-text" id="pageTotal">/ 0</span>
+			</div>
+			<div class="reader-desktop-only">
+				<button class="btn btn-sm btn-secondary" id="nextPageFooter" type="button" title="Próxima" aria-label="Próxima"><i class="fa-solid fa-chevron-right"></i></button>
+			</div>
 		</div>
 		<div class="text-center small text-muted" id="pageCompact">0/0</div>
 		<div class="reader-end-actions mt-2" id="readerEndActions">

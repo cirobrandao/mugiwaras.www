@@ -4,7 +4,7 @@ ob_start();
 $form = (array)($form ?? []);
 $username = (string)($form['username'] ?? ($user['username'] ?? ''));
 $email = (string)($form['email'] ?? ($user['email'] ?? ''));
-$phone = (string)($form['phone'] ?? ($user['phone'] ?? ''));
+$phone = phone_mask((string)($form['phone'] ?? ($user['phone'] ?? '')));
 $phoneCountry = (string)($form['phone_country'] ?? ($user['phone_country'] ?? ''));
 $phoneWhatsApp = (int)($form['phone_has_whatsapp'] ?? ($user['phone_has_whatsapp'] ?? 0));
 $birthDate = (string)($form['birth_date'] ?? ($user['birth_date'] ?? ''));
@@ -56,7 +56,7 @@ if ($birthDate === '0000-00-00') {
 				</div>
 				<div class="col-md-6">
 					<label class="form-label">Telefone</label>
-					<input class="form-control" name="phone" value="<?= View::e($phone) ?>" placeholder="11 9 9999-9999">
+					<input class="form-control" name="phone" value="<?= View::e($phone) ?>" placeholder="11 9 9999-9999" data-mask="phone" maxlength="14" inputmode="numeric">
 					<div class="form-text">Formato: 11 9 9999-9999</div>
 				</div>
 				<div class="col-md-3">

@@ -47,12 +47,15 @@ if (!function_exists('upload_url')) {
     function upload_url(string $path = ''): string
     {
         $uploadBaseUrl = rtrim((string)config('app.upload_url', ''), '/');
-        if ($uploadBaseUrl === '') {
-            return url($path);
+        // Only use a separate upload base URL for the actual upload page (/upload).
+        // For any other path, always use the regular `url()` which is based on APP_URL.
+        $path = '/' . ltrim($path ?? '', '/');
+        $isUploadPage = preg_match('#^/upload($|/|\?)#', $path) === 1;
+        if ($isUploadPage && $uploadBaseUrl !== '') {
+            $basePath = rtrim((string)config('app.base_path', ''), '/');
+            return $uploadBaseUrl . $basePath . $path;
         }
-        $basePath = rtrim((string)config('app.base_path', ''), '/');
-        $path = '/' . ltrim($path, '/');
-        return $uploadBaseUrl . $basePath . $path;
+        return url($path);
     }
 }
 
@@ -60,5 +63,22 @@ if (!function_exists('format_brl')) {
     function format_brl(float $value): string
     {
         return 'R$ ' . number_format($value, 2, ',', '.');
+    }
+}
+
+if (!function_exists('phone_mask')) {
+    function phone_mask(string $value): string
+    {
+        $digits = preg_replace('/\D+/', '', $value) ?? '';
+        if ($digits === '') {
+            return '';
+        }
+        if (strlen($digits) === 11) {
+            return sprintf('%s %s %s-%s', substr($digits, 0, 2), substr($digits, 2, 1), substr($digits, 3, 4), substr($digits, 7, 4));
+        }
+        if (strlen($digits) === 10) {
+            return sprintf('%s %s-%s', substr($digits, 0, 2), substr($digits, 2, 4), substr($digits, 6, 4));
+        }
+        return $digits;
     }
 }

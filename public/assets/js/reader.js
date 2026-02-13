@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const next = document.getElementById('nextPage');
   const pageInput = document.getElementById('pageNumber');
   const pageTotal = document.getElementById('pageTotal');
+  const prevFooter = document.getElementById('prevPageFooter');
+  const nextFooter = document.getElementById('nextPageFooter');
   const lastBtn = document.getElementById('readerLast');
   const status = document.getElementById('readerStatus');
   const fitMode = document.getElementById('readerFitMode');
@@ -26,10 +28,46 @@ document.addEventListener('DOMContentLoaded', () => {
   const pageCompact = document.getElementById('pageCompact');
   const pageGuide = document.getElementById('readerPageGuide');
   const endActions = document.getElementById('readerEndActions');
+  const prevChapterUrl = readerEl ? (readerEl.dataset.previousChapterUrl || '') : '';
+  const nextChapterUrl = readerEl ? (readerEl.dataset.nextChapterUrl || '') : '';
   const isRtl = readerEl ? (readerEl.dataset.direction || 'rtl') === 'rtl' : false;
   let scrollMode = modeSelect ? modeSelect.value === 'scroll' : (modeSelectMobile ? modeSelectMobile.value === 'scroll' : false);
   let wheelPaging = wheelToggle ? wheelToggle.checked : true;
   const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+
+  // Cookie helpers for storing reader preferences
+  const setCookie = (name, value, days = 365) => {
+    try {
+      const d = new Date();
+      d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+      document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/`;
+    } catch (e) {}
+  };
+  const getCookie = (name) => {
+    try {
+      const match = document.cookie.match(new RegExp('(?:^|; )' + encodeURIComponent(name) + '=([^;]*)'));
+      return match ? decodeURIComponent(match[1]) : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const loadSavedSettings = () => {
+    try {
+      const fit = getCookie('reader_fit_mode');
+      if (fit && fitMode) fitMode.value = fit;
+      const mode = getCookie('reader_mode');
+      if (mode && modeSelect) modeSelect.value = mode;
+      if (mode && modeSelectMobile) modeSelectMobile.value = mode;
+      const zoom = getCookie('reader_zoom');
+      if (zoom && zoomInput) zoomInput.value = String(Math.min(160, Math.max(60, parseInt(zoom, 10) || 100)));
+      const wheel = getCookie('reader_wheel');
+      if (wheel !== null && wheelToggle) wheelToggle.checked = (wheel === '1' || wheel === 'true');
+      // update derived state
+      scrollMode = modeSelect ? modeSelect.value === 'scroll' : (modeSelectMobile ? modeSelectMobile.value === 'scroll' : scrollMode);
+      wheelPaging = wheelToggle ? wheelToggle.checked : wheelPaging;
+    } catch (e) {}
+  };
 
   const syncWheelToggle = () => {
     if (!wheelToggle) return;
@@ -65,10 +103,16 @@ document.addEventListener('DOMContentLoaded', () => {
       pageGuide?.classList.add('d-none');
       pageCompact?.classList.add('d-none');
       endActions?.classList.remove('d-none');
+      // hide footer prev/next buttons in scroll mode
+      if (prevFooter) prevFooter.classList.add('d-none');
+      if (nextFooter) nextFooter.classList.add('d-none');
     } else {
       pageGuide?.classList.remove('d-none');
       pageCompact?.classList.add('d-none');
       endActions?.classList.add('d-none');
+      // show footer prev/next buttons in page mode (desktop only)
+      if (prevFooter) prevFooter.classList.remove('d-none');
+      if (nextFooter) nextFooter.classList.remove('d-none');
     }
   };
   let saveTimer = null;
@@ -94,30 +138,67 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const applyFitMode = () => {
-    if (!img) return;
+    if (!img || !readerEl) return;
     const mode = fitMode ? fitMode.value : 'height';
     img.style.width = '';
     img.style.height = '';
     img.style.maxWidth = '';
     img.style.maxHeight = '';
-    if (mode === 'height') {
-      img.style.maxHeight = '80vh';
-      img.style.width = 'auto';
-    } else if (mode === 'original') {
-      img.style.width = 'auto';
-      img.style.height = 'auto';
+    // Page mode: keep page fixed and constrain height to viewport (show original by default)
+    if (!scrollMode) {
+      readerEl.classList.add('page-fixed');
+      readerEl.style.display = 'flex';
+      readerEl.style.justifyContent = 'center';
+      readerEl.style.alignItems = 'center';
+      readerEl.style.overflow = 'hidden';
+      // keep original dimensions but prevent overflow
+      if (mode === 'width') {
+        img.style.width = '100%';
+        img.style.height = 'auto';
+        img.style.maxHeight = 'calc(100vh - 160px)';
+      } else if (mode === 'height') {
+        img.style.maxHeight = 'calc(100vh - 160px)';
+        img.style.width = 'auto';
+      } else {
+        img.style.width = 'auto';
+        img.style.height = 'auto';
+        img.style.maxHeight = 'calc(100vh - 160px)';
+        img.style.maxWidth = 'none';
+      }
     } else {
-      img.style.width = '100%';
-      img.style.height = 'auto';
+      // Scroll mode: regular behaviour
+      readerEl.classList.remove('page-fixed');
+      readerEl.style.display = '';
+      readerEl.style.justifyContent = '';
+      readerEl.style.alignItems = '';
+      readerEl.style.overflow = '';
+      if (mode === 'height') {
+        img.style.maxHeight = '80vh';
+        img.style.width = 'auto';
+      } else if (mode === 'original') {
+        img.style.width = 'auto';
+        img.style.height = 'auto';
+      } else {
+        img.style.width = '100%';
+        img.style.height = 'auto';
+      }
     }
   };
 
   const applyScrollDefaults = () => {
     if (!fitMode) return;
-    if (scrollMode) {
+    // When in page mode (no scroll) fix the page and show original-ish sizing by default
+    if (!scrollMode) {
       fitMode.value = 'original';
       applyFitMode();
     }
+  };
+
+  const renderChapterControls = () => {
+    // Chapter controls removed: if an existing element was injected previously, remove it.
+    const existing = document.getElementById('chapterControls');
+    if (existing) existing.remove();
+    // intentionally do not recreate chapter controls here
   };
 
   const applyZoom = () => {
@@ -156,6 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pageCompact) pageCompact.textContent = `${page + 1}/${total}`;
     if (prev) prev.disabled = page <= 0;
     if (next) next.disabled = page >= total - 1;
+    if (prevFooter) prevFooter.disabled = page <= 0;
+    if (nextFooter) nextFooter.disabled = page >= total - 1;
     if (lastBtn) lastBtn.disabled = page >= total - 1;
     if (progress) progress.style.width = `${total > 0 ? Math.round(((page + 1) / total) * 100) : 0}%`;
     setStatus('Carregando...');
@@ -199,6 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderScrollMode = () => {
     if (!readerEl || !img) return;
     readerEl.classList.toggle('scroll-mode', scrollMode);
+    // ensure any page-mode inline styles are cleared when switching to scroll
+    try { applyFitMode(); } catch (e) {}
     if (!scrollMode) {
       update();
       return;
@@ -233,11 +318,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (fitMode) {
     fitMode.addEventListener('change', () => {
+      setCookie('reader_fit_mode', fitMode.value);
       applyFitMode();
     });
   }
   if (zoomInput) {
-    zoomInput.addEventListener('input', applyZoom);
+    zoomInput.addEventListener('input', () => {
+      setCookie('reader_zoom', String(zoomInput.value));
+      applyZoom();
+    });
   }
 
   if (img) {
@@ -265,6 +354,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (next) next.addEventListener('click', () => {
     goNext();
   });
+  if (prevFooter) prevFooter.addEventListener('click', () => { goPrev(); });
+  if (nextFooter) nextFooter.addEventListener('click', () => { goNext(); });
+ 
 
   if (pageInput) {
     const onPageChange = () => {
@@ -362,9 +454,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // load saved reader settings from cookies (fit, mode, zoom, wheel)
+  loadSavedSettings();
+
   update();
   applyScrollDefaults();
   syncPageGuide();
+  renderChapterControls();
   syncWheelToggle();
   if (scrollMode) {
     renderScrollMode();
@@ -373,6 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (modeSelect) {
     modeSelect.addEventListener('change', () => {
       scrollMode = modeSelect.value === 'scroll';
+      setCookie('reader_mode', modeSelect.value);
       if (modeSelectMobile) modeSelectMobile.value = modeSelect.value;
       syncWheelToggle();
       syncPageGuide();
@@ -385,6 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
         readerEl.appendChild(img);
         update();
       }
+      renderChapterControls();
     });
   }
   // scroll-top button behavior (overlay)
@@ -399,6 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (modeSelectMobile) {
     modeSelectMobile.addEventListener('change', () => {
       scrollMode = modeSelectMobile.value === 'scroll';
+      setCookie('reader_mode', modeSelectMobile.value);
       if (modeSelect) modeSelect.value = modeSelectMobile.value;
       syncWheelToggle();
       syncPageGuide();
@@ -411,12 +510,14 @@ document.addEventListener('DOMContentLoaded', () => {
         readerEl.appendChild(img);
         update();
       }
+      renderChapterControls();
     });
   }
 
   if (wheelToggle) {
     wheelToggle.addEventListener('change', () => {
       wheelPaging = wheelToggle.checked;
+      setCookie('reader_wheel', wheelToggle.checked ? '1' : '0');
     });
   }
 

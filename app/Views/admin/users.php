@@ -194,7 +194,7 @@ $page = min($page, $pages);
 					$country = (string)($u['phone_country'] ?? '');
 					$digits = preg_replace('/\D+/', '', $country . $phone) ?? '';
 					?>
-					<?= View::e($phone !== '' ? $phone : '-') ?>
+					<?= View::e($phone !== '' ? phone_mask($phone) : '-') ?>
 					<?php if (!empty($u['phone_has_whatsapp']) && $digits !== ''): ?>
 						<a class="ms-2 text-success" href="https://wa.me/<?= View::e($digits) ?>" target="_blank" rel="noopener" title="WhatsApp">
 							<i class="fa-brands fa-whatsapp"></i>
@@ -306,7 +306,7 @@ $page = min($page, $pages);
 									</div>
 									<div class="col-md-4">
 										<label class="form-label">Telefone</label>
-										<input class="form-control" type="text" name="phone" value="<?= View::e((string)$u['phone']) ?>" required>
+										<input class="form-control" type="text" name="phone" value="<?= View::e(phone_mask((string)$u['phone'])) ?>" placeholder="11 9 9999-9999" data-mask="phone" maxlength="14" inputmode="numeric" required>
 									</div>
 									<div class="col-md-4">
 										<label class="form-label">País</label>

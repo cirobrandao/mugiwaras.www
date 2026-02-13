@@ -52,7 +52,7 @@ ob_start();
 		</div>
 	</div>
 	<div class="small text-muted mb-2" id="readerStatus">&nbsp;</div>
-	<div id="reader" class="reader-frame" data-total="<?= count($pages ?? []) ?>" data-base-url="<?= base_path('/reader/file/page') ?>" data-query="?f=<?= View::e((string)($fileToken ?? '')) ?>">
+	<div id="reader" class="reader-frame" data-total="<?= count($pages ?? []) ?>" data-base-url="<?= base_path('/reader/file/page') ?>" data-query="?f=<?= View::e((string)($fileToken ?? '')) ?>" data-previous-chapter-url="<?= View::e($previousChapterUrl ?? '') ?>" data-next-chapter-url="<?= View::e($nextChapterUrl ?? '') ?>">
 		<div class="reader-overlay d-none" id="readerOverlay">Carregando...</div>
 		<img id="readerImage" alt="Página">
 	</div>

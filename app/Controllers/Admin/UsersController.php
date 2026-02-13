@@ -46,8 +46,8 @@ final class UsersController extends Controller
 
         $username = mb_strtolower(trim((string)($request->post['username'] ?? (string)$target['username'])));
         $email = mb_strtolower(trim((string)($request->post['email'] ?? (string)$target['email'])));
-        $phone = trim((string)($request->post['phone'] ?? (string)$target['phone']));
-        $phoneCountry = trim((string)($request->post['phone_country'] ?? (string)$target['phone_country']));
+        $phone = Validation::normalizePhone(trim((string)($request->post['phone'] ?? (string)$target['phone'])));
+        $phoneCountry = preg_replace('/\D+/', '', trim((string)($request->post['phone_country'] ?? (string)$target['phone_country']))) ?? '';
         $birthDate = trim((string)($request->post['birth_date'] ?? (string)$target['birth_date']));
         $observations = trim((string)($request->post['observations'] ?? (string)($target['observations'] ?? '')));
         $phoneWhatsApp = (int)($request->post['phone_has_whatsapp'] ?? (int)($target['phone_has_whatsapp'] ?? 0));
@@ -941,11 +941,7 @@ final class UsersController extends Controller
         if (strlen($digits) !== 11) {
             return '';
         }
-        $ddd = substr($digits, 0, 2);
-        $prefix = substr($digits, 2, 1);
-        $mid = substr($digits, 3, 4);
-        $end = substr($digits, 7, 4);
-        return sprintf('%s %s %s-%s', $ddd, $prefix, $mid, $end);
+        return $digits;
     }
 
     private function generateReferralCode(\PDO $pdo): string
