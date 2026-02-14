@@ -140,7 +140,7 @@ $alertCookieUserId = (int)($viewer['id'] ?? 0);
 
 <div class="row g-3">
     <div class="col-12 col-xl-8">
-        <article class="section-card">
+        <article class="section-card news-publication-detail">
             <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
                 <h1 class="h4 mb-0"><?= View::e((string)($newsItem['title'] ?? 'Noticia')) ?></h1>
                 <?php if (!empty($newsItem['category_name'])): ?>

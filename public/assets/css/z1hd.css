@@ -109,6 +109,47 @@ body.theme-dark .news-title {
   color: var(--ink);
 }
 
+body.theme-dark .blog-publications .blog-publication-card {
+  background: var(--surface-alt) !important;
+  border: 1px solid #1f2937 !important;
+  color: var(--ink);
+}
+
+body.theme-dark .blog-publications .blog-publication-card .text-muted {
+  color: var(--slate) !important;
+}
+
+body.theme-dark .blog-publications .blog-publication-card a {
+  color: var(--ink);
+}
+
+body.theme-dark .blog-publications .blog-publication-card a:hover {
+  color: var(--primary-strong);
+}
+
+body.theme-dark .news-publication-detail {
+  background: var(--surface);
+  border: 1px solid #1f2937;
+}
+
+body.theme-dark .news-publication-detail .text-muted {
+  color: var(--slate) !important;
+}
+
+body.theme-dark .news-publication-detail .news-article-body {
+  color: var(--ink);
+}
+
+body.theme-dark .news-publication-detail .news-article-body a {
+  color: var(--primary-strong);
+  border-bottom-color: rgba(144, 183, 255, 0.35);
+}
+
+body.theme-dark .news-publication-detail .news-article-body a:hover {
+  color: var(--ink);
+  border-bottom-color: rgba(203, 213, 225, 0.5);
+}
+
 body.theme-dark .metric-card {
   background: #0f172a;
   border-color: #1f2937;

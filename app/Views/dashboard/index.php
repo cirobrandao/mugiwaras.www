@@ -187,7 +187,7 @@ $alertCookieUserId = (int)($user['id'] ?? 0);
             <?php endif; ?>
         </section>
         <?php if (!empty($newsBelowMostRead)): ?>
-            <section class="section-card mt-3">
+            <section class="section-card mt-3 blog-publications">
                 <div class="news-title-box">
                     <div class="section-title news-title">➧ Blog</div>
                 </div>
@@ -203,7 +203,7 @@ $alertCookieUserId = (int)($user['id'] ?? 0);
                     $fExcerpt = $newsExcerpt((string)($mainFeatured['body'] ?? ''), 260);
                     $fImage = trim((string)($mainFeatured['featured_image_path'] ?? ''));
                     ?>
-                    <div class="card border-0 bg-body-tertiary mb-3">
+                    <div class="card border-0 bg-body-tertiary mb-3 blog-publication-card">
                         <div class="row g-0">
                             <?php if ($fImage !== ''): ?>
                                 <div class="col-12 col-md-4">
@@ -246,7 +246,7 @@ $alertCookieUserId = (int)($user['id'] ?? 0);
                             $excerpt = $newsExcerpt((string)($n['body'] ?? ''), 140);
                             $itemImage = trim((string)($n['featured_image_path'] ?? ''));
                             ?>
-                            <article class="card border-0 bg-body-tertiary">
+                            <article class="card border-0 bg-body-tertiary blog-publication-card">
                                 <div class="row g-0 h-100">
                                     <?php if ($itemImage !== ''): ?>
                                         <div class="col-12 col-md-3">
