@@ -28,7 +28,7 @@ ob_start();
             <div class="empty-text">As categorias aparecerão aqui quando estiverem disponíveis.</div>
         </div>
     <?php else: ?>
-        <div class="categories-grid">
+        <div class="library-grid">
             <?php foreach ($categories as $cat): ?>
                 <?php 
                     $banner = !empty($cat['banner_path']) ? base_path('/' . ltrim((string)$cat['banner_path'], '/')) : ''; 
@@ -38,27 +38,27 @@ ob_start();
                     $hasRequirements = !empty($cat['requires_subscription']);
                     $tagColor = !empty($cat['tag_color']) ? (string)$cat['tag_color'] : '';
                 ?>
-                <a href="<?= $categoryUrl ?>" class="category-card">
+                <a href="<?= $categoryUrl ?>" class="library-card">
                     <?php if ($hasRequirements): ?>
-                        <div class="category-badge">
+                        <div class="library-card-badge">
                             <i class="bi bi-star-fill"></i>
                             <span>Premium</span>
                         </div>
                     <?php endif; ?>
                     
                     <?php if ($banner): ?>
-                        <div class="category-cover">
+                        <div class="library-card-cover">
                             <img src="<?= $banner ?>" alt="<?= $categoryName ?>" loading="lazy">
                         </div>
                     <?php else: ?>
-                        <div class="category-cover category-cover-placeholder"<?= $tagColor ? ' style="background: linear-gradient(135deg, ' . View::e($tagColor) . 'dd 0%, ' . View::e($tagColor) . '88 100%);"' : '' ?>>
+                        <div class="library-card-cover library-card-cover-placeholder"<?= $tagColor ? ' style="background: linear-gradient(135deg, ' . View::e($tagColor) . 'dd 0%, ' . View::e($tagColor) . '88 100%);"' : '' ?>>
                             <i class="bi bi-collection"></i>
                         </div>
                     <?php endif; ?>
                     
-                    <div class="category-content">
-                        <h3 class="category-title"><?= $categoryName ?></h3>
-                        <div class="category-action">
+                    <div class="library-card-content">
+                        <h3 class="library-card-title"><?= $categoryName ?></h3>
+                        <div class="library-card-action">
                             <span>Explorar</span>
                             <i class="bi bi-arrow-right"></i>
                         </div>

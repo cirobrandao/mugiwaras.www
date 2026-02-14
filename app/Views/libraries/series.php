@@ -129,22 +129,30 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php $isRead = !empty($read) && in_array((int)$item['id'], $read, true); ?>
             <div class="series-item" data-series-title="<?= View::e((string)($series['name'] ?? '')) ?>" data-item-title="<?= View::e((string)($item['title'] ?? '')) ?>">
                 <div class="series-item-content">
+                    <div class="series-item-read-action">
+                        <form method="post" action="<?= base_path('/lib/read') ?>" class="d-inline">
+                            <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                            <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
+                            <input type="hidden" name="read" value="<?= $isRead ? '0' : '1' ?>">
+                            <button class="btn btn-sm btn-outline-secondary" type="submit" title="<?= $isRead ? 'Marcar não lido' : 'Marcar lido' ?>">
+                                <i class="bi <?= $isRead ? 'bi-eye-slash' : 'bi-eye' ?>"></i>
+                            </button>
+                        </form>
+                    </div>
                     <div class="series-item-info">
                         <a class="series-item-title" href="<?= $isPdf ? base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf ? 'data-open-pdf' : '' ?> <?= $isPdf ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?> <?= $isPdf ? 'data-reader-url="' . base_path('/reader/pdf/' . (int)$item['id']) . '"' : '' ?>>
                             <?= View::e(str_replace('_', ' ', (string)$item['title'])) ?>
-                        </a>
-                        <div class="series-item-badges">
-                            <?php if ($isPdf): ?>
-                                <span class="badge bg-warning text-dark">PDF</span>
-                            <?php elseif ($isEpub): ?>
-                                <span class="badge bg-info text-dark">EPUB</span>
-                            <?php endif; ?>
                             <?php if ($isRead): ?>
                                 <span class="badge bg-success">Lido</span>
                             <?php endif; ?>
-                        </div>
+                        </a>
                     </div>
                     <div class="series-item-actions">
+                        <?php if ($isPdf): ?>
+                            <span class="badge bg-warning text-dark">PDF</span>
+                        <?php elseif ($isEpub): ?>
+                            <span class="badge bg-info text-dark">EPUB</span>
+                        <?php endif; ?>
                         <?php if ($pdfDownloadUrl !== ''): ?>
                             <a class="btn btn-sm btn-outline-primary" href="<?= $pdfDownloadUrl ?>" title="Download PDF">
                                 <i class="bi bi-download"></i>
@@ -154,14 +162,6 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                                 <i class="bi bi-download"></i>
                             </a>
                         <?php endif; ?>
-                        <form method="post" action="<?= base_path('/lib/read') ?>" class="d-inline">
-                            <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                            <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
-                            <input type="hidden" name="read" value="<?= $isRead ? '0' : '1' ?>">
-                            <button class="btn btn-sm btn-outline-secondary" type="submit" title="<?= $isRead ? 'Marcar não lido' : 'Marcar lido' ?>">
-                                <i class="bi <?= $isRead ? 'bi-eye-slash' : 'bi-eye' ?>"></i>
-                            </button>
-                        </form>
                         <?php if (!empty($user) && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))): ?>
                             <div class="series-item-admin">
                                 <form method="post" action="<?= base_path('/lib/content/order') ?>" class="d-inline-flex align-items-center gap-1">
