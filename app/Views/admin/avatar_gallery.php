@@ -65,11 +65,11 @@ ob_start();
                 <table class="table table-sm align-middle">
                     <thead class="table-light">
                     <tr>
-                        <th scope="col" style="width: 80px;">Preview</th>
+                        <th scope="col" class="table-col-sm">Preview</th>
                         <th scope="col">Titulo</th>
-                        <th scope="col" style="width: 110px;">Ordem</th>
-                        <th scope="col" style="width: 110px;">Ativo</th>
-                        <th scope="col" style="width: 140px;">Acoes</th>
+                        <th scope="col" class="table-col-md">Ordem</th>
+                        <th scope="col" class="table-col-md">Ativo</th>
+                        <th scope="col" class="table-col-lg">Acoes</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -78,7 +78,7 @@ ob_start();
                         <?php $formId = 'avatar-form-' . (int)($a['id'] ?? 0); ?>
                         <tr>
                             <td>
-                                <img src="<?= View::e($path) ?>" alt="Avatar" style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover;">
+                                <img src="<?= View::e($path) ?>" alt="Avatar" class="avatar-gallery-preview">
                             </td>
                             <td>
                                 <form id="<?= View::e($formId) ?>" method="post" action="<?= base_path('/admin/avatar-gallery/update') ?>"></form>

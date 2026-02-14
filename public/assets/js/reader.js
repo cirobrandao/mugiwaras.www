@@ -246,6 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyZoom();
     scheduleSaveProgress();
     markReadIfLast();
+    if (typeof updateMobileDisplay === 'function') updateMobileDisplay();
   };
 
   const scheduleSaveProgress = () => {
@@ -356,6 +357,52 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (prevFooter) prevFooter.addEventListener('click', () => { goPrev(); });
   if (nextFooter) nextFooter.addEventListener('click', () => { goNext(); });
+
+  // Mobile controls support
+  const prevPageMobile = document.getElementById('prevPageMobile');
+  const nextPageMobile = document.getElementById('nextPageMobile');
+  const readerProgressMobile = document.getElementById('readerProgressMobile');
+  const pageNumberDisplay = document.getElementById('pageNumberDisplay');
+  const pageTotalDisplay = document.getElementById('pageTotalDisplay');
+  const tapZoneLeft = document.getElementById('tapZoneLeft');
+  const tapZoneRight = document.getElementById('tapZoneRight');
+
+  if (prevPageMobile) prevPageMobile.addEventListener('click', () => { goPrev(); });
+  if (nextPageMobile) nextPageMobile.addEventListener('click', () => { goNext(); });
+
+  // Mobile tap zones (tap left side = prev, tap right side = next)
+  // For RTL (manga), reverse the behavior
+  if (tapZoneLeft) {
+    tapZoneLeft.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isRtl) {
+        goNext(); // RTL: left tap goes to next page
+      } else {
+        goPrev(); // LTR: left tap goes to previous page
+      }
+    });
+  }
+  if (tapZoneRight) {
+    tapZoneRight.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isRtl) {
+        goPrev(); // RTL: right tap goes to previous page
+      } else {
+        goNext(); // LTR: right tap goes to next page
+      }
+    });
+  }
+
+  // Update mobile displays alongside main update
+  const updateMobileDisplay = () => {
+    if (pageNumberDisplay) pageNumberDisplay.textContent = String(page + 1);
+    if (pageTotalDisplay) pageTotalDisplay.textContent = String(total);
+    if (readerProgressMobile) readerProgressMobile.style.width = `${total > 0 ? Math.round(((page + 1) / total) * 100) : 0}%`;
+    if (prevPageMobile) prevPageMobile.disabled = page <= 0;
+    if (nextPageMobile) nextPageMobile.disabled = page >= total - 1;
+  };
  
 
   if (pageInput) {
@@ -564,6 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pageTotal) pageTotal.textContent = `/ ${total}`;
         if (pageCompact) pageCompact.textContent = `${page + 1}/${total}`;
         if (progress) progress.style.width = `${Math.round(((page + 1) / total) * 100)}%`;
+        if (typeof updateMobileDisplay === 'function') updateMobileDisplay();
       }
       // update scroll-top overlay visibility while scrolling
       try { updateScrollTopVisibility(); } catch (e) {}

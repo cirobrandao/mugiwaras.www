@@ -53,11 +53,15 @@ $currentHost = explode(':', $currentHost)[0] ?? $currentHost;
 $appHost = mb_strtolower((string)(parse_url($appUrl, PHP_URL_HOST) ?? ''));
 $uploadHost = mb_strtolower((string)(parse_url($uploadUrl, PHP_URL_HOST) ?? ''));
 
+// Redirect logic for upload domain
 if ($appUrl !== '' && $uploadUrl !== '' && $appHost !== '' && $uploadHost !== '' && $appHost !== $uploadHost) {
-    $isUploadRoute = preg_match('#^/upload($|/|\?)#', $reqPath) === 1;
+    $isUploadRoute = preg_match('#^/(upload|loja/(proof|request))($|/|\?)#', $reqPath) === 1;
     $isAssetRoute = preg_match('#^/assets($|/)#', $reqPath) === 1;
     $isPublicFileRoute = preg_match('#^/(uploads|favicon\.ico)($|/)#', $reqPath) === 1;
-    if ($currentHost === $uploadHost && !$isUploadRoute && !$isAssetRoute && !$isPublicFileRoute) {
+    $hasTransitionToken = !empty($_GET['_t']);
+    
+    // If on upload host but accessing non-upload route (and no transition token), redirect to main domain
+    if ($currentHost === $uploadHost && !$isUploadRoute && !$isAssetRoute && !$isPublicFileRoute && !$hasTransitionToken) {
         $target = rtrim($appUrl, '/') . '/' . ltrim($request->uri, '/');
         header('Location: ' . $target, true, 302);
         exit;
@@ -65,6 +69,28 @@ if ($appUrl !== '' && $uploadUrl !== '' && $appHost !== '' && $uploadHost !== ''
 }
 
 Auth::checkRemember($request);
+
+// Handle cross-domain authentication token
+if (!empty($_GET['_t']) && empty($_SESSION['user_id'])) {
+    $userId = \App\Core\CrossDomainAuth::validateTransitionToken((string)$_GET['_t']);
+    if ($userId !== null) {
+        $user = \App\Models\User::findById($userId);
+        if ($user) {
+            $_SESSION['user_id'] = $userId;
+            \App\Core\Audit::log('cross_domain_auth', $userId, ['ip' => $request->ip()]);
+            
+            // Redirect to same URL without token
+            $cleanUrl = strtok($request->uri, '?');
+            parse_str((string)parse_url($request->uri, PHP_URL_QUERY), $params);
+            unset($params['_t']);
+            if (!empty($params)) {
+                $cleanUrl .= '?' . http_build_query($params);
+            }
+            header('Location: ' . url($cleanUrl), true, 302);
+            exit;
+        }
+    }
+}
 
 $router = new Router();
 

@@ -74,10 +74,10 @@ $priorityLabel = [
         <thead class="table-light">
         <tr>
             <th>Título</th>
-            <th style="width: 140px;">Prioridade</th>
-            <th style="width: 120px;">Status</th>
-            <th style="width: 180px;">Período</th>
-            <th class="text-end" style="width: 220px;">Ações</th>
+            <th class="table-col-lg">Prioridade</th>
+            <th class="table-col-md">Status</th>
+            <th class="table-col-xl">Período</th>
+            <th class="text-end table-col-2xl">Ações</th>
         </tr>
         </thead>
         <tbody>

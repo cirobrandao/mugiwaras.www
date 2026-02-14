@@ -312,6 +312,5 @@ if (function_exists('sys_getloadavg')) {
 <script src="<?= base_path('/assets/bootstrap.bundle.min.js') ?>"></script>
 <script src="<?= base_path('/assets/js/phone-mask.js') ?>"></script>
 <script src="<?= base_path('/assets/js/app.js') ?>"></script>
-<script src="<?= base_path('/assets/js/theme.js') ?>"></script>
 </body>
 </html>

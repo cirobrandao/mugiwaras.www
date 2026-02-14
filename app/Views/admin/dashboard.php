@@ -4,38 +4,6 @@ use App\Core\View;
 use App\Models\User;
 ob_start();
 
-if (!function_exists('time_ago')) {
-    function time_ago(?string $datetime): string
-    {
-        if (empty($datetime)) {
-            return 'nunca';
-        }
-        try {
-            $dt = new DateTimeImmutable($datetime);
-        } catch (Exception $e) {
-            return 'nunca';
-        }
-        $now = new DateTimeImmutable('now');
-        $diff = $now->getTimestamp() - $dt->getTimestamp();
-        if ($diff < 60) {
-            return 'agora';
-        }
-        if ($diff < 3600) {
-            return 'ha ' . (int)floor($diff / 60) . ' min';
-        }
-        if ($diff < 86400) {
-            return 'ha ' . (int)floor($diff / 3600) . ' h';
-        }
-        if ($diff < 2592000) {
-            return 'ha ' . (int)floor($diff / 86400) . ' d';
-        }
-        if ($diff < 31536000) {
-            return 'ha ' . (int)floor($diff / 2592000) . ' mes';
-        }
-        return 'ha ' . (int)floor($diff / 31536000) . ' ano';
-    }
-}
-
 $user = Auth::user();
 $role = $user['role'] ?? 'user';
 $isAdmin = \App\Core\Auth::isAdmin($user);
@@ -144,59 +112,91 @@ foreach ($uploadsSeries as $row) {
 $maxUploads = max(15000, (!empty($uploadsValues) ? max($uploadsValues) : 0));
 $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 ?>
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-    <div>
-        <h1 class="h4 mb-1">Painel Admin</h1>
+<div class="admin-dashboard-header mb-4">
+    <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="admin-dashboard-icon">
+                <i class="bi bi-speedometer2"></i>
+            </div>
+            <div>
+                <h1 class="h3 mb-1 fw-bold">Painel Admin</h1>
+                <p class="text-muted small mb-0">Visão geral do sistema</p>
+            </div>
+        </div>
+        <div class="badge bg-danger-subtle text-danger px-3 py-2 fw-semibold">
+            <i class="bi bi-shield-fill-check me-1"></i>
+            Administrador
+        </div>
     </div>
 </div>
-<hr class="text-success" />
 <?php if ($isAdmin): ?>
     <div class="row g-3 align-items-start admin-dashboard-layout">
-                <div class="col-lg-8 admin-dashboard-main">
-                    <div class="row g-3 mb-4">
-                        <div class="col-6 col-lg-3">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="text-muted small">Usuarios</div>
-                                    <div class="fs-3 fw-semibold"><?= $formatNumber((int)($stats['users_total'] ?? 0)) ?></div>
-                                    <div class="small text-muted">Nao staff: <?= $formatNumber((int)($stats['users_nonstaff'] ?? 0)) ?></div>
-                                </div>
-                            </div>
+        <div class="col-lg-8 admin-dashboard-main">
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-lg-3">
+                    <div class="admin-stat-card stat-primary">
+                        <div class="stat-icon">
+                            <i class="bi bi-people"></i>
                         </div>
-                        <div class="col-6 col-lg-3">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="text-muted small">Pagamentos pendentes</div>
-                                    <div class="fs-3 fw-semibold"><?= $formatNumber((int)($stats['payments_pending'] ?? 0)) ?></div>
-                                    <a class="small" href="<?= base_path('/admin/payments') ?>">Ver pagamentos</a>
-                                </div>
-                            </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Usuários</div>
+                            <div class="stat-value"><?= $formatNumber((int)($stats['users_total'] ?? 0)) ?></div>
+                            <div class="stat-meta">Não staff: <?= $formatNumber((int)($stats['users_nonstaff'] ?? 0)) ?></div>
                         </div>
-                        <div class="col-6 col-lg-3">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="text-muted small">Uploads na fila</div>
-                                    <div class="fs-3 fw-semibold"><?= $formatNumber((int)($stats['uploads_pending'] ?? 0)) ?></div>
-                                    <a class="small" href="<?= base_path('/admin/uploads') ?>">Ver uploads</a>
-                                </div>
-                            </div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="admin-stat-card stat-warning">
+                        <div class="stat-icon">
+                            <i class="bi bi-credit-card"></i>
                         </div>
-                        <div class="col-6 col-lg-3">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="text-muted small">Suporte aberto</div>
-                                    <div class="fs-3 fw-semibold"><?= $formatNumber((int)($stats['support_open'] ?? 0)) ?></div>
-                                    <a class="small" href="<?= base_path('/admin/support') ?>">Ver tickets</a>
-                                </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Pagamentos</div>
+                            <div class="stat-value"><?= $formatNumber((int)($stats['payments_pending'] ?? 0)) ?></div>
+                            <div class="stat-meta">
+                                <a href="<?= base_path('/admin/payments') ?>">Ver pagamentos</a>
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="admin-stat-card stat-info">
+                        <div class="stat-icon">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Uploads</div>
+                            <div class="stat-value"><?= $formatNumber((int)($stats['uploads_pending'] ?? 0)) ?></div>
+                            <div class="stat-meta">
+                                <a href="<?= base_path('/admin/uploads') ?>">Ver uploads</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="admin-stat-card stat-success">
+                        <div class="stat-icon">
+                            <i class="bi bi-headset"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">Suporte</div>
+                            <div class="stat-value"><?= $formatNumber((int)($stats['support_open'] ?? 0)) ?></div>
+                            <div class="stat-meta">
+                                <a href="<?= base_path('/admin/support') ?>">Ver tickets</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
                     <div class="row g-3 mb-4">
                         <div class="col-lg-5">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h2 class="h6 mb-3">Sistema</h2>
+                            <div class="admin-info-card">
+                                <div class="admin-card-header">
+                                    <i class="bi bi-hdd-rack me-2"></i>
+                                    <h2 class="admin-card-title">Sistema</h2>
+                                </div>
+                                <div class="admin-card-body">
                                     <div class="d-flex flex-column gap-2 small">
                                         <div class="d-flex justify-content-between"><span class="text-muted">Servidor</span><span><?= View::e((string)($server['server_software'] ?? '')) ?></span></div>
                                         <div class="d-flex justify-content-between"><span class="text-muted">SO</span><span><?= View::e((string)($server['os'] ?? '')) ?></span></div>
@@ -231,61 +231,78 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                             </div>
                         </div>
                         <div class="col-lg-7">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
-                                        <h2 class="h6 mb-0">Atalhos de gestao</h2>
-                                        <span class="badge text-bg-light">Admin</span>
-                                    </div>
-                                    <div class="row g-2">
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/users') ?>">Usuarios</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/team') ?>">Equipe</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/categories') ?>">Categorias</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/packages') ?>">Pacotes</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/vouchers') ?>">Vouchers</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/news') ?>">Noticias</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/notifications') ?>">Notificacoes</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/images') ?>">Banco de imagens</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/log') ?>">Logs de IP</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/uploads') ?>">Uploads</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/payments') ?>">Pagamentos</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/support') ?>">Suporte</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/settings') ?>">Configuracoes</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/avatar-gallery') ?>">Galeria de avatares</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/security/email-blocklist') ?>">Email blocklist</a>
-                                        </div>
-                                        <div class="col-md-6 d-grid">
-                                            <a class="btn btn-outline-primary" href="<?= base_path('/admin/security/user-blocklist') ?>">User blocklist</a>
-                                        </div>
+                            <div class="admin-info-card">
+                                <div class="admin-card-header">
+                                    <i class="bi bi-grid-3x3-gap me-2"></i>
+                                    <h2 class="admin-card-title">Atalhos de gestão</h2>
+                                    <span class="badge bg-danger-subtle text-danger ms-auto">Admin</span>
+                                </div>
+                                <div class="admin-card-body">
+                                    <div class="admin-shortcuts-grid">
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/users') ?>">
+                                            <i class="bi bi-people"></i>
+                                            <span>Usuários</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/team') ?>">
+                                            <i class="bi bi-shield-check"></i>
+                                            <span>Equipe</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/categories') ?>">
+                                            <i class="bi bi-collection"></i>
+                                            <span>Categorias</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/packages') ?>">
+                                            <i class="bi bi-box"></i>
+                                            <span>Pacotes</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/vouchers') ?>">
+                                            <i class="bi bi-ticket-perforated"></i>
+                                            <span>Vouchers</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/news') ?>">
+                                            <i class="bi bi-megaphone"></i>
+                                            <span>Notícias</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/notifications') ?>">
+                                            <i class="bi bi-bell"></i>
+                                            <span>Notificações</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/images') ?>">
+                                            <i class="bi bi-images"></i>
+                                            <span>Imagens</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/log') ?>">
+                                            <i class="bi bi-list-ul"></i>
+                                            <span>Logs</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/uploads') ?>">
+                                            <i class="bi bi-upload"></i>
+                                            <span>Uploads</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/payments') ?>">
+                                            <i class="bi bi-cash-coin"></i>
+                                            <span>Pagamentos</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/support') ?>">
+                                            <i class="bi bi-life-preserver"></i>
+                                            <span>Suporte</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/settings') ?>">
+                                            <i class="bi bi-gear"></i>
+                                            <span>Configurações</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/avatar-gallery') ?>">
+                                            <i class="bi bi-person-square"></i>
+                                            <span>Avatares</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/security/email-blocklist') ?>">
+                                            <i class="bi bi-envelope-x"></i>
+                                            <span>Email Block</span>
+                                        </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/security/user-blocklist') ?>">
+                                            <i class="bi bi-person-x"></i>
+                                            <span>User Block</span>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -294,15 +311,16 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 
                     <div class="row g-3 mb-4">
                         <div class="col-lg-6">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="news-title-box">
-                                        <div class="section-title news-title">➧ Pagamentos por mês</div>
-                                    </div>
+                            <div class="admin-info-card">
+                                <div class="admin-card-header">
+                                    <i class="bi bi-bar-chart-fill me-2"></i>
+                                    <h2 class="admin-card-title">Pagamentos por mês</h2>
+                                </div>
+                                <div class="admin-card-body">
                                     <?php if (empty($paymentsSeries)): ?>
                                         <div class="text-muted">Sem dados.</div>
                                     <?php else: ?>
-                                        <div class="d-flex flex-column gap-2">
+                                        <div class="d-flex flex-column gap-3">
                                             <?php foreach ($paymentsSeries as $row): ?>
                                                 <?php
                                                     $value = $parseNumber((string)($row['value'] ?? '0'));
@@ -327,15 +345,16 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                             </div>
                         </div>
                         <div class="col-lg-6">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="news-title-box">
-                                        <div class="section-title news-title">➧ Uploads por semana</div>
-                                    </div>
+                            <div class="admin-info-card">
+                                <div class="admin-card-header">
+                                    <i class="bi bi-cloud-arrow-up-fill me-2"></i>
+                                    <h2 class="admin-card-title">Uploads por semana</h2>
+                                </div>
+                                <div class="admin-card-body">
                                     <?php if (empty($uploadsSeries)): ?>
                                         <div class="text-muted">Sem dados.</div>
                                     <?php else: ?>
-                                        <div class="d-flex flex-column gap-2">
+                                        <div class="d-flex flex-column gap-3">
                                             <?php foreach ($uploadsSeries as $idx => $row): ?>
                                                 <?php
                                                     $value = $uploadsValues[$idx] ?? (int)round($parseNumber((string)($row['value'] ?? '0')));
@@ -363,37 +382,40 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                 </div>
                 <div class="col-lg-4 admin-dashboard-sidebar">
                     <div class="d-flex flex-column gap-3">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body">
-
-                                 <div class="news-title-box">
-                                    <div class="section-title news-title">➧ Ultimos conectados</div>
-                                </div>
-                                
+                        <div class="admin-info-card">
+                            <div class="admin-card-header">
+                                <i class="bi bi-clock-history me-2"></i>
+                                <h2 class="admin-card-title">Últimos conectados</h2>
+                            </div>
+                            <div class="admin-card-body">
                                 <?php if (empty($recentUsers)): ?>
                                     <div class="text-muted">Sem registros recentes.</div>
                                 <?php else: ?>
-                                    <div class="list-group list-group-flush small">
+                                    <div class="admin-recent-users">
                                         <?php foreach ($recentUsers as $ru): ?>
-                                            <div class="list-group-item d-flex align-items-center justify-content-between py-2">
-                                                <span><?= View::e((string)($ru['username'] ?? '')) ?></span>
+                                            <div class="admin-user-item">
+                                                <div class="user-info">
+                                                    <i class="bi bi-person-circle"></i>
+                                                    <span class="user-name"><?= View::e((string)($ru['username'] ?? '')) ?></span>
+                                                </div>
                                                 <?php $lastLogin = $ru['data_ultimo_login'] ?? $ru['data_registro'] ?? null; ?>
-                                                <span class="small text-muted"><?= View::e(time_ago(is_string($lastLogin) ? $lastLogin : null)) ?></span>
+                                                <span class="user-time"><?= View::e(time_ago(is_string($lastLogin) ? $lastLogin : null)) ?></span>
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body">
-                                <div class="news-title-box">
-                                    <div class="section-title news-title">➧ Tentativas de falhas</div>
-                                </div>
+                        <div class="admin-info-card">
+                            <div class="admin-card-header">
+                                <i class="bi bi-shield-exclamation me-2"></i>
+                                <h2 class="admin-card-title">Tentativas de falhas</h2>
+                            </div>
+                            <div class="admin-card-body">
                                 <?php if (empty($loginFailAttempts)): ?>
                                     <div class="text-muted">Sem tentativas recentes.</div>
                                 <?php else: ?>
-                                    <div class="list-group list-group-flush small">
+                                    <div class="admin-recent-users">
                                         <?php foreach ($loginFailAttempts as $fail): ?>
                                             <?php
                                             $label = (string)($fail['username'] ?? '');
@@ -408,9 +430,12 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                                 }
                                                 $displayLabel = mb_strimwidth($fullLabel, 0, 36, '...');
                                             ?>
-                                            <div class="list-group-item d-flex align-items-center justify-content-between gap-2 py-2">
-                                                <span class="login-fail-label" title="<?= View::e($fullLabel) ?>"><?= View::e($displayLabel) ?></span>
-                                                <span class="small text-muted"><?= View::e(time_ago($when !== '' ? $when : null)) ?></span>
+                                            <div class="admin-user-item admin-fail-item" title="<?= View::e($fullLabel) ?>">
+                                                <div class="user-info">
+                                                    <i class="bi bi-x-circle"></i>
+                                                    <span class="user-name"><?= View::e($displayLabel) ?></span>
+                                                </div>
+                                                <span class="user-time"><?= View::e(time_ago($when !== '' ? $when : null)) ?></span>
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
@@ -423,13 +448,38 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
         <?php endif; ?>
 
 <?php if ($isModerator): ?>
+    <div class="admin-dashboard-header mb-4">
+        <div class="d-flex align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="admin-dashboard-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <h1 class="h3 mb-1 fw-bold">Painel Moderador</h1>
+                    <p class="text-muted small mb-0">Gestão de conteúdo</p>
+                </div>
+            </div>
+            <div class="badge bg-info-subtle text-info px-3 py-2 fw-semibold">
+                <i class="bi bi-shield-check me-1"></i>
+                Moderador
+            </div>
+        </div>
+    </div>
     <div class="row g-3">
         <div class="col-md-4">
-            <div class="card h-100"><div class="card-body">
-                <h3 class="h6">Uploads</h3>
-                <p class="text-muted">Revisar uploads pendentes.</p>
-                <a class="btn btn-sm btn-primary" href="<?= base_path('/admin/uploads') ?>">Abrir</a>
-            </div></div>
+            <div class="admin-info-card">
+                <div class="admin-card-header">
+                    <i class="bi bi-cloud-arrow-up me-2"></i>
+                    <h2 class="admin-card-title">Uploads</h2>
+                </div>
+                <div class="admin-card-body">
+                    <p class="text-muted mb-3">Revisar uploads pendentes.</p>
+                    <a class="btn btn-primary w-100" href="<?= base_path('/admin/uploads') ?>">
+                        <i class="bi bi-box-arrow-up-right me-2"></i>
+                        Abrir
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 <?php endif; ?>

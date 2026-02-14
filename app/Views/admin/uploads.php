@@ -1,6 +1,5 @@
 <?php
 use App\Core\View;
-// Controle: arquivo revisado para envio via Git em 2026-02-04
 ob_start();
 ?>
 <?php
@@ -9,81 +8,50 @@ foreach (($categories ?? []) as $c) {
     $categoryMap[(int)$c['id']] = (string)$c['name'];
 }
 
-$midEllipsis = static function (string $text, int $max = 32, int $tail = 7): string {
-    $text = trim($text);
-    if ($text === '') {
-        return '';
-    }
-    if (mb_strlen($text) <= $max) {
-        return $text;
-    }
-    $head = max(0, $max - $tail - 3);
-    if ($head <= 0) {
-        return mb_substr($text, 0, $max - 3) . '...';
-    }
-    return mb_substr($text, 0, $head) . '...' . mb_substr($text, -$tail);
-};
-
-$shortFileName = static function (string $name) use ($midEllipsis): string {
+$shortFileName = static function (string $name): string {
     $name = trim($name);
     if ($name === '') {
         return '';
     }
     $pos = strrpos($name, '.');
     if ($pos === false || $pos === 0) {
-        return $midEllipsis($name, 32, 7);
+        return mid_ellipsis($name, 32, 7);
     }
     $base = substr($name, 0, $pos);
     $ext = substr($name, $pos + 1);
     $extPart = $ext !== '' ? '.' . $ext : '';
     $max = 32;
     $tail = 6;
-    $trimmedBase = $midEllipsis($base, $max - mb_strlen($extPart), $tail);
+    $trimmedBase = mid_ellipsis($base, $max - mb_strlen($extPart), $tail);
     return $trimmedBase . $extPart;
 };
 ?>
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h4 mb-0">Gerenciador de Arquivos</h1>
-    <?php if (!empty($total)): ?>
-        <div class="ms-3 small text-muted text-end">
-            <span>Total uploads: <?= (int)$total ?></span><br>
-            <span>Total enviado: <?= isset($totalSize) ? number_format($totalSize / (1024*1024*1024), 2, ',', '.') : '0' ?> GB</span>
+<div class="uploads-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 mb-1 fw-bold">Gerenciador de Arquivos</h1>
+            <p class="text-muted small mb-0">Controle de uploads e aprovações</p>
         </div>
-    <?php endif; ?>
+        <?php if (!empty($total)): ?>
+            <div class="uploads-stats">
+                <div class="stat-item">
+                    <i class="bi bi-file-earmark-arrow-up text-primary"></i>
+                    <div>
+                        <div class="stat-value"><?= (int)$total ?></div>
+                        <div class="stat-label">Uploads</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="bi bi-hdd text-success"></i>
+                    <div>
+                        <div class="stat-value"><?= isset($totalSize) ? number_format($totalSize / (1024*1024*1024), 2, ',', '.') : '0' ?></div>
+                        <div class="stat-label">GB enviados</div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
-
-<hr class="text-success" />
-
-<style>
-    .uploads-action-btn {
-        width: 34px;
-        height: 34px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .uploads-truncate {
-        max-width: 180px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        display: inline-block;
-        vertical-align: bottom;
-    }
-    .uploads-pill {
-        display: inline-block;
-        max-width: 180px;
-        padding: 2px 8px;
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        background: #f8f9fa;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        vertical-align: middle;
-    }
-</style>
 <form method="get" action="<?= base_path('/admin/uploads') ?>" class="row g-3 align-items-end mb-3">
     <div class="col-sm-4 col-md-3">
         <label class="form-label">Usuário (ID ou nome)</label>

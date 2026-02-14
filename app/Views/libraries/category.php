@@ -47,48 +47,46 @@ $seriesCount = is_array($series ?? null) ? count($series) : 0;
             <?php $isPinned = (int)($s['pin_order'] ?? 0) > 0; ?>
             <?php $editModalId = 'edit-series-' . $seriesId; ?>
             <?php $deleteModalId = 'delete-series-' . $seriesId; ?>
-            <div class="list-group-item py-3<?= $isPinned ? ' bg-warning-subtle' : '' ?>">
+            <div class="list-group-item library-desktop-item py-3<?= $isPinned ? ' bg-warning-subtle' : '' ?>">
                 <div class="d-flex justify-content-between align-items-center gap-3">
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <form method="post" action="<?= base_path('/libraries/series/favorite') ?>">
-                        <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                        <input type="hidden" name="id" value="<?= $seriesId ?>">
-                        <input type="hidden" name="action" value="<?= $isFav ? 'remove' : 'add' ?>">
-                        <button class="btn btn-sm <?= $isFav ? 'btn-warning' : 'btn-outline-warning' ?>" type="submit" aria-label="<?= $isFav ? 'Remover favorito' : 'Favoritar' ?>">
-                            <?= $isFav ? '★' : '☆' ?>
-                        </button>
-                    </form>
+                    <div class="d-flex align-items-center gap-3 flex-grow-1 min-w-0">
+                        <form method="post" action="<?= base_path('/libraries/series/favorite') ?>" class="flex-shrink-0">
+                            <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                            <input type="hidden" name="id" value="<?= $seriesId ?>">
+                            <input type="hidden" name="action" value="<?= $isFav ? 'remove' : 'add' ?>">
+                            <button class="btn btn-sm <?= $isFav ? 'btn-warning' : 'btn-outline-warning' ?>" type="submit" aria-label="<?= $isFav ? 'Remover favorito' : 'Favoritar' ?>">
+                                <?= $isFav ? '★' : '☆' ?>
+                            </button>
+                        </form>
 
-                        <div>
+                        <div class="flex-grow-1 min-w-0">
                             <?php $isAdultSeries = !empty($s['adult_only']); ?>
-                            <div class="d-flex align-items-center gap-2 series-line">
-                                <div class="series-title-wrap">
-                                    <div class="series-title-row">
-                                        <a class="text-decoration-none fw-semibold series-title" href="<?= base_path('/libraries/' . rawurlencode((string)$category['name']) . '/' . rawurlencode((string)$s['name']) . '?format=' . $entry['format'] . (!empty($iosTest) ? '&ios_test=1' : '')) ?>">
-                                            <?= View::e((string)$s['name']) ?>
-                                        </a>
-                                        <div class="series-tags">
-                                            <?php if ($isAdultSeries): ?>
-                                                <span class="badge bg-danger">18+</span>
-                                            <?php endif; ?>
-                                            <?php if ($entry['tag'] !== ''): ?>
-                                                <span class="badge bg-warning text-dark"><?= View::e($entry['tag']) ?></span>
-                                            <?php endif; ?>
-                                            <?php if ($isPinned): ?>
-                                                <span class="badge bg-primary">Em destaque</span>
-                                            <?php endif; ?>
-                                            <?php if ($entry['format'] === 'empty'): ?>
-                                                <span class="badge bg-secondary">Sem conteúdo</span>
-                                            <?php elseif ($entry['format'] === 'pending'): ?>
-                                                <span class="badge bg-info text-dark">Aguardando conversão</span>
-                                            <?php endif; ?>
-                                            <?php if ($pendingCount > 0 && $canPin && $entry['format'] !== 'pending'): ?>
-                                                <span class="badge bg-info text-dark">Em conversão: <?= $pendingCount ?></span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                    <div class="small text-muted">Capítulos: <?= (int)$entry['count'] ?></div>
+                            <div class="mb-2">
+                                <a class="library-desktop-title text-decoration-none fw-semibold d-inline-block" href="<?= base_path('/libraries/' . rawurlencode((string)$category['name']) . '/' . rawurlencode((string)$s['name']) . '?format=' . $entry['format'] . (!empty($iosTest) ? '&ios_test=1' : '')) ?>">
+                                    <?= View::e((string)$s['name']) ?>
+                                </a>
+                                <div class="d-inline-flex flex-wrap gap-1 align-items-center ms-2">
+                                    <?php if ($isAdultSeries): ?>
+                                        <span class="badge bg-danger">18+</span>
+                                    <?php endif; ?>
+                                    <?php if ($entry['tag'] !== ''): ?>
+                                        <span class="badge bg-warning text-dark"><?= View::e($entry['tag']) ?></span>
+                                    <?php endif; ?>
+                                    <?php if ($isPinned): ?>
+                                        <span class="badge bg-primary">Em destaque</span>
+                                    <?php endif; ?>
+                                    <?php if ($entry['format'] === 'empty'): ?>
+                                        <span class="badge bg-secondary">Sem conteúdo</span>
+                                    <?php elseif ($entry['format'] === 'pending'): ?>
+                                        <span class="badge bg-info text-dark">Aguardando conversão</span>
+                                    <?php endif; ?>
+                                    <?php if ($pendingCount > 0 && $canPin && $entry['format'] !== 'pending'): ?>
+                                        <span class="badge bg-info text-dark">Em conversão: <?= $pendingCount ?></span>
+                                    <?php endif; ?>
                                 </div>
+                            </div>
+                            <div class="small text-muted">
+                                <i class="bi bi-book me-1"></i><?= (int)$entry['count'] ?> capítulos
                             </div>
                         </div>
                     </div>
@@ -155,69 +153,48 @@ $seriesCount = is_array($series ?? null) ? count($series) : 0;
             <?php $editModalId = 'edit-series-' . $seriesId; ?>
             <?php $deleteModalId = 'delete-series-' . $seriesId; ?>
             <?php $isAdultSeries = !empty($s['adult_only']); ?>
-            <div class="card mb-2 library-list-card<?= $isPinned ? ' border-warning' : '' ?>">
-                <div class="card-body">
-                    <div class="d-flex align-items-start justify-content-between gap-2 library-card-row">
-                        <div class="d-flex align-items-start gap-2">
-                            <form method="post" action="<?= base_path('/libraries/series/favorite') ?>">
-                                <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                                <input type="hidden" name="id" value="<?= $seriesId ?>">
-                                <input type="hidden" name="action" value="<?= $isFav ? 'remove' : 'add' ?>">
-                                <button class="btn btn-sm <?= $isFav ? 'btn-warning' : 'btn-outline-warning' ?>" type="submit" aria-label="<?= $isFav ? 'Remover favorito' : 'Favoritar' ?>">
-                                    <?= $isFav ? '★' : '☆' ?>
-                                </button>
-                            </form>
-                            <div class="d-flex align-items-center gap-2 series-line w-100">
-                                <div class="series-title-wrap">
-                                    <div class="series-title-row">
-                                        <a class="text-decoration-none fw-semibold series-title" href="<?= base_path('/libraries/' . rawurlencode((string)$category['name']) . '/' . rawurlencode((string)$s['name']) . '?format=' . $entry['format'] . (!empty($iosTest) ? '&ios_test=1' : '')) ?>">
-                                            <?= View::e((string)$s['name']) ?>
-                                        </a>
-                                        <div class="series-tags">
-                                            <?php if ($isAdultSeries): ?>
-                                                <span class="badge bg-danger">18+</span>
-                                            <?php endif; ?>
-                                            <?php if ($entry['tag'] !== ''): ?>
-                                                <span class="badge bg-warning text-dark"><?= View::e($entry['tag']) ?></span>
-                                            <?php endif; ?>
-                                            <?php if ($isPinned): ?>
-                                                <span class="badge bg-primary">Em destaque</span>
-                                            <?php endif; ?>
-                                            <?php if ($entry['format'] === 'empty'): ?>
-                                                <span class="badge bg-secondary">Sem conteúdo</span>
-                                            <?php elseif ($entry['format'] === 'pending'): ?>
-                                                <span class="badge bg-info text-dark">Aguardando conversão</span>
-                                            <?php endif; ?>
-                                            <?php if ($pendingCount > 0 && $canPin && $entry['format'] !== 'pending'): ?>
-                                                <span class="badge bg-info text-dark">Em conversão: <?= $pendingCount ?></span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                    <div class="small text-muted">Capítulos: <?= (int)$entry['count'] ?></div>
+            <div class="card mb-2 library-series-card<?= $isPinned ? ' border-warning' : '' ?>">
+                <a href="<?= base_path('/libraries/' . rawurlencode((string)$category['name']) . '/' . rawurlencode((string)$s['name']) . '?format=' . $entry['format'] . (!empty($iosTest) ? '&ios_test=1' : '')) ?>" class="text-decoration-none text-dark library-series-link">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div class="flex-grow-1 min-w-0">
+                                <h6 class="mb-1 fw-semibold text-truncate"><?= View::e((string)$s['name']) ?></h6>
+                                <div class="d-flex flex-wrap gap-1 mb-2">
+                                    <?php if ($isAdultSeries): ?>
+                                        <span class="badge bg-danger">18+</span>
+                                    <?php endif; ?>
+                                    <?php if ($entry['tag'] !== ''): ?>
+                                        <span class="badge bg-warning text-dark"><?= View::e($entry['tag']) ?></span>
+                                    <?php endif; ?>
+                                    <?php if ($isPinned): ?>
+                                        <span class="badge bg-primary">Em destaque</span>
+                                    <?php endif; ?>
+                                    <?php if ($entry['format'] === 'empty'): ?>
+                                        <span class="badge bg-secondary">Sem conteúdo</span>
+                                    <?php elseif ($entry['format'] === 'pending'): ?>
+                                        <span class="badge bg-info text-dark">Aguardando conversão</span>
+                                    <?php endif; ?>
+                                    <?php if ($pendingCount > 0 && $canPin && $entry['format'] !== 'pending'): ?>
+                                        <span class="badge bg-info text-dark">Em conversão: <?= $pendingCount ?></span>
+                                    <?php endif; ?>
                                 </div>
+                                <div class="small text-muted">
+                                    <i class="bi bi-book"></i> <?= (int)$entry['count'] ?> capítulos
+                                </div>
+                            </div>
+                            <div class="library-series-actions" onclick="event.preventDefault(); event.stopPropagation();">
+                                <form method="post" action="<?= base_path('/libraries/series/favorite') ?>" class="d-inline">
+                                    <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                                    <input type="hidden" name="id" value="<?= $seriesId ?>">
+                                    <input type="hidden" name="action" value="<?= $isFav ? 'remove' : 'add' ?>">
+                                    <button class="btn btn-sm <?= $isFav ? 'btn-warning' : 'btn-outline-warning' ?>" type="submit" aria-label="<?= $isFav ? 'Remover favorito' : 'Favoritar' ?>">
+                                        <?= $isFav ? '★' : '☆' ?>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex flex-wrap gap-1 mt-2 library-card-badges">
-                        <?php if ($isAdultSeries): ?>
-                            <span class="badge bg-danger">18+</span>
-                        <?php endif; ?>
-                        <?php if ($entry['tag'] !== ''): ?>
-                            <span class="badge bg-warning text-dark"><?= View::e($entry['tag']) ?></span>
-                        <?php endif; ?>
-                        <?php if ($isPinned): ?>
-                            <span class="badge bg-primary">Em destaque</span>
-                        <?php endif; ?>
-                        <?php if ($entry['format'] === 'empty'): ?>
-                            <span class="badge bg-secondary">Sem conteúdo</span>
-                        <?php elseif ($entry['format'] === 'pending'): ?>
-                            <span class="badge bg-info text-dark">Aguardando conversão</span>
-                        <?php endif; ?>
-                        <?php if ($pendingCount > 0 && $canPin && $entry['format'] !== 'pending'): ?>
-                            <span class="badge bg-info text-dark">Em conversão: <?= $pendingCount ?></span>
-                        <?php endif; ?>
-                    </div>
-                </div>
+                </a>
                 <?php if ($canPin || $canManage): ?>
                     <div class="card-footer bg-white border-0 pt-0">
                         <div class="d-flex flex-wrap align-items-center gap-2">

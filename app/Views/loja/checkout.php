@@ -2,9 +2,22 @@
 use App\Core\View;
 ob_start();
 ?>
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h4 mb-0">Confirmar compra</h1>
-    <span class="badge bg-secondary">Pagamento</span>
+<div class="checkout-header mb-4">
+    <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="checkout-icon">
+                <i class="bi bi-credit-card"></i>
+            </div>
+            <div>
+                <h1 class="h3 mb-1 fw-bold">Confirmar compra</h1>
+                <p class="text-muted small mb-0">Revise os detalhes e envie o comprovante</p>
+            </div>
+        </div>
+        <div class="badge bg-warning-subtle text-warning px-3 py-2 fw-semibold">
+            <i class="bi bi-clock-history me-1"></i>
+            Pagamento
+        </div>
+    </div>
 </div>
 
 <?php if (!empty($pricingError)): ?>
@@ -13,20 +26,26 @@ ob_start();
 
 <div class="row g-3 mb-3">
     <div class="col-md-6">
-        <div class="card h-100 shadow-sm loja-card">
-            <div class="card-body">
-                <h2 class="h6">Resumo do pacote</h2>
-                <p><strong>Título:</strong> <?= View::e($package['title']) ?></p>
-                <p class="text-muted small mb-3"><?= View::e((string)$package['description']) ?></p>
-                <div class="d-flex justify-content-between">
-                    <span class="text-muted">Preço mensal</span>
-                    <strong><?= format_brl((float)($package['price'] ?? 0)) ?></strong>
+        <div class="checkout-card">
+            <div class="checkout-card-header">
+                <i class="bi bi-box-seam me-2"></i>
+                <h2 class="checkout-card-title">Resumo do pacote</h2>
+            </div>
+            <div class="checkout-card-body">
+                <div class="checkout-package-info mb-3">
+                    <div class="package-title"><?= View::e($package['title']) ?></div>
+                    <div class="package-desc"><?= View::e((string)$package['description']) ?></div>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <span class="text-muted">Meses</span>
-                    <strong><?= (int)($months ?? 1) ?></strong>
-                </div>
-                <hr class="my-2">
+                <div class="checkout-summary">
+                    <div class="summary-item">
+                        <span>Preço mensal</span>
+                        <strong><?= format_brl((float)($package['price'] ?? 0)) ?></strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Meses</span>
+                        <strong><?= (int)($months ?? 1) ?></strong>
+                    </div>
+                    <div class="summary-divider"></div>
                 <?php if (!empty($quote)): ?>
                     <?php
                     $newTermCostCents = (int)($quote['new_term_cost_cents'] ?? 0);
@@ -34,18 +53,18 @@ ob_start();
                     $creditRemainingCents = (int)($quote['credit_current_remaining_cents'] ?? 0);
                     $costRemainingCents = (int)($quote['cost_new_remaining_cents'] ?? 0);
                     ?>
-                    <div class="d-flex justify-content-between">
-                        <span class="text-muted">Subtotal</span>
+                    <div class="summary-item">
+                        <span>Subtotal</span>
                         <strong><?= format_brl($newTermCostCents / 100) ?></strong>
                     </div>
                     <?php if ($upgradeDiffCents > 0): ?>
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Diferença de upgrade</span>
+                        <div class="summary-item">
+                            <span>Diferença de upgrade</span>
                             <strong><?= format_brl($upgradeDiffCents / 100) ?></strong>
                         </div>
                     <?php endif; ?>
                     <?php if ($creditRemainingCents > 0 || $costRemainingCents > 0): ?>
-                        <div class="small text-muted mt-2">
+                        <div class="summary-note">
                             Crédito restante<?= !empty($currentPackageTitle) ? ' (' . View::e((string)$currentPackageTitle) . ')' : '' ?>:
                             <strong><?= format_brl($creditRemainingCents / 100) ?></strong>
                             • Custo restante novo pacote:
@@ -53,38 +72,56 @@ ob_start();
                         </div>
                     <?php endif; ?>
                 <?php endif; ?>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="text-muted">Total</span>
-                    <strong class="fs-5"><?= format_brl((float)($total ?? 0)) ?></strong>
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <strong><?= format_brl((float)($total ?? 0)) ?></strong>
+                    </div>
+                    <?php if (!empty($remainingDays)): ?>
+                        <div class="summary-note">Crédito calculado com base em <?= (int)$remainingDays ?> dia(s) restantes.</div>
+                    <?php endif; ?>
                 </div>
-                <?php if (!empty($remainingDays)): ?>
-                    <div class="small text-muted mt-2">Crédito calculado com base em <?= (int)$remainingDays ?> dia(s) restantes.</div>
-                <?php endif; ?>
             </div>
         </div>
     </div>
     <div class="col-md-6">
-            <div class="card h-100 shadow-sm loja-card">
-            <div class="card-body">
-                <h2 class="h6">Pagamento via PIX</h2>
+        <div class="checkout-card">
+            <div class="checkout-card-header">
+                <i class="bi bi-qr-code me-2"></i>
+                <h2 class="checkout-card-title">Pagamento via PIX</h2>
+            </div>
+            <div class="checkout-card-body">
                 <?php if (!empty($pixKey) || !empty($pixName) || !empty($pixHolder) || !empty($pixBank) || !empty($pixCpf)): ?>
-                    <div class="alert alert-info mb-0">
-                        <div class="fw-semibold mb-2">Dados para transferência</div>
-                        <?php if (!empty($pixName) || !empty($pixHolder)): ?>
-                            <div><strong>Recebedor:</strong> <?= View::e($pixName !== '' ? $pixName : $pixHolder) ?></div>
-                        <?php endif; ?>
-                        <?php if (!empty($pixBank)): ?>
-                            <div><strong>Banco:</strong> <?= View::e($pixBank) ?></div>
-                        <?php endif; ?>
-                        <?php if (!empty($pixCpf)): ?>
-                            <div><strong>CPF:</strong> <?= View::e($pixCpf) ?></div>
-                        <?php endif; ?>
+                    <div class="checkout-pix-info">
+                        <div class="pix-info-title">Dados para transferência</div>
+                        <div class="pix-info-items">
+                            <?php if (!empty($pixName) || !empty($pixHolder)): ?>
+                                <div class="pix-info-item">
+                                    <span class="pix-info-label">Recebedor</span>
+                                    <span class="pix-info-value"><?= View::e($pixName !== '' ? $pixName : $pixHolder) ?></span>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (!empty($pixBank)): ?>
+                                <div class="pix-info-item">
+                                    <span class="pix-info-label">Banco</span>
+                                    <span class="pix-info-value"><?= View::e($pixBank) ?></span>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (!empty($pixCpf)): ?>
+                                <div class="pix-info-item">
+                                    <span class="pix-info-label">CPF</span>
+                                    <span class="pix-info-value"><?= View::e($pixCpf) ?></span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                         <?php if (!empty($pixKey)): ?>
-                            <div class="mt-2">
-                                <div class="fw-semibold">Chave PIX</div>
-                                <div class="input-group input-group-sm mt-1">
-                                    <input class="form-control" type="text" id="pixKeyValue" value="<?= View::e($pixKey) ?>" readonly>
-                                    <button class="btn btn-outline-primary" type="button" id="copyPixKey">Copiar</button>
+                            <div class="pix-key-section">
+                                <div class="pix-key-label">Chave PIX</div>
+                                <div class="pix-key-copy">
+                                    <input type="text" id="pixKeyValue" value="<?= View::e($pixKey) ?>" readonly>
+                                    <button type="button" id="copyPixKey">
+                                        <i class="bi bi-clipboard"></i>
+                                        Copiar
+                                    </button>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -97,9 +134,12 @@ ob_start();
     </div>
 </div>
 
-<div class="card shadow-sm loja-card">
-    <div class="card-body">
-        <h2 class="h6">Enviar comprovante</h2>
+<div class="checkout-card">
+    <div class="checkout-card-header">
+        <i class="bi bi-file-earmark-arrow-up me-2"></i>
+        <h2 class="checkout-card-title">Enviar comprovante</h2>
+    </div>
+    <div class="checkout-card-body">
         <?php if (!empty($error)): ?>
             <div class="alert alert-danger small">
                 <?php if ($error === 'proof'): ?>
@@ -127,17 +167,23 @@ ob_start();
                 <?php endif; ?>
             </div>
         <?php endif; ?>
-        <div class="form-text mb-3">Formatos aceitos: JPG, PNG ou PDF. Tamanho máximo: 4MB.</div>
+        <div class="checkout-file-info mb-3">
+            <i class="bi bi-info-circle me-2"></i>
+            Formatos aceitos: JPG, PNG ou PDF. Tamanho máximo: 4MB.
+        </div>
         <form method="post" action="<?= upload_url('/loja/request') ?>" enctype="multipart/form-data" id="proofForm">
             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
             <input type="hidden" name="package_id" value="<?= (int)$package['id'] ?>">
             <input type="hidden" name="months" value="<?= (int)($months ?? 1) ?>">
             <div class="mb-3">
-                <label class="form-label">Comprovante</label>
+                <label class="form-label fw-semibold">Comprovante</label>
                 <input type="file" name="proof" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>
             </div>
             <div class="small text-danger mb-2" id="proofError" style="display:none"></div>
-            <button class="btn btn-primary" type="submit" id="proofSubmit">Enviar para aprovação</button>
+            <button class="btn btn-primary btn-lg w-100" type="submit" id="proofSubmit">
+                <i class="bi bi-send me-2"></i>
+                Enviar para aprovação
+            </button>
         </form>
     </div>
 </div>

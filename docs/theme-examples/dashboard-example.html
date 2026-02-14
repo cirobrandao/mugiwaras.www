@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Moderna - Exemplo</title>
+    
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Theme CSS -->
+    <link href="../../public/assets/css/theme.css" rel="stylesheet">
+</head>
+<body>
+    
+    <div class="app-container">
+        
+        <!-- ========== SIDEBAR ========== -->
+        <aside class="app-sidebar">
+            <!-- Logo -->
+            <div class="sidebar-header">
+                <a href="/" class="sidebar-logo">
+                    <i class="bi bi-hexagon-fill"></i>
+                    <span>Mugiwaras</span>
+                </a>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="sidebar-nav">
+                <!-- Main Section -->
+                <div class="sidebar-nav-section">
+                    <div class="sidebar-nav-title">Menu Principal</div>
+                    
+                    <a href="/dashboard" class="sidebar-nav-item active">
+                        <i class="bi bi-house-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    
+                    <a href="/libraries" class="sidebar-nav-item">
+                        <i class="bi bi-book-fill"></i>
+                        <span>Biblioteca</span>
+                    </a>
+                    
+                    <a href="/favorites" class="sidebar-nav-item">
+                        <i class="bi bi-star-fill"></i>
+                        <span>Favoritos</span>
+                        <span class="sidebar-nav-badge">12</span>
+                    </a>
+                    
+                    <a href="/reader" class="sidebar-nav-item">
+                        <i class="bi bi-journal-text"></i>
+                        <span>Leitor</span>
+                    </a>
+                    
+                    <a href="/news" class="sidebar-nav-item">
+                        <i class="bi bi-newspaper"></i>
+                        <span>Notícias</span>
+                        <span class="sidebar-nav-badge">3</span>
+                    </a>
+                </div>
+                
+                <!-- Account Section -->
+                <div class="sidebar-nav-section">
+                    <div class="sidebar-nav-title">Conta</div>
+                    
+                    <a href="/profile" class="sidebar-nav-item">
+                        <i class="bi bi-person-fill"></i>
+                        <span>Perfil</span>
+                    </a>
+                    
+                    <a href="/loja" class="sidebar-nav-item">
+                        <i class="bi bi-cart-fill"></i>
+                        <span>Loja</span>
+                    </a>
+                    
+                    <a href="/support" class="sidebar-nav-item">
+                        <i class="bi bi-headset"></i>
+                        <span>Suporte</span>
+                    </a>
+                </div>
+                
+                <!-- Admin Section -->
+                <div class="sidebar-nav-section">
+                    <div class="sidebar-nav-title">Administração</div>
+                    
+                    <a href="/admin" class="sidebar-nav-item">
+                        <i class="bi bi-gear-fill"></i>
+                        <span>Painel Admin</span>
+                    </a>
+                    
+                    <a href="/admin/users" class="sidebar-nav-item">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Usuários</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <!-- Footer -->
+            <div class="sidebar-footer">
+                <a href="/logout" class="sidebar-nav-item">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Sair</span>
+                </a>
+            </div>
+        </aside>
+        
+        <!-- ========== MAIN CONTENT ========== -->
+        <main class="app-main">
+            
+            <!-- Topbar -->
+            <header class="app-topbar">
+                <!-- Mobile Toggle -->
+                <button class="topbar-toggle" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+                
+                <!-- Search -->
+                <div class="topbar-search">
+                    <i class="bi bi-search"></i>
+                    <input type="search" placeholder="Buscar séries, categorias..." />
+                </div>
+                
+                <!-- Actions -->
+                <div class="topbar-actions">
+                    <button class="topbar-icon-btn" title="Notificações">
+                        <i class="bi bi-bell-fill"></i>
+                        <span class="badge"></span>
+                    </button>
+                    
+                    <button class="topbar-icon-btn" title="Tema">
+                        <i class="bi bi-moon-fill"></i>
+                    </button>
+                    
+                    <a href="/profile" class="topbar-avatar">
+                        <img src="https://i.pravatar.cc/150?img=3" alt="Avatar">
+                        <div class="topbar-avatar-info">
+                            <div class="topbar-avatar-name">João Silva</div>
+                            <div class="topbar-avatar-role">Premium</div>
+                        </div>
+                    </a>
+                </div>
+            </header>
+            
+            <!-- Content -->
+            <div class="app-content">
+                
+                <!-- Header -->
+                <div class="content-header">
+                    <h1 class="content-title">Olá, João! 👋</h1>
+                    <p class="content-subtitle">Bem-vindo de volta. Aqui está o que está acontecendo hoje.</p>
+                </div>
+                
+                <!-- Main Grid: 2 Columns (Content + Sidebar) -->
+                <div class="row g-4">
+                    
+                    <!-- LEFT COLUMN: Main Content -->
+                    <div class="col-12 col-xl-8">
+                        
+                        <!-- Seção: Meus Favoritos -->
+                        <section class="mb-5">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h2 class="section-title mb-0">
+                                    <i class="bi bi-star-fill text-warning me-2"></i>
+                                    Meus Favoritos
+                                </h2>
+                                <a href="/favorites" class="text-decoration-none">Ver todos →</a>
+                            </div>
+                            
+                            <div class="row g-3">
+                                <!-- Card Favorito 1 -->
+                                <div class="col-12 col-md-6">
+                                    <a href="/series/one-piece" class="card-horizontal">
+                                        <div class="card-horizontal-icon">
+                                            <i class="bi bi-book-fill"></i>
+                                        </div>
+                                        <div class="card-horizontal-content">
+                                            <div class="card-horizontal-title">One Piece</div>
+                                            <div class="card-horizontal-subtitle">Cap. 1095 • Mangá</div>
+                                        </div>
+                                        <span class="card-horizontal-badge">Novo</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Card Favorito 2 -->
+                                <div class="col-12 col-md-6">
+                                    <a href="/series/berserk" class="card-horizontal">
+                                        <div class="card-horizontal-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                                            <i class="bi bi-book-fill"></i>
+                                        </div>
+                                        <div class="card-horizontal-content">
+                                            <div class="card-horizontal-title">Berserk</div>
+                                            <div class="card-horizontal-subtitle">Cap. 374 • Mangá</div>
+                                        </div>
+                                    </a>
+                                </div>
+                                
+                                <!-- Card Favorito 3 -->
+                                <div class="col-12 col-md-6">
+                                    <a href="/series/chainsaw-man" class="card-horizontal">
+                                        <div class="card-horizontal-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                                            <i class="bi bi-book-fill"></i>
+                                        </div>
+                                        <div class="card-horizontal-content">
+                                            <div class="card-horizontal-title">Chainsaw Man</div>
+                                            <div class="card-horizontal-subtitle">Cap. 145 • Mangá</div>
+                                        </div>
+                                        <span class="card-horizontal-badge">Novo</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Card Favorito 4 -->
+                                <div class="col-12 col-md-6">
+                                    <a href="/series/attack-on-titan" class="card-horizontal">
+                                        <div class="card-horizontal-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                                            <i class="bi bi-book-fill"></i>
+                                        </div>
+                                        <div class="card-horizontal-content">
+                                            <div class="card-horizontal-title">Attack on Titan</div>
+                                            <div class="card-horizontal-subtitle">Cap. 139 • Mangá</div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        <!-- Seção: Blog / Notícias -->
+                        <section>
+                            <h2 class="section-title">
+                                <i class="bi bi-newspaper text-primary me-2"></i>
+                                Últimas Notícias
+                            </h2>
+                            
+                            <div class="row g-4">
+                                <!-- Post 1 -->
+                                <div class="col-12">
+                                    <div class="card-soft">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-12 col-md-4">
+                                                <img src="https://picsum.photos/400/250?random=1" 
+                                                     alt="Notícia" 
+                                                     class="img-fluid rounded" 
+                                                     style="height: 180px; object-fit: cover; width: 100%;">
+                                            </div>
+                                            <div class="col-12 col-md-8">
+                                                <div class="d-flex align-items-center gap-2 mb-2">
+                                                    <span class="pill pill-primary">Mangá</span>
+                                                    <span class="text-muted" style="font-size: 0.875rem;">
+                                                        <i class="bi bi-clock me-1"></i>Há 2 horas
+                                                    </span>
+                                                </div>
+                                                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                                    <a href="/news/1" class="text-decoration-none text-dark">
+                                                        One Piece: Capítulo 1095 revela segredos de Egghead
+                                                    </a>
+                                                </h3>
+                                                <p class="text-secondary mb-3" style="font-size: 0.9rem; line-height: 1.6;">
+                                                    O mais recente capítulo trouxe revelações impressionantes sobre o passado 
+                                                    de Kuma e a conexão com os Celestial Dragons...
+                                                </p>
+                                                <a href="/news/1" class="btn btn-sm btn-outline-primary">
+                                                    Ler mais →
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Post 2 -->
+                                <div class="col-12">
+                                    <div class="card-soft">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-12 col-md-4">
+                                                <img src="https://picsum.photos/400/250?random=2" 
+                                                     alt="Notícia" 
+                                                     class="img-fluid rounded" 
+                                                     style="height: 180px; object-fit: cover; width: 100%;">
+                                            </div>
+                                            <div class="col-12 col-md-8">
+                                                <div class="d-flex align-items-center gap-2 mb-2">
+                                                    <span class="pill pill-success">Atualização</span>
+                                                    <span class="text-muted" style="font-size: 0.875rem;">
+                                                        <i class="bi bi-clock me-1"></i>Há 5 horas
+                                                    </span>
+                                                </div>
+                                                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                                    <a href="/news/2" class="text-decoration-none text-dark">
+                                                        Novo sistema de leitura: leitor aprimorado disponível
+                                                    </a>
+                                                </h3>
+                                                <p class="text-secondary mb-3" style="font-size: 0.9rem; line-height: 1.6;">
+                                                    Implementamos um novo leitor com melhor performance, controles 
+                                                    aprimorados e suporte a gestos touch...
+                                                </p>
+                                                <a href="/news/2" class="btn btn-sm btn-outline-primary">
+                                                    Ler mais →
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                    </div>
+                    
+                    <!-- RIGHT COLUMN: Widgets Sidebar -->
+                    <div class="col-12 col-xl-4">
+                        
+                        <!-- Widget: Avisos -->
+                        <div class="widget">
+                            <div class="widget-header">
+                                <h3 class="widget-title">
+                                    <i class="bi bi-bell-fill"></i>
+                                    Avisos
+                                </h3>
+                            </div>
+                            
+                            <div class="widget-alert widget-alert-success">
+                                <div class="widget-alert-icon">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </div>
+                                <div class="widget-alert-content">
+                                    <div class="widget-alert-title">Acesso Premium Ativo</div>
+                                    <div class="widget-alert-text">
+                                        Seu plano está ativo até 15/03/2026
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="widget-alert widget-alert-info">
+                                <div class="widget-alert-icon">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                </div>
+                                <div class="widget-alert-content">
+                                    <div class="widget-alert-title">Novos capítulos disponíveis</div>
+                                    <div class="widget-alert-text">
+                                        3 séries dos seus favoritos foram atualizadas
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Widget: Top 10 -->
+                        <div class="widget">
+                            <div class="widget-header">
+                                <h3 class="widget-title">
+                                    <i class="bi bi-fire"></i>
+                                    Top 10 Séries
+                                </h3>
+                                <a href="/top" class="widget-link">Ver tudo</a>
+                            </div>
+                            
+                            <ul class="widget-list">
+                                <li class="widget-list-item">
+                                    <div class="widget-list-rank">1</div>
+                                    <div class="widget-list-content">
+                                        <div class="widget-list-title">One Piece</div>
+                                        <div class="widget-list-subtitle">
+                                            <span class="pill pill-primary" style="padding: 2px 8px;">Mangá</span>
+                                        </div>
+                                    </div>
+                                    <div class="widget-list-meta">
+                                        <i class="bi bi-eye-fill me-1"></i>12.5k
+                                    </div>
+                                </li>
+                                
+                                <li class="widget-list-item">
+                                    <div class="widget-list-rank">2</div>
+                                    <div class="widget-list-content">
+                                        <div class="widget-list-title">Berserk</div>
+                                        <div class="widget-list-subtitle">
+                                            <span class="pill pill-primary" style="padding: 2px 8px;">Mangá</span>
+                                        </div>
+                                    </div>
+                                    <div class="widget-list-meta">
+                                        <i class="bi bi-eye-fill me-1"></i>8.3k
+                                    </div>
+                                </li>
+                                
+                                <li class="widget-list-item">
+                                    <div class="widget-list-rank">3</div>
+                                    <div class="widget-list-content">
+                                        <div class="widget-list-title">Attack on Titan</div>
+                                        <div class="widget-list-subtitle">
+                                            <span class="pill pill-primary" style="padding: 2px 8px;">Mangá</span>
+                                        </div>
+                                    </div>
+                                    <div class="widget-list-meta">
+                                        <i class="bi bi-eye-fill me-1"></i>7.9k
+                                    </div>
+                                </li>
+                                
+                                <li class="widget-list-item">
+                                    <div class="widget-list-rank">4</div>
+                                    <div class="widget-list-content">
+                                        <div class="widget-list-title">Chainsaw Man</div>
+                                        <div class="widget-list-subtitle">
+                                            <span class="pill pill-primary" style="padding: 2px 8px;">Mangá</span>
+                                        </div>
+                                    </div>
+                                    <div class="widget-list-meta">
+                                        <i class="bi bi-eye-fill me-1"></i>6.2k
+                                    </div>
+                                </li>
+                                
+                                <li class="widget-list-item">
+                                    <div class="widget-list-rank">5</div>
+                                    <div class="widget-list-content">
+                                        <div class="widget-list-title">Hunter x Hunter</div>
+                                        <div class="widget-list-subtitle">
+                                            <span class="pill pill-primary" style="padding: 2px 8px;">Mangá</span>
+                                        </div>
+                                    </div>
+                                    <div class="widget-list-meta">
+                                        <i class="bi bi-eye-fill me-1"></i>5.8k
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Widget: Últimos Lançamentos -->
+                        <div class="widget">
+                            <div class="widget-header">
+                                <h3 class="widget-title">
+                                    <i class="bi bi-stars"></i>
+                                    Últimos Lançamentos
+                                </h3>
+                                <a href="/recent" class="widget-link">Ver todos</a>
+                            </div>
+                            
+                            <ul class="widget-list">
+                                <li class="widget-list-item">
+                                    <div class="widget-list-icon">
+                                        <i class="bi bi-file-earmark-plus"></i>
+                                    </div>
+                                    <div class="widget-list-content">
+                                        <div class="widget-list-title">One Piece - Cap. 1095</div>
+                                        <div class="widget-list-subtitle">
+                                            <i class="bi bi-clock"></i>
+                                            Há 2 horas
+                                        </div>
+                                    </div>
+                                </li>
+                                
+                                <li class="widget-list-item">
+                                    <div class="widget-list-icon">
+                                        <i class="bi bi-file-earmark-plus"></i>
+                                    </div>
+                                    <div class="widget-list-content">
+                                        <div class="widget-list-title">Chainsaw Man - Cap. 145</div>
+                                        <div class="widget-list-subtitle">
+                                            <i class="bi bi-clock"></i>
+                                            Há 5 horas
+                                        </div>
+                                    </div>
+                                </li>
+                                
+                                <li class="widget-list-item">
+                                    <div class="widget-list-icon">
+                                        <i class="bi bi-file-earmark-plus"></i>
+                                    </div>
+                                    <div class="widget-list-content">
+                                        <div class="widget-list-title">Berserk - Cap. 375</div>
+                                        <div class="widget-list-subtitle">
+                                            <i class="bi bi-clock"></i>
+                                            Ontem
+                                        </div>
+                                    </div>
+                                </li>
+                                
+                                <li class="widget-list-item">
+                                    <div class="widget-list-icon">
+                                        <i class="bi bi-file-earmark-plus"></i>
+                                    </div>
+                                    <div class="widget-list-content">
+                                        <div class="widget-list-title">Vagabond - Vol. 37</div>
+                                        <div class="widget-list-subtitle">
+                                            <i class="bi bi-clock"></i>
+                                            2 dias atrás
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                
+            </div>
+            
+        </main>
+        
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Theme JS -->
+    <script>
+        // Sidebar Toggle
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.app-sidebar');
+        
+        sidebarToggle?.addEventListener('click', () => {
+            sidebar.classList.toggle('show');
+        });
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 992) {
+                if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                    sidebar.classList.remove('show');
+                }
+            }
+        });
+    </script>
+    
+</body>
+</html>

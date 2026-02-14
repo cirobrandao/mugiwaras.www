@@ -2,7 +2,17 @@
 use App\Core\View;
 ob_start();
 ?>
-<h1 class="h4 mb-3">Loja</h1>
+<div class="loja-header mb-4">
+    <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+        <div>
+            <h1 class="h3 mb-1 fw-bold">Loja de Assinaturas</h1>
+            <p class="text-muted small mb-0">Escolha o plano ideal para você</p>
+        </div>
+        <div class="loja-icon">
+            <i class="bi bi-bag-heart"></i>
+        </div>
+    </div>
+</div>
 <?php if (!empty($_GET['expired'])): ?>
     <div class="alert alert-warning">Sua assinatura expirou. Renove seu acesso abaixo.</div>
 <?php endif; ?>
@@ -29,7 +39,7 @@ ob_start();
     <div class="alert alert-secondary">Nenhum pacote disponível.</div>
 <?php else: ?>
     <?php $catList = $categories ?? []; ?>
-    <div class="row g-3">
+    <div class="loja-packages-grid">
         <?php foreach ($packages as $p): ?>
             <?php
             $pkgCats = $packageCategories[(int)$p['id']] ?? [];
@@ -44,56 +54,83 @@ ob_start();
                 }
             }
             ?>
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm loja-card">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title"><?= View::e($p['title']) ?></h5>
-                        <p class="card-text text-muted small mb-3"><?= View::e($p['description']) ?></p>
-                        <?php if (!empty($catList)): ?>
-                            <ul class="list-unstyled small mb-3">
-                                <?php foreach ($activeCats as $c): ?>
-                                    <li><span class="me-1">›</span><?= View::e((string)$c['name']) ?></li>
-                                <?php endforeach; ?>
-                                <?php foreach ($inactiveCats as $c): ?>
-                                    <li class="text-muted"><span class="me-1">›</span><del><?= View::e((string)$c['name']) ?></del></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php endif; ?>
-                        <form class="mt-auto" method="get" action="<?= base_path('/loja/checkout/' . (int)$p['id']) ?>">
-                            <div class="fw-semibold mb-2">
-                                <?= format_brl((float)($p['price'] ?? 0)) ?> / mês
-                            </div>
-                            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
-                                <label class="small text-muted mb-0">Deseja assinar quantos meses?</label>
-                                <div class="d-flex align-items-center gap-2">
-                                    <select class="form-select form-select-sm w-auto pkg-months" name="months">
-                                        <?php for ($m = 1; $m <= 12; $m++): ?>
-                                            <option value="<?= $m ?>" <?= $m === 1 ? 'selected' : '' ?>><?= $m ?></option>
-                                        <?php endfor; ?>
-                                    </select>
-                                    <button class="btn btn-primary" type="submit">Assinar</button>
-                                </div>
-                            </div>
-                        </form>
+            <div class="loja-package-card">
+                <div class="loja-package-header">
+                    <div class="loja-package-icon">
+                        <i class="bi bi-star-fill"></i>
                     </div>
+                    <h3 class="loja-package-title"><?= View::e($p['title']) ?></h3>
+                    <p class="loja-package-desc"><?= View::e($p['description']) ?></p>
                 </div>
+                
+                <div class="loja-package-price">
+                    <span class="price-value"><?= format_brl((float)($p['price'] ?? 0)) ?></span>
+                    <span class="price-period">/ mês</span>
+                </div>
+
+                <?php if (!empty($catList)): ?>
+                    <div class="loja-package-features">
+                        <div class="features-label">Acesso incluído:</div>
+                        <ul class="features-list">
+                            <?php foreach ($activeCats as $c): ?>
+                                <li class="feature-item active">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    <span><?= View::e((string)$c['name']) ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                            <?php foreach ($inactiveCats as $c): ?>
+                                <li class="feature-item inactive">
+                                    <i class="bi bi-x-circle"></i>
+                                    <span><?= View::e((string)$c['name']) ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+
+                <form class="loja-package-form" method="get" action="<?= base_path('/loja/checkout/' . (int)$p['id']) ?>">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Período de assinatura</label>
+                        <select class="form-select" name="months">
+                            <?php for ($m = 1; $m <= 12; $m++): ?>
+                                <option value="<?= $m ?>" <?= $m === 1 ? 'selected' : '' ?>>
+                                    <?= $m ?> <?= $m === 1 ? 'mês' : 'meses' ?>
+                                    <?php if ($m > 1): ?>
+                                        - <?= format_brl((float)($p['price'] ?? 0) * $m) ?>
+                                    <?php endif; ?>
+                                </option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit">
+                        <i class="bi bi-cart-check me-2"></i>
+                        Assinar Agora
+                    </button>
+                </form>
             </div>
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
 
-<div class="card mt-3 loja-card">
-    <div class="card-body">
-        <h2 class="h6">Tenho um voucher</h2>
-        <form method="post" action="<?= base_path('/loja/voucher') ?>" class="row g-2">
-            <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-            <div class="col-md-6">
-                <input class="form-control" name="code" placeholder="VC-XXXXXXXX" required>
-            </div>
-            <div class="col-md-2 d-grid">
-                <button class="btn btn-outline-primary" type="submit">Aplicar</button>
-            </div>
-        </form>
+<div class="loja-voucher-section">
+    <div class="voucher-card">
+        <div class="voucher-icon">
+            <i class="bi bi-ticket-perforated"></i>
+        </div>
+        <div class="voucher-content">
+            <h2 class="voucher-title">Tem um voucher?</h2>
+            <p class="voucher-desc">Digite seu código para ativar benefícios especiais</p>
+            <form method="post" action="<?= base_path('/loja/voucher') ?>" class="voucher-form">
+                <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                <div class="input-group">
+                    <input class="form-control" name="code" placeholder="Digite seu código de voucher" required>
+                    <button class="btn btn-success" type="submit">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Aplicar
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 <?php

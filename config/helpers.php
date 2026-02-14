@@ -46,16 +46,7 @@ if (!function_exists('url')) {
 if (!function_exists('upload_url')) {
     function upload_url(string $path = ''): string
     {
-        $uploadBaseUrl = rtrim((string)config('app.upload_url', ''), '/');
-        // Only use a separate upload base URL for the actual upload page (/upload).
-        // For any other path, always use the regular `url()` which is based on APP_URL.
-        $path = '/' . ltrim($path ?? '', '/');
-        $isUploadPage = preg_match('#^/upload($|/|\?)#', $path) === 1;
-        if ($isUploadPage && $uploadBaseUrl !== '') {
-            $basePath = rtrim((string)config('app.base_path', ''), '/');
-            return $uploadBaseUrl . $basePath . $path;
-        }
-        return url($path);
+        return \App\Core\CrossDomainAuth::buildUploadUrl($path);
     }
 }
 
@@ -80,5 +71,102 @@ if (!function_exists('phone_mask')) {
             return sprintf('%s %s-%s', substr($digits, 0, 2), substr($digits, 2, 4), substr($digits, 6, 4));
         }
         return $digits;
+    }
+}
+
+if (!function_exists('asset')) {
+    function asset(string $path): string
+    {
+        $v = config('app.asset_version', '1.0.0');
+        return url($path) . '?v=' . $v;
+    }
+}
+
+if (!function_exists('time_ago')) {
+    function time_ago(?string $datetime): string
+    {
+        if (empty($datetime)) {
+            return 'nunca';
+        }
+        try {
+            $dt = new DateTimeImmutable($datetime);
+        } catch (Exception $e) {
+            return 'nunca';
+        }
+        $now = new DateTimeImmutable('now');
+        $diff = $now->getTimestamp() - $dt->getTimestamp();
+        if ($diff < 60) {
+            return 'agora';
+        }
+        if ($diff < 3600) {
+            return 'há ' . (int)floor($diff / 60) . ' min';
+        }
+        if ($diff < 86400) {
+            return 'há ' . (int)floor($diff / 3600) . ' h';
+        }
+        if ($diff < 2592000) {
+            return 'há ' . (int)floor($diff / 86400) . ' d';
+        }
+        if ($diff < 31536000) {
+            return 'há ' . (int)floor($diff / 2592000) . ' meses';
+        }
+        return 'há ' . (int)floor($diff / 31536000) . ' anos';
+    }
+}
+
+if (!function_exists('time_ago_compact')) {
+    function time_ago_compact(?string $datetime): string
+    {
+        if (empty($datetime)) {
+            return '-';
+        }
+        try {
+            $dt = new DateTimeImmutable($datetime);
+        } catch (Exception $e) {
+            return '-';
+        }
+        $now = new DateTimeImmutable('now');
+        $diff = $now->getTimestamp() - $dt->getTimestamp();
+        if ($diff < 0) {
+            $diff = 0;
+        }
+        $days = (int)floor($diff / 86400);
+        $hours = (int)floor(($diff % 86400) / 3600);
+        $mins = (int)floor(($diff % 3600) / 60);
+        if ($days > 0) {
+            return $days . 'd ' . $hours . 'h';
+        }
+        if ($hours > 0) {
+            return $hours . 'h ' . $mins . 'm';
+        }
+        return $mins . 'm';
+    }
+}
+
+if (!function_exists('mid_ellipsis')) {
+    function mid_ellipsis(string $text, int $max = 32, int $tail = 7): string
+    {
+        $text = trim($text);
+        if ($text === '') {
+            return '';
+        }
+        if (mb_strlen($text) <= $max) {
+            return $text;
+        }
+        $head = max(0, $max - $tail - 3);
+        if ($head <= 0) {
+            return mb_substr($text, 0, $max - 3) . '...';
+        }
+        return mb_substr($text, 0, $head) . '...' . mb_substr($text, -$tail);
+    }
+}
+
+if (!function_exists('truncate')) {
+    function truncate(string $text, int $max = 100): string
+    {
+        if (mb_strlen($text) <= $max) {
+            return $text;
+        }
+        return mb_strimwidth($text, 0, $max, '...');
     }
 }
