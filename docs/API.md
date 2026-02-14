@@ -6,7 +6,7 @@
 - POST /register
 - GET /support
 - POST /support
-- GET /dashboard
+- GET /home
 - GET /payments
 - POST /payments/request
 - GET /upload

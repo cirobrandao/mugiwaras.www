@@ -32,8 +32,11 @@ use App\Core\SimpleCache;
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="<?= asset('/assets/css/theme.css') ?>">
+    <?php if (!empty($loadDashboardSidebarCss)): ?>
+        <link rel="stylesheet" href="<?= asset('/assets/css/sidebar.css') ?>">
+    <?php endif; ?>
     <link rel="stylesheet" href="<?= asset('/assets/css/app.css') ?>">
-    <link rel="stylesheet" href="<?= asset('/assets/css/z1hd.css') ?>">
     <link rel="stylesheet" href="<?= asset('/assets/category-tags.css') ?>">
 </head>
 <body class="app-body">
@@ -108,201 +111,156 @@ if (function_exists('sys_getloadavg')) {
                 <?php if (!empty($systemLogo)): ?>
                     <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="Logo" class="auth-logo">
                 <?php endif; ?>
-                <h1 class="mt-4">Bem-vindo de volta</h1>
-                <p class="text-muted">Acesse sua conta para continuar sua leitura e gerenciar seus conteúdos.</p>
-                <div class="mt-4">
-                    <div class="fw-semibold">Precisa de acesso?</div>
-                    <a class="text-decoration-none" href="<?= base_path('/register') ?>">Cadastre-se agora.</a>
-                </div>
+                <h1><?= View::e($authHeroTitle ?? 'Bem-vindo de volta') ?></h1>
+                <p><?= View::e($authHeroText ?? 'Acesse sua conta para continuar sua leitura e gerenciar seus conteúdos.') ?></p>
+                <?php if (!empty($authHeroFeatures) && is_array($authHeroFeatures)): ?>
+                    <div class="auth-hero-features">
+                        <?php foreach ($authHeroFeatures as $feature): ?>
+                            <div class="auth-hero-feature">
+                                <i class="<?= View::e($feature['icon'] ?? 'bi bi-check-circle') ?>"></i>
+                                <div>
+                                    <?php if (!empty($feature['title'])): ?>
+                                        <div class="fw-semibold"><?= View::e($feature['title']) ?></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($feature['text'])): ?>
+                                        <div><?= View::e($feature['text']) ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
-            <div class="text-muted small">© <?= date('Y') ?> <?= View::e($displaySystemName !== '' ? $displaySystemName : $systemName) ?></div>
+            <div class="auth-hero-footer">
+                © <?= date('Y') ?> <?= View::e($displaySystemName !== '' ? $displaySystemName : $systemName) ?>. Todos os direitos reservados.
+            </div>
         </div>
         <div class="auth-panel">
-            <?= $content ?? '' ?>
+            <div class="auth-panel-inner">
+                <?= $content ?? '' ?>
+            </div>
         </div>
     </div>
 <?php else: ?>
     <div class="app-shell">
-        <aside class="app-sidebar">
-            <a class="sidebar-brand" href="<?= base_path('/dashboard') ?>">
-                <div class="brand-mark">
-                    <?php if (!empty($systemFavicon)): ?>
-                        <img src="<?= base_path('/' . ltrim((string)$systemFavicon, '/')) ?>" alt="Favicon" class="brand-icon">
-                    <?php else: ?>
-                        <?= View::e(mb_strtoupper(mb_substr($systemName, 0, 1))) ?>
-                    <?php endif; ?>
-                </div>
-                <div class="brand-text">
-                    <div class="brand-title"><?= View::e($systemName) ?></div>
-                    <div class="brand-sub">Biblioteca digital</div>
-                </div>
-            </a>
-            <nav class="sidebar-nav">
-                <?php if ($isLoggedIn): ?>
-                    <div class="nav-section">Navegacao</div>
-                    <a class="nav-link <?= $activePage === 'dashboard' ? 'active' : '' ?>" href="<?= base_path('/dashboard') ?>">
-                        <i class="bi bi-house"></i>
-                        <span>Inicio</span>
-                    </a>
-                    <?php if (!$isRestricted): ?>
-                        <a class="nav-link <?= $activePage === 'libraries' ? 'active' : '' ?>" href="<?= base_path('/libraries') ?>">
-                            <i class="bi bi-collection"></i>
-                            <span>Bibliotecas</span>
-                        </a>
-                        <a class="nav-link <?= $activePage === 'loja' ? 'active' : '' ?>" href="<?= base_path('/loja') ?>">
-                            <i class="bi bi-bag"></i>
-                            <span>Loja</span>
-                        </a>
-                    <?php endif; ?>
-                    <?php if (!$isAdmin && !$isEquipe && !$isSupportStaff && !$isUploader && !$isModerator): ?>
-                        <a class="nav-link" href="<?= $supportUrl ?>">
-                            <i class="bi bi-life-preserver"></i>
-                            <span>Abrir chamado</span>
-                            <?php if (!empty($supportBadge)): ?>
-                                <span class="badge bg-danger ms-auto"><?= (int)$supportBadge ?></span>
-                            <?php endif; ?>
-                        </a>
-                    <?php endif; ?>
-                <?php else: ?>
-                    <a class="nav-link" href="<?= base_path('/') ?>">
-                        <i class="bi bi-box-arrow-in-right"></i>
-                        <span>Login</span>
-                    </a>
-                    <a class="nav-link" href="<?= base_path('/register') ?>">
-                        <i class="bi bi-person-plus"></i>
-                        <span>Registrar</span>
-                    </a>
-                    <a class="nav-link" href="<?= base_path('/support') ?>">
-                        <i class="bi bi-life-preserver"></i>
-                        <span>Suporte</span>
-                    </a>
-                <?php endif; ?>
-
-                <?php if ($canUseSideMenu): ?>
-                    <div class="nav-section">Administracao</div>
-                    <?php if ($isAdmin): ?>
-                        <a class="nav-link" href="<?= base_path('/admin') ?>">
-                            <i class="bi bi-grid"></i>
-                            <span>Painel</span>
-                        </a>
-                    <?php endif; ?>
-                    <?php if ($isSupportStaff): ?>
-                        <a class="nav-link" href="<?= base_path('/admin/support') ?>">
-                            <i class="bi bi-headset"></i>
-                            <span>Suporte</span>
-                            <?php if (!empty($pendingSupport)): ?>
-                                <span class="badge bg-danger ms-auto"><?= (int)$pendingSupport ?></span>
-                            <?php endif; ?>
-                        </a>
-                    <?php endif; ?>
-                    <?php if ($isAdmin): ?>
-                        <a class="nav-link" href="<?= base_path('/admin/payments') ?>">
-                            <i class="bi bi-cash-coin"></i>
-                            <span>Pagamentos</span>
-                            <?php if (!empty($pendingPayments)): ?>
-                                <span class="badge bg-danger ms-auto"><?= (int)$pendingPayments ?></span>
-                            <?php endif; ?>
-                        </a>
-                    <?php endif; ?>
-                    <?php if ($isAdmin || $isUploader || $isModerator): ?>
-                        <a class="nav-link" href="<?= base_path('/admin/uploads') ?>">
-                            <i class="bi bi-upload"></i>
-                            <span>Upload Manager</span>
-                            <?php if (!empty($pendingUploads)): ?>
-                                <span class="badge bg-danger ms-auto"><?= (int)$pendingUploads ?></span>
-                            <?php endif; ?>
-                        </a>
-                        <a class="nav-link" href="<?= upload_url('/upload') ?>">
-                            <i class="bi bi-cloud-arrow-up"></i>
-                            <span>Enviar arquivo</span>
-                        </a>
-                    <?php endif; ?>
-                    <?php if ($isAdmin): ?>
-                        <a class="nav-link" href="<?= base_path('/admin/news') ?>">
-                            <i class="bi bi-megaphone"></i>
-                            <span>Noticias</span>
-                        </a>
-                        <a class="nav-link" href="<?= base_path('/admin/notifications') ?>">
-                            <i class="bi bi-bell"></i>
-                            <span>Notificacoes</span>
-                        </a>
-                    <?php endif; ?>
-                <?php endif; ?>
-
-                <?php if ($isLoggedIn): ?>
-                    <div class="nav-section">Conta</div>
-                    <a class="nav-link" href="<?= base_path('/perfil') ?>">
-                        <i class="bi bi-person"></i>
-                        <span>Perfil</span>
-                    </a>
-                    <a class="nav-link" href="<?= base_path('/logout') ?>">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Sair</span>
-                    </a>
-                <?php endif; ?>
-            </nav>
-        </aside>
-
-        <div class="app-main">
-            <header class="app-topbar">
+        <!-- Top Bar -->
+        <header class="app-topbar" role="banner">
+            <div class="app-topbar-inner">
                 <div class="topbar-left">
-                    <div>
+                    <a class="topbar-brand" href="<?= base_path('/home') ?>" aria-label="Página inicial">
                         <?php if (!empty($systemLogo)): ?>
-                            <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="Logo" class="topbar-logo" data-sidebar-toggle>
+                            <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="<?= View::e($systemName) ?>" class="topbar-brand-logo">
                         <?php else: ?>
-                            <div class="crumb-sub"><?= $isLoggedIn ? 'Leitura, biblioteca e administracao' : 'Acesse sua conta' ?></div>
+                            <span class="topbar-brand-text"><?= View::e($systemName) ?></span>
                         <?php endif; ?>
-                    </div>
-                </div>
-                <div class="topbar-right">
+                    </a>
                     <?php if ($isLoggedIn): ?>
-                        <form class="topbar-search" method="get" action="<?= base_path('/libraries/search') ?>">
-                            <i class="bi bi-search"></i>
-                            <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar nas bibliotecas">
+                        <nav class="topbar-portal-nav" aria-label="Menu do portal">
+                            <a class="topbar-portal-link <?= $activePage === 'home' ? 'active' : '' ?>" href="<?= base_path('/home') ?>">
+                                <i class="bi bi-house-door"></i>
+                                <span>Início</span>
+                            </a>
+                            <?php if (!$isRestricted): ?>
+                                <a class="topbar-portal-link <?= $activePage === 'libraries' ? 'active' : '' ?>" href="<?= base_path('/lib') ?>">
+                                    <i class="bi bi-collection"></i>
+                                    <span>Biblioteca</span>
+                                </a>
+                                <a class="topbar-portal-link <?= $activePage === 'loja' ? 'active' : '' ?>" href="<?= base_path('/loja') ?>">
+                                    <i class="bi bi-bag"></i>
+                                    <span>Loja</span>
+                                </a>
+                            <?php endif; ?>
+                        </nav>
+                    <?php endif; ?>
+                    <?php if ($isLoggedIn): ?>
+                        <form class="topbar-search" method="get" action="<?= base_path('/lib/search') ?>" role="search" aria-label="Buscar nas bibliotecas">
+                            <i class="bi bi-search" aria-hidden="true"></i>
+                            <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar nas bibliotecas" aria-label="Campo de busca">
                         </form>
-                        <button class="btn btn-icon theme-toggle-btn" type="button" data-theme-toggle aria-label="Alternar tema">
-                            <i class="fa-solid fa-moon"></i>
+                    <?php endif; ?>
+                </div>
+                <div class="topbar-right" role="toolbar" aria-label="Ações do usuário">
+                    <?php if ($isLoggedIn): ?>
+                        <button class="btn btn-icon theme-toggle-btn" type="button" data-theme-toggle aria-label="Alternar tema claro/escuro">
+                            <i class="fa-solid fa-moon" aria-hidden="true"></i>
                         </button>
                         <div class="dropdown">
-                            <button class="btn btn-ghost dropdown-toggle d-inline-flex align-items-center gap-2" data-bs-toggle="dropdown">
+                            <button class="btn btn-ghost dropdown-toggle d-inline-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu do usuário">
                                 <?php if ($userAvatar !== ''): ?>
-                                    <img src="<?= base_path('/' . ltrim($userAvatar, '/')) ?>" alt="Avatar" class="topbar-avatar">
+                                    <img src="<?= base_path('/' . ltrim($userAvatar, '/')) ?>" alt="Avatar de <?= View::e($displayName) ?>" class="topbar-avatar">
                                 <?php else: ?>
-                                    <span class="topbar-avatar-placeholder"><?= View::e($initial) ?></span>
+                                    <span class="topbar-avatar-placeholder" aria-hidden="true"><?= View::e($initial) ?></span>
                                 <?php endif; ?>
                                 <span class="d-none d-md-inline"><?= View::e($displayName) ?></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="<?= base_path('/perfil') ?>">Meu perfil</a></li>
-                                <li><a class="dropdown-item" href="<?= base_path('/perfil/senha') ?>">Mudar senha</a></li>
+                                <?php if (!$isAdmin && !$isEquipe && !$isSupportStaff && !$isUploader && !$isModerator): ?>
+                                    <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="<?= $supportUrl ?>"><span><i class="bi bi-life-preserver me-2"></i>Suporte</span><?php if (!empty($supportBadge)): ?><span class="badge bg-danger"><?= (int)$supportBadge ?></span><?php endif; ?></a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                <?php endif; ?>
+                                <?php if ($canUseSideMenu): ?>
+                                    <?php if ($isAdmin): ?>
+                                        <li><a class="dropdown-item" href="<?= base_path('/admin') ?>"><i class="bi bi-grid me-2"></i>Painel admin</a></li>
+                                    <?php endif; ?>
+                                    <?php if ($isSupportStaff): ?>
+                                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="<?= base_path('/admin/support') ?>"><span><i class="bi bi-headset me-2"></i>Suporte staff</span><?php if (!empty($pendingSupport)): ?><span class="badge bg-danger"><?= (int)$pendingSupport ?></span><?php endif; ?></a></li>
+                                    <?php endif; ?>
+                                    <?php if ($isAdmin): ?>
+                                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="<?= base_path('/admin/payments') ?>"><span><i class="bi bi-cash-coin me-2"></i>Pagamentos</span><?php if (!empty($pendingPayments)): ?><span class="badge bg-danger"><?= (int)$pendingPayments ?></span><?php endif; ?></a></li>
+                                    <?php endif; ?>
+                                    <?php if ($isAdmin || $isUploader || $isModerator): ?>
+                                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="<?= base_path('/admin/uploads') ?>"><span><i class="bi bi-upload me-2"></i>Upload manager</span><?php if (!empty($pendingUploads)): ?><span class="badge bg-danger"><?= (int)$pendingUploads ?></span><?php endif; ?></a></li>
+                                        <li><a class="dropdown-item" href="<?= upload_url('/upload') ?>"><i class="bi bi-cloud-arrow-up me-2"></i>Enviar arquivo</a></li>
+                                    <?php endif; ?>
+                                    <?php if ($isAdmin): ?>
+                                        <li><a class="dropdown-item" href="<?= base_path('/admin/news') ?>"><i class="bi bi-megaphone me-2"></i>Notícias</a></li>
+                                        <li><a class="dropdown-item" href="<?= base_path('/admin/notifications') ?>"><i class="bi bi-bell me-2"></i>Notificações</a></li>
+                                    <?php endif; ?>
+                                    <li><hr class="dropdown-divider"></li>
+                                <?php endif; ?>
+                                <li><a class="dropdown-item" href="<?= base_path('/perfil') ?>"><i class="bi bi-person me-2"></i>Meu perfil</a></li>
+                                <li><a class="dropdown-item" href="<?= base_path('/perfil/senha') ?>"><i class="bi bi-key me-2"></i>Mudar senha</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="<?= base_path('/logout') ?>">Sair</a></li>
+                                <li><a class="dropdown-item" href="<?= base_path('/logout') ?>"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
                             </ul>
                         </div>
                     <?php else: ?>
-                        <button class="btn btn-icon theme-toggle-btn" type="button" data-theme-toggle aria-label="Alternar tema">
-                            <i class="fa-solid fa-moon"></i>
+                        <button class="btn btn-icon theme-toggle-btn" type="button" data-theme-toggle aria-label="Alternar tema claro/escuro">
+                            <i class="fa-solid fa-moon" aria-hidden="true"></i>
                         </button>
                         <a class="btn btn-ghost" href="<?= base_path('/') ?>">Login</a>
-                        <a class="btn btn-dark" href="<?= base_path('/register') ?>">Registrar</a>
+                        <a class="btn btn-primary" href="<?= base_path('/register') ?>">Registrar</a>
                     <?php endif; ?>
                 </div>
-            </header>
+            </div>
+        </header>
 
-            <main class="app-content">
-                <section class="section-card app-page">
-                    <?= $content ?? '' ?>
-                </section>
+        <!-- Main Content Area -->
+        <div class="app-main">
+            <main role="main">
+                <?= $content ?? '' ?>
             </main>
-
-            <footer class="app-footer">
-                <div>© <?= date('Y') ?> <?= View::e($systemName) ?></div>
-                <div class="text-muted">
-                    Carga do servidor: <?= View::e($loadLabel) ?>
-                    <?php if ($loadPercent !== null): ?>
-                        <span class="fw-semibold"><?= (int)$loadPercent ?>%</span>
-                    <?php endif; ?>
-                    · Última atualização <span data-last-sync>agora</span>
+            <footer class="app-footer" role="contentinfo">
+                <div class="footer-content">
+                    <div class="footer-copyright">
+                        <i class="bi bi-c-circle me-1" aria-hidden="true"></i>
+                        <?= date('Y') ?> <?= View::e($systemName) ?>. Todos os direitos reservados.
+                    </div>
+                    <div class="footer-info">
+                        <span class="server-status" aria-label="Carga do servidor">
+                            <i class="bi bi-hdd" aria-hidden="true"></i>
+                            <span class="d-none d-md-inline">Servidor:</span> 
+                            <span class="status-badge status-<?= View::e($loadLabel) ?>"><?= View::e($loadLabel) ?></span>
+                            <?php if ($loadPercent !== null): ?>
+                                <span class="fw-semibold"><?= (int)$loadPercent ?>%</span>
+                            <?php endif; ?>
+                        </span>
+                        <span class="separator" aria-hidden="true">·</span>
+                        <span class="last-update">
+                            <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>
+                            <span data-last-sync>agora</span>
+                        </span>
+                    </div>
                 </div>
             </footer>
         </div>

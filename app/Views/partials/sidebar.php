@@ -37,7 +37,7 @@ $activePage = $activePage ?? '';
 $displaySystemName = trim(preg_replace('/\s*\[DEV\]\s*/i', '', (string)$systemName));
 ?>
 <aside class="app-sidebar">
-    <a class="sidebar-brand" href="<?= base_path('/dashboard') ?>">
+    <a class="sidebar-brand" href="<?= base_path('/home') ?>">
         <div class="brand-mark">
             <?php if (!empty($systemFavicon)): ?>
                 <img src="<?= base_path('/' . ltrim((string)$systemFavicon, '/')) ?>" alt="Favicon" class="brand-icon">
@@ -53,12 +53,12 @@ $displaySystemName = trim(preg_replace('/\s*\[DEV\]\s*/i', '', (string)$systemNa
     <nav class="sidebar-nav">
         <?php if ($isLoggedIn): ?>
             <div class="nav-section">Navegacao</div>
-            <a class="nav-link <?= $activePage === 'dashboard' ? 'active' : '' ?>" href="<?= base_path('/dashboard') ?>">
+            <a class="nav-link <?= $activePage === 'home' ? 'active' : '' ?>" href="<?= base_path('/home') ?>">
                 <i class="bi bi-house"></i>
                 <span>Inicio</span>
             </a>
             <?php if (!$isRestricted): ?>
-                <a class="nav-link <?= $activePage === 'libraries' ? 'active' : '' ?>" href="<?= base_path('/libraries') ?>">
+                <a class="nav-link <?= $activePage === 'libraries' ? 'active' : '' ?>" href="<?= base_path('/lib') ?>">
                     <i class="bi bi-collection"></i>
                     <span>Bibliotecas</span>
                 </a>

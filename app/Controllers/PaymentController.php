@@ -228,9 +228,6 @@ final class PaymentController extends Controller
             $days = (int)($package['subscription_days'] ?? 0);
         }
         $months = 1;
-        if ((int)($package['subscription_days'] ?? 0) > 0) {
-            $months = (int)ceil(max(1, $days) / (int)$package['subscription_days']);
-        }
 
         $db = \App\Core\Database::connection();
         try {
@@ -246,6 +243,7 @@ final class PaymentController extends Controller
                 'pid' => $packageId,
                 'status' => 'approved',
                 'months' => $months,
+                'voucher_days' => $days,
             ]);
             $pricing = new SubscriptionPricingService();
             $pricing->applyApprovedPayment($paymentId, 'now');

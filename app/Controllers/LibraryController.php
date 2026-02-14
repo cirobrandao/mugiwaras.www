@@ -174,13 +174,13 @@ final class LibraryController extends Controller
         if (!$user) {
             Response::redirect(base_path('/'));
         }
-        $name = rawurldecode($category);
+        $slug = rawurldecode($category);
         if (!Category::isReady()) {
             http_response_code(500);
             echo $this->view('libraries/category', ['error' => 'Biblioteca ainda não inicializada.', 'category' => ['name' => '']]);
             return;
         }
-        $cat = Category::findByName($name);
+        $cat = Category::findBySlug($slug);
         if (!$cat) {
             http_response_code(404);
             echo $this->view('libraries/category', ['error' => 'Categoria não encontrada.', 'category' => ['name' => '']]);
@@ -263,14 +263,14 @@ final class LibraryController extends Controller
         if (!$user) {
             Response::redirect(base_path('/'));
         }
-        $categoryName = rawurldecode($category);
+        $categorySlug = rawurldecode($category);
         $seriesName = rawurldecode($series);
         if (!Category::isReady()) {
             http_response_code(500);
             echo $this->view('libraries/series', ['error' => 'Biblioteca ainda não inicializada.']);
             return;
         }
-        $cat = Category::findByName($categoryName);
+        $cat = Category::findBySlug($categorySlug);
         if (!$cat) {
             http_response_code(404);
             echo $this->view('libraries/series', ['error' => 'Categoria não encontrada.']);
@@ -506,73 +506,73 @@ final class LibraryController extends Controller
     public function updateContent(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user) || \App\Core\Auth::isEquipe($user))) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $id = (int)($request->post['id'] ?? 0);
         $title = trim((string)($request->post['title'] ?? ''));
         if ($id <= 0 || $title === '') {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         ContentItem::updateTitle($id, $title);
         Audit::log('content_rename', (int)$user['id'], ['content_id' => $id]);
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     public function updateContentOrder(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $id = (int)($request->post['id'] ?? 0);
         $order = (int)($request->post['content_order'] ?? 0);
         if ($id <= 0) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         ContentItem::updateOrder($id, $order);
         Audit::log('content_order', (int)$user['id'], ['content_id' => $id, 'order' => $order]);
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     public function pinSeries(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $id = (int)($request->post['id'] ?? 0);
         $pinOrder = (int)($request->post['pin_order'] ?? 0);
         if ($id <= 0) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         Series::updatePinOrder($id, $pinOrder);
         Audit::log('series_pin', (int)$user['id'], ['series_id' => $id, 'order' => $pinOrder]);
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     public function deleteContent(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $id = (int)($request->post['id'] ?? 0);
         $item = ContentItem::find($id);
         if (!$item) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         $abs = $this->resolveLibraryPath((string)$item['cbz_path']);
         if ($abs && file_exists($abs)) {
@@ -580,17 +580,17 @@ final class LibraryController extends Controller
         }
         ContentItem::delete($id);
         Audit::log('content_delete', (int)$user['id'], ['content_id' => $id]);
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     public function toggleFavorite(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $id = (int)($request->post['id'] ?? 0);
         $action = (string)($request->post['action'] ?? 'add');
@@ -601,46 +601,46 @@ final class LibraryController extends Controller
                 UserFavorite::add((int)$user['id'], $id);
             }
         }
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     public function toggleRead(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $id = (int)($request->post['id'] ?? 0);
         $read = (string)($request->post['read'] ?? '1') === '1';
         if ($id > 0) {
             UserContentStatus::setRead((int)$user['id'], $id, $read);
         }
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     public function markSeriesRead(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $seriesId = (int)($request->post['series_id'] ?? 0);
         if ($seriesId <= 0) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         $ser = Series::findById($seriesId);
         if (!$ser) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         $cat = Category::findById((int)($ser['category_id'] ?? 0));
         if (!$cat) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         $isVitalicio = ($user['access_tier'] ?? '') === 'vitalicio';
         $restrictedIds = [4, 5, 6];
@@ -658,7 +658,7 @@ final class LibraryController extends Controller
         }
         $isAdultUser = $this->isAdultUser($user);
         if (!$isStaff && !$isAdultUser && (!empty($cat['adult_only']) || !empty($ser['adult_only']))) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         $action = (string)($request->post['action'] ?? 'read');
         $scope = (string)($request->post['scope'] ?? 'all');
@@ -684,29 +684,29 @@ final class LibraryController extends Controller
                 UserContentStatus::setReadForSeriesAndTypes((int)$user['id'], $seriesId, $types, $applyOrder);
             }
         }
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     public function markSeriesUnread(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $seriesId = (int)($request->post['series_id'] ?? 0);
         if ($seriesId <= 0) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         $ser = Series::findById($seriesId);
         if (!$ser) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         $cat = Category::findById((int)($ser['category_id'] ?? 0));
         if (!$cat) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         $isVitalicio = ($user['access_tier'] ?? '') === 'vitalicio';
         $restrictedIds = [4, 5, 6];
@@ -724,7 +724,7 @@ final class LibraryController extends Controller
         }
         $isAdultUser = $this->isAdultUser($user);
         if (!$isStaff && !$isAdultUser && (!empty($cat['adult_only']) || !empty($ser['adult_only']))) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         $scope = (string)($request->post['scope'] ?? 'all');
         $maxOrder = (int)($request->post['episode_order'] ?? 0);
@@ -745,7 +745,7 @@ final class LibraryController extends Controller
             $applyOrder = ($scope === 'upto' && $maxOrder > 0) ? $maxOrder : null;
             UserContentStatus::setUnreadForSeriesAndTypes((int)$user['id'], $seriesId, $types, $applyOrder);
         }
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     public function updateProgress(\App\Core\Request $request): void
@@ -768,11 +768,11 @@ final class LibraryController extends Controller
     public function toggleSeriesFavorite(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $id = (int)($request->post['id'] ?? 0);
         $action = (string)($request->post['action'] ?? 'add');
@@ -783,63 +783,63 @@ final class LibraryController extends Controller
                 UserSeriesFavorite::add((int)$user['id'], $id);
             }
         }
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     public function updateSeries(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $id = (int)($request->post['id'] ?? 0);
         $name = trim((string)($request->post['name'] ?? ''));
         if ($id <= 0 || $name === '') {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         Series::rename($id, $name);
         Audit::log('series_rename', (int)$user['id'], ['series_id' => $id]);
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     public function updateSeriesAdult(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $id = (int)($request->post['id'] ?? 0);
         $adultOnly = (int)($request->post['adult_only'] ?? 0) > 0 ? 1 : 0;
         if ($id <= 0) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         Series::updateAdultOnly($id, $adultOnly);
         Audit::log('series_adult', (int)$user['id'], ['series_id' => $id, 'adult_only' => $adultOnly]);
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     public function deleteSeries(\App\Core\Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $user = Auth::user();
         if (!$user || !(\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))) {
-            Response::redirect(base_path('/libraries'));
+            Response::redirect(base_path('/lib'));
         }
         $id = (int)($request->post['id'] ?? 0);
         if ($id <= 0) {
-            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+            Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
         }
         $this->deleteSeriesCascade($id);
         Audit::log('series_delete', (int)$user['id'], ['series_id' => $id]);
-        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/libraries'));
+        Response::redirect($request->server['HTTP_REFERER'] ?? base_path('/lib'));
     }
 
     private function resolveLibraryPath(string $relative): ?string

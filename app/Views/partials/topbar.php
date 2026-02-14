@@ -7,20 +7,15 @@ $userAvatar = (string)($currentUser['avatar_path'] ?? '');
 ?>
 <header class="app-topbar">
     <div class="topbar-left">
-        <div>
-            <?php if (!empty($systemLogo)): ?>
-                <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="Logo" class="topbar-logo" data-sidebar-toggle>
-            <?php else: ?>
-                <div class="crumb-sub"><?= $isLoggedIn ? 'Leitura, biblioteca e administracao' : 'Acesse sua conta' ?></div>
-            <?php endif; ?>
-        </div>
+        <?php if ($isLoggedIn): ?>
+            <form class="topbar-search" method="get" action="<?= base_path('/lib/search') ?>" role="search" aria-label="Buscar nas bibliotecas">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar nas bibliotecas" autocomplete="off" aria-label="Campo de busca">
+            </form>
+        <?php endif; ?>
     </div>
     <div class="topbar-right">
         <?php if ($isLoggedIn): ?>
-            <form class="topbar-search" method="get" action="<?= base_path('/libraries/search') ?>">
-                <i class="bi bi-search"></i>
-                <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar nas bibliotecas" autocomplete="off">
-            </form>
             <button class="btn btn-icon theme-toggle-btn" type="button" data-theme-toggle aria-label="Alternar tema">
                 <i class="fa-solid fa-moon"></i>
             </button>

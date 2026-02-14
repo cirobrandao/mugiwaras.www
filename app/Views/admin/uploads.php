@@ -199,8 +199,9 @@ $shortFileName = static function (string $name): string {
                     $categoryNameForSeries = (string)($u['category_name'] ?? '');
                     $seriesId = (int)($u['series_id'] ?? 0);
                     $seriesLabel = $seriesName !== '' ? $seriesName : ($seriesId > 0 ? ('#' . $seriesId) : '—');
-                    $seriesUrl = ($seriesName !== '' && $categoryNameForSeries !== '')
-                        ? base_path('/libraries/' . rawurlencode($categoryNameForSeries) . '/' . rawurlencode($seriesName))
+                    $categorySlugForSeries = $categoryNameForSeries !== '' ? \App\Models\Category::generateSlug($categoryNameForSeries) : '';
+                    $seriesUrl = ($seriesName !== '' && $categorySlugForSeries !== '')
+                        ? base_path('/lib/' . rawurlencode($categorySlugForSeries) . '/' . rawurlencode($seriesName))
                         : '';
                     ?>
                     <div class="d-inline-flex align-items-center gap-1" style="max-width: 190px;">

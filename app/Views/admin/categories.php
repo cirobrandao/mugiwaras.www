@@ -133,75 +133,77 @@ ob_start();
 </div>
 
 
-<div class="table-responsive">
-    <table class="table table-sm">
+<div class="admin-categories-table">
+    <table class="table">
         <thead>
         <tr>
-            <th>Banner</th>
-            <th>Nome</th>
-            <th>Ordem</th>
-            <th>Padrões</th>
-            <th>Tipos</th>
-            <th>Assinantes</th>
-            <th>18+</th>
-            <th>Loja</th>
-            <th class="text-end">Ações</th>
+            <th style="width: 160px;">Banner</th>
+            <th style="width: 180px;">Nome</th>
+            <th style="width: 140px;">Slug</th>
+            <th style="width: 80px;">Ordem</th>
+            <th style="width: 160px;">Tipos</th>
+            <th style="width: 140px;">Configurações</th>
+            <th style="width: 220px;" class="text-end">Ações</th>
         </tr>
         </thead>
         <tbody>
         <?php foreach (($items ?? []) as $c): ?>
             <tr>
-                <td style="width: 180px;">
+                <td>
                     <?php if (!empty($c['banner_path'])): ?>
-                            <img src="<?= base_path('/' . ltrim((string)$c['banner_path'], '/')) ?>" alt="Banner" class="admin-banner-thumb">
-                        <?php else: ?>
-                            <div class="text-muted small">Sem banner</div>
-                        <?php endif; ?>
+                        <img src="<?= base_path('/' . ltrim((string)$c['banner_path'], '/')) ?>" alt="Banner" class="admin-banner-thumb">
+                    <?php else: ?>
+                        <div class="admin-banner-placeholder">Sem banner</div>
+                    <?php endif; ?>
                 </td>
                 <td>
-                    <?= View::e((string)$c['name']) ?>
-                    <?php if (!empty($c['tag_color'])): ?>
-                        <span class="badge ms-2" style="background: <?= View::e((string)$c['tag_color']) ?>;">TAG</span>
-                    <?php endif; ?>
+                    <div class="admin-category-name">
+                        <?= View::e((string)$c['name']) ?>
+                        <?php if (!empty($c['tag_color'])): ?>
+                            <span class="badge" style="background: <?= View::e((string)$c['tag_color']) ?>;">TAG</span>
+                        <?php endif; ?>
+                    </div>
                 </td>
-                <td><?= (int)($c['sort_order'] ?? 0) ?></td>
-                <td class="small text-muted">
-                    <?= (($c['display_orientation'] ?? 'vertical') === 'horizontal') ? 'Grade' : 'Lista' ?> ·
-                    <?= View::e((string)($c['cbz_direction'] ?? 'rtl')) ?> ·
-                    <?= View::e((string)($c['cbz_mode'] ?? 'page')) ?> ·
-                    <?= View::e((string)($c['epub_mode'] ?? 'text')) ?>
-                </td>
-                <td class="small">
-                    <?php if (!empty($c['content_video'])): ?><span class="badge bg-secondary me-1">Vídeo</span><?php endif; ?>
-                    <?php if (!empty($c['content_cbz'])): ?><span class="badge bg-primary me-1">CBZ</span><?php endif; ?>
-                    <?php if (!empty($c['content_pdf'])): ?><span class="badge bg-warning text-dark me-1">PDF</span><?php endif; ?>
-                    <?php if (!empty($c['content_epub'])): ?><span class="badge bg-info text-dark me-1">ePub</span><?php endif; ?>
-                    <?php if (!empty($c['content_download'])): ?><span class="badge bg-dark me-1">Download</span><?php endif; ?>
-                </td>
-                <td class="small">
-                    <?php if (!empty($c['requires_subscription'])): ?>
-                        <span class="badge bg-success">Somente assinantes</span>
+                <td>
+                    <?php if (!empty($c['slug'])): ?>
+                        <span class="admin-category-slug"><?= View::e((string)$c['slug']) ?></span>
                     <?php else: ?>
-                        <span class="text-muted">Livre</span>
+                        <span class="text-muted small">—</span>
                     <?php endif; ?>
                 </td>
-                <td class="small">
-                    <?php if (!empty($c['adult_only'])): ?>
-                        <span class="badge bg-danger">18+</span>
-                    <?php else: ?>
-                        <span class="text-muted">-</span>
-                    <?php endif; ?>
+                <td>
+                    <span class="badge bg-secondary"><?= (int)($c['sort_order'] ?? 0) ?></span>
                 </td>
-                <td class="small">
-                    <?php if (!empty($c['hide_from_store'])): ?>
-                        <span class="badge bg-secondary">Oculto</span>
-                    <?php else: ?>
-                        <span class="text-muted">Exibir</span>
-                    <?php endif; ?>
+                <td>
+                    <div class="admin-badge-group">
+                        <?php if (!empty($c['content_video'])): ?><span class="badge bg-secondary">Vídeo</span><?php endif; ?>
+                        <?php if (!empty($c['content_cbz'])): ?><span class="badge bg-primary">CBZ</span><?php endif; ?>
+                        <?php if (!empty($c['content_pdf'])): ?><span class="badge bg-warning text-dark">PDF</span><?php endif; ?>
+                        <?php if (!empty($c['content_epub'])): ?><span class="badge bg-info text-dark">ePub</span><?php endif; ?>
+                        <?php if (!empty($c['content_download'])): ?><span class="badge bg-dark">DL</span><?php endif; ?>
+                    </div>
                 </td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#editCategory<?= (int)$c['id'] ?>">Editar</button>
-                    <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteCategory<?= (int)$c['id'] ?>">Excluir</button>
+                <td>
+                    <div class="admin-info-cell">
+                        <?php if (!empty($c['requires_subscription'])): ?><span class="badge bg-success mb-1">Assinantes</span><br><?php endif; ?>
+                        <?php if (!empty($c['adult_only'])): ?><span class="badge bg-danger mb-1">18+</span><br><?php endif; ?>
+                        <?php if (!empty($c['hide_from_store'])): ?><span class="badge bg-secondary mb-1">Oculto da loja</span><?php endif; ?>
+                        <div class="text-muted mt-1" style="font-size: 0.7rem;">
+                            <?= (($c['display_orientation'] ?? 'vertical') === 'horizontal') ? 'Grade' : 'Lista' ?> · 
+                            <?= View::e((string)($c['cbz_direction'] ?? 'rtl')) ?> · 
+                            <?= View::e((string)($c['cbz_mode'] ?? 'page')) ?>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="admin-actions">
+                        <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#editCategory<?= (int)$c['id'] ?>">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteCategory<?= (int)$c['id'] ?>">
+                            <i class="bi bi-trash"></i> Excluir
+                        </button>
+                    </div>
                 </td>
             </tr>
             <?php

@@ -10,8 +10,22 @@ final class Payment
 {
     public static function create(array $data): int
     {
-        $stmt = Database::connection()->prepare('INSERT INTO payments (user_id,package_id,status,months,created_at) VALUES (:uid,:pid,:status,:months,NOW())');
-        $stmt->execute($data);
+        $voucherDays = isset($data['voucher_days']) ? (int)$data['voucher_days'] : null;
+        
+        if ($voucherDays !== null && $voucherDays > 0) {
+            $stmt = Database::connection()->prepare('INSERT INTO payments (user_id,package_id,status,months,voucher_days,created_at) VALUES (:uid,:pid,:status,:months,:voucher_days,NOW())');
+            $stmt->execute([
+                'uid' => $data['uid'],
+                'pid' => $data['pid'],
+                'status' => $data['status'],
+                'months' => $data['months'],
+                'voucher_days' => $voucherDays,
+            ]);
+        } else {
+            $stmt = Database::connection()->prepare('INSERT INTO payments (user_id,package_id,status,months,created_at) VALUES (:uid,:pid,:status,:months,NOW())');
+            $stmt->execute($data);
+        }
+        
         return (int)Database::connection()->lastInsertId();
     }
 

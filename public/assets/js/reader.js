@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const zoomInput = document.getElementById('readerZoom');
   const progress = document.getElementById('readerProgress');
   const expandBtn = document.getElementById('readerExpand');
-  const modeSelect = document.getElementById('readerMode');
   const modeSelectMobile = document.getElementById('readerModeMobile');
   const overlay = document.getElementById('readerOverlay');
   const firstBtn = document.getElementById('readerFirst');
@@ -31,9 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const prevChapterUrl = readerEl ? (readerEl.dataset.previousChapterUrl || '') : '';
   const nextChapterUrl = readerEl ? (readerEl.dataset.nextChapterUrl || '') : '';
   const isRtl = readerEl ? (readerEl.dataset.direction || 'rtl') === 'rtl' : false;
-  let scrollMode = modeSelect ? modeSelect.value === 'scroll' : (modeSelectMobile ? modeSelectMobile.value === 'scroll' : false);
+  let scrollMode = modeSelectMobile ? modeSelectMobile.value === 'scroll' : false;
   let wheelPaging = wheelToggle ? wheelToggle.checked : true;
   const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+
+  // Mobile controls elements
+  const mobileControlsPage = document.querySelector('.mobile-controls-page');
+  const mobileControlsScroll = document.querySelector('.mobile-controls-scroll');
 
   // Cookie helpers for storing reader preferences
   const setCookie = (name, value, days = 365) => {
@@ -57,14 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const fit = getCookie('reader_fit_mode');
       if (fit && fitMode) fitMode.value = fit;
       const mode = getCookie('reader_mode');
-      if (mode && modeSelect) modeSelect.value = mode;
       if (mode && modeSelectMobile) modeSelectMobile.value = mode;
       const zoom = getCookie('reader_zoom');
       if (zoom && zoomInput) zoomInput.value = String(Math.min(160, Math.max(60, parseInt(zoom, 10) || 100)));
       const wheel = getCookie('reader_wheel');
       if (wheel !== null && wheelToggle) wheelToggle.checked = (wheel === '1' || wheel === 'true');
       // update derived state
-      scrollMode = modeSelect ? modeSelect.value === 'scroll' : (modeSelectMobile ? modeSelectMobile.value === 'scroll' : scrollMode);
+      scrollMode = modeSelectMobile ? modeSelectMobile.value === 'scroll' : scrollMode;
       wheelPaging = wheelToggle ? wheelToggle.checked : wheelPaging;
     } catch (e) {}
   };
@@ -80,6 +82,20 @@ document.addEventListener('DOMContentLoaded', () => {
       wheelToggle.disabled = false;
       if (wheelWrap) wheelWrap.classList.remove('d-none');
       wheelPaging = wheelToggle.checked;
+    }
+  };
+
+  const syncMobileControls = () => {
+    if (!isMobile) return;
+    // Toggle mobile controls based on scroll mode
+    if (scrollMode) {
+      // Show chapter navigation controls in scroll mode
+      if (mobileControlsPage) mobileControlsPage.style.display = 'none';
+      if (mobileControlsScroll) mobileControlsScroll.style.display = 'block';
+    } else {
+      // Show page navigation controls in page mode
+      if (mobileControlsPage) mobileControlsPage.style.display = 'block';
+      if (mobileControlsScroll) mobileControlsScroll.style.display = 'none';
     }
   };
 
@@ -283,6 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderScrollMode = () => {
     if (!readerEl || !img) return;
     readerEl.classList.toggle('scroll-mode', scrollMode);
+    // Toggle scroll-active class on wrap container for CSS styling
+    if (wrap) wrap.classList.toggle('scroll-active', scrollMode);
     // ensure any page-mode inline styles are cleared when switching to scroll
     try { applyFitMode(); } catch (e) {}
     if (!scrollMode) {
@@ -306,12 +324,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const applyMobileMode = () => {
     if (!isMobile) return;
     document.body.classList.add('reader-mobile');
-    if (modeSelectMobile && modeSelect) {
-      modeSelectMobile.value = modeSelect.value;
-    }
-    scrollMode = modeSelect ? modeSelect.value === 'scroll' : (modeSelectMobile ? modeSelectMobile.value === 'scroll' : false);
+    scrollMode = modeSelectMobile ? modeSelectMobile.value === 'scroll' : false;
     if (wheelWrap) wheelWrap.classList.add('d-none');
     syncWheelToggle();
+    syncMobileControls();
     syncPageGuide();
     applyScrollDefaults();
     renderScrollMode();
@@ -509,16 +525,17 @@ document.addEventListener('DOMContentLoaded', () => {
   syncPageGuide();
   renderChapterControls();
   syncWheelToggle();
+  syncMobileControls();
   if (scrollMode) {
     renderScrollMode();
   }
 
-  if (modeSelect) {
-    modeSelect.addEventListener('change', () => {
-      scrollMode = modeSelect.value === 'scroll';
-      setCookie('reader_mode', modeSelect.value);
-      if (modeSelectMobile) modeSelectMobile.value = modeSelect.value;
+  if (modeSelectMobile) {
+    modeSelectMobile.addEventListener('change', () => {
+      scrollMode = modeSelectMobile.value === 'scroll';
+      setCookie('reader_mode', modeSelectMobile.value);
       syncWheelToggle();
+      syncMobileControls();
       syncPageGuide();
       applyScrollDefaults();
       if (scrollTopBtn) { if (scrollMode) setTimeout(() => { try { updateScrollTopVisibility(); } catch(e){} }, 80); else scrollTopBtn.classList.add('d-none'); }
@@ -532,6 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderChapterControls();
     });
   }
+  
   // scroll-top button behavior (overlay)
   if (scrollTopBtn) {
     scrollTopBtn.addEventListener('click', (e) => {
@@ -540,25 +558,6 @@ document.addEventListener('DOMContentLoaded', () => {
       else window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     setTimeout(() => { try { if (typeof updateScrollTopVisibility === 'function') updateScrollTopVisibility(); } catch (e) {} }, 120);
-  }
-  if (modeSelectMobile) {
-    modeSelectMobile.addEventListener('change', () => {
-      scrollMode = modeSelectMobile.value === 'scroll';
-      setCookie('reader_mode', modeSelectMobile.value);
-      if (modeSelect) modeSelect.value = modeSelectMobile.value;
-      syncWheelToggle();
-      syncPageGuide();
-      applyScrollDefaults();
-      if (scrollTopBtn) { if (scrollMode) setTimeout(() => { try { updateScrollTopVisibility(); } catch(e){} }, 80); else scrollTopBtn.classList.add('d-none'); }
-      if (scrollMode) {
-        renderScrollMode();
-      } else {
-        readerEl.innerHTML = '';
-        readerEl.appendChild(img);
-        update();
-      }
-      renderChapterControls();
-    });
   }
 
   if (wheelToggle) {

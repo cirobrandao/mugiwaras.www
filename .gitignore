@@ -27,6 +27,9 @@
 /sql/dev_*.sql
 /sql/0*.sql
 /z1hd/
+/public/assets/css/*.backup.css
+/public/assets/css/*.old
+*.old
 
 # Environment overrides
 .env.local

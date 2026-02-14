@@ -123,6 +123,7 @@ final class DashboardController extends Controller
         $this->writeTagCss();
 
         echo $this->view('dashboard/index', [
+            'activePage' => 'home',
             'user' => $user,
             'newsBelowMostRead' => $newsBelowMostRead,
             'favoriteSeries' => $favoriteSeries,

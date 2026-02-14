@@ -120,26 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-	const toggles = document.querySelectorAll('[data-sidebar-toggle]');
-	const shell = document.querySelector('.app-shell');
-	const sidebar = document.querySelector('.app-sidebar');
-	if (toggles.length && shell) {
-		toggles.forEach((btn) => {
-			btn.addEventListener('click', () => {
-				shell.classList.toggle('sidebar-open');
-			});
-		});
-	}
-	if (shell && sidebar) {
-		document.addEventListener('pointerdown', (event) => {
-			if (!shell.classList.contains('sidebar-open')) return;
-			const target = event.target;
-			if (sidebar.contains(target)) return;
-			if (target && target.closest('[data-sidebar-toggle]')) return;
-			shell.classList.remove('sidebar-open');
-		}, true);
-	}
-
 	const sync = document.querySelector('[data-last-sync]');
 	if (sync) {
 		const now = new Date();

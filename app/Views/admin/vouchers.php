@@ -2,12 +2,22 @@
 use App\Core\View;
 ob_start();
 ?>
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h4 mb-0">Vouchers</h1>
-    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#voucherCreateModal">Adicionar</button>
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">Vouchers</h1>
+        <p class="text-muted small mb-0">Gerencie códigos promocionais e vouchers de assinatura</p>
+    </div>
+    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#voucherCreateModal">
+        <i class="bi bi-plus-lg me-1"></i> Criar Voucher
+    </button>
 </div>
 
-<hr class="text-success" />
+<?php if (!empty($_GET['migration_needed'])): ?>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Migração Pendente:</strong> Execute o SQL <code>sql/002_payments_voucher_days.sql</code> para corrigir o cálculo de dias dos vouchers.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
 
 <?php if (!empty($_GET['error']) && $_GET['error'] === 'package'): ?>
     <div class="alert alert-warning">Selecione um pacote válido para o voucher.</div>
@@ -17,13 +27,13 @@ ob_start();
 
 <div class="modal fade" id="voucherCreateModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
                 <div>
-                    <h5 class="modal-title mb-1">Adicionar voucher</h5>
-                    <div class="text-muted small">Codigo gerado automaticamente e vencimento sempre as 00:00.</div>
+                    <h5 class="modal-title mb-1"><i class="bi bi-ticket-perforated me-2"></i>Criar Novo Voucher</h5>
+                    <div class="small opacity-90">Código gerado automaticamente • Vencimento às 00:00</div>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
                 <form method="post" action="<?= base_path('/admin/vouchers/save') ?>" class="row g-3" id="voucherForm">
@@ -38,16 +48,19 @@ ob_start();
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Dias (opcional)</label>
+                        <label class="form-label fw-semibold">Dias de Assinatura</label>
                         <input class="form-control" type="number" min="0" step="1" name="days" placeholder="0">
+                        <div class="form-text">Deixe 0 para usar os dias do pacote</div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Limite de usos</label>
-                        <input class="form-control" type="number" min="0" step="1" name="max_uses" placeholder="0">
+                        <label class="form-label fw-semibold">Limite de Usos</label>
+                        <input class="form-control" type="number" min="0" step="1" name="max_uses" placeholder="Ilimitado">
+                        <div class="form-text">0 = uso ilimitado</div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Expira em</label>
+                        <label class="form-label fw-semibold">Data de Expiração</label>
                         <input class="form-control" type="date" name="expires_at">
+                        <div class="form-text">Opcional</div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-check mt-4">
@@ -67,9 +80,22 @@ ob_start();
     </div>
 </div>
 
-<div class="table-responsive">
-    <table class="table table-sm">
-        <thead><tr><th>Código</th><th>Pacote</th><th>Quem criou</th><th>Uso</th><th>Dias adicionados</th><th>Usos</th><th>Expira</th><th>Status</th><th class="text-end">Ações</th></tr></thead>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Código</th>
+                    <th>Pacote</th>
+                    <th>Criador</th>
+                    <th>Usuários</th>
+                    <th class="text-center">Dias</th>
+                    <th class="text-center">Usos</th>
+                    <th>Expira</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
         <tbody>
         <?php $historyModalUserIds = []; ?>
         <?php foreach (($vouchers ?? []) as $v): ?>
@@ -84,9 +110,9 @@ ob_start();
                 }
             ?>
             <tr>
-                <td><?= View::e((string)$v['code']) ?></td>
-                <td><?= View::e((string)($v['package_title'] ?? '')) ?></td>
-                <td><?= View::e((string)($v['creator_username'] ?? '-')) ?></td>
+                <td><code class="text-primary"><?= View::e((string)$v['code']) ?></code></td>
+                <td><span class="badge bg-info text-dark"><?= View::e((string)($v['package_title'] ?? '')) ?></span></td>
+                <td><small class="text-muted"><?= View::e((string)($v['creator_username'] ?? '-')) ?></small></td>
                 <td>
                     <?php if (!empty($v['is_used'])): ?>
                         <?php if (!empty($redeemedUsersDetailed)): ?>
@@ -111,12 +137,12 @@ ob_start();
                         Não usado
                     <?php endif; ?>
                 </td>
-                <td><?= (int)($v['added_days'] ?? 0) ?></td>
-                <td><?= (int)($v['uses'] ?? 0) ?><?= !empty($v['max_uses']) ? ' / ' . (int)$v['max_uses'] : '' ?></td>
-                <td><?= View::e((string)($v['expires_at'] ?? '-')) ?></td>
-                <td><?= !empty($v['is_active']) ? 'Ativo' : 'Inativo' ?></td>
+                <td class="text-center"><strong class="text-success"><?= (int)($v['added_days'] ?? 0) ?></strong></td>
+                <td class="text-center"><?= (int)($v['uses'] ?? 0) ?><?= !empty($v['max_uses']) ? '<span class="text-muted"> / ' . (int)$v['max_uses'] . '</span>' : '' ?></td>
+                <td><small><?= View::e((string)($v['expires_at'] ?? '-')) ?></small></td>
+                <td class="text-center"><?= !empty($v['is_active']) ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>' ?></td>
                 <td class="text-end">
-                    <form method="post" action="<?= base_path('/admin/vouchers/remove') ?>" class="d-inline">
+                    <form method="post" action="<?= base_path('/admin/vouchers/remove') ?>" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o voucher <?= View::e((string)$v['code']) ?>?');">
                         <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                         <input type="hidden" name="code" value="<?= View::e((string)$v['code']) ?>">
                         <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
@@ -124,8 +150,9 @@ ob_start();
                 </td>
             </tr>
         <?php endforeach; ?>
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <?php
@@ -149,16 +176,15 @@ $statusClasses = [
     ?>
     <div class="modal fade" id="userCommerceModal<?= (int)$historyUserId ?>" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Histórico de compras e vouchers</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <div>
+                        <h5 class="modal-title mb-1"><i class="bi bi-clock-history me-2"></i>Histórico de Compras e Vouchers</h5>
+                        <div class="small opacity-90"><?= View::e($username) ?> • ID #<?= (int)$historyUserId ?></div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                        <div><strong><?= View::e($username) ?></strong></div>
-                        <div class="small text-muted">ID #<?= (int)$historyUserId ?></div>
-                    </div>
                     <?php if (empty($history)): ?>
                         <div class="text-muted">Sem compras ou ativações de voucher.</div>
                     <?php else: ?>

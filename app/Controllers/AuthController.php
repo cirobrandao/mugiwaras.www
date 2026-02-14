@@ -58,7 +58,7 @@ final class AuthController extends Controller
         if ($intendedUrl) {
             Response::redirect($intendedUrl);
         }
-        Response::redirect(base_path('/dashboard'));
+        Response::redirect(base_path('/home'));
     }
 
     public function registerForm(): void

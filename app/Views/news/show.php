@@ -2,6 +2,7 @@
 use App\Core\View;
 use App\Core\Markdown;
 use App\Core\Auth;
+$loadDashboardSidebarCss = true;
 ob_start();
 
 if (!function_exists('time_ago')) {
@@ -88,15 +89,158 @@ $alertCookieUserId = (int)($viewer['id'] ?? 0);
 ?>
 
 <style>
+    .news-article {
+        background: var(--surface);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: var(--radius);
+        padding: 0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+    }
+    
+    body.theme-dark .news-article {
+        background: rgba(31, 41, 55, 0.5);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    
+    .news-article-header {
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.06) 0%, rgba(118, 75, 162, 0.06) 100%);
+        border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+        padding: 0.875rem 1.25rem;
+        margin-bottom: 0;
+    }
+    
+    body.theme-dark .news-article-header {
+        border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+    
+    .news-article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+    }
+    
+    .news-article-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.875rem;
+        font-size: 0.75rem;
+        color: var(--ink-60);
+    }
+    
+    .news-article-meta i {
+        font-size: 0.6875rem;
+        margin-right: 0.25rem;
+        color: var(--ink-50);
+    }
+    
+    .news-article-featured {
+        margin: 0;
+        border-radius: 0;
+        overflow: hidden;
+        box-shadow: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    
+    body.theme-dark .news-article-featured {
+        border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+    
+    .news-article-featured img {
+        width: 100%;
+        max-height: 320px;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .news-article-body {
+        font-size: 0.9375rem;
+        line-height: 1.7;
+        color: var(--ink-80);
+        padding: 1.25rem;
+    }
+    
     .news-article-body img {
         display: block;
         max-width: 100%;
         width: auto;
         height: auto;
-        max-height: min(70vh, 560px);
+        max-height: 420px;
         object-fit: contain;
-        border-radius: .5rem;
-        margin: .75rem auto;
+        border-radius: var(--radius);
+        margin: 1.25rem auto;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    
+    body.theme-dark .news-article-body img {
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .news-article-body p {
+        margin-bottom: 1rem;
+    }
+    
+    .news-article-body h2,
+    .news-article-body h3,
+    .news-article-body h4 {
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: var(--ink);
+    }
+    
+    .news-article-body h2 { font-size: 1.375rem; }
+    .news-article-body h3 { font-size: 1.15rem; }
+    .news-article-body h4 { font-size: 1rem; }
+    
+    @media (max-width: 768px) {
+        .news-article-header {
+            padding: 0.75rem 1rem;
+        }
+        
+        .news-article-body {
+            padding: 1rem;
+        }
+        
+        .news-article-title {
+            font-size: 1.25rem;
+        }
+        
+        .news-article-meta {
+            font-size: 0.6875rem;
+            gap: 0.625rem;
+        }
+        
+        .news-article-featured img {
+            max-height: 220px;
+        }
+        
+        .news-article-body {
+            font-size: 0.875rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .news-article-header {
+            padding: 0.625rem 0.875rem;
+        }
+        
+        .news-article-body {
+            padding: 0.875rem;
+        }
+        
+        .news-article-title {
+            font-size: 1.125rem;
+        }
+        
+        .news-article-featured img {
+            max-height: 180px;
+        }
     }
 </style>
 
@@ -138,25 +282,28 @@ $alertCookieUserId = (int)($viewer['id'] ?? 0);
     </script>
 <?php endif; ?>
 
-<div class="row g-3">
+<div class="portal-container">
+    <div class="row g-3">
     <div class="col-12 col-xl-8">
-        <article class="section-card news-publication-detail">
-            <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
-                <h1 class="h4 mb-0"><?= View::e((string)($newsItem['title'] ?? 'Noticia')) ?></h1>
-                <?php if (!empty($newsItem['category_name'])): ?>
-                    <span class="badge bg-secondary"><?= View::e((string)$newsItem['category_name']) ?></span>
-                <?php endif; ?>
-            </div>
+        <article class="news-article">
+            <header class="news-article-header">
+                <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+                    <h1 class="news-article-title mb-0"><?= View::e((string)($newsItem['title'] ?? 'Noticia')) ?></h1>
+                    <?php if (!empty($newsItem['category_name'])): ?>
+                        <span class="badge bg-primary"><?= View::e((string)$newsItem['category_name']) ?></span>
+                    <?php endif; ?>
+                </div>
 
-            <div class="small text-muted d-flex flex-wrap gap-3 mb-3">
-                <span><i class="bi bi-calendar-event me-1"></i><?= View::e($publishedLabel) ?></span>
-                <span><i class="bi bi-clock-history me-1"></i><?= View::e($publishedAgo) ?></span>
-                <span><i class="bi bi-person-circle me-1"></i><?= View::e($author) ?></span>
-            </div>
+                <div class="news-article-meta">
+                    <span><i class="bi bi-calendar-event"></i><?= View::e($publishedLabel) ?></span>
+                    <span><i class="bi bi-clock-history"></i><?= View::e($publishedAgo) ?></span>
+                    <span><i class="bi bi-person-circle"></i><?= View::e($author) ?></span>
+                </div>
+            </header>
 
             <?php if (!empty($newsItem['featured_image_path'])): ?>
-                <div class="mb-3">
-                    <img src="<?= base_path('/' . ltrim((string)$newsItem['featured_image_path'], '/')) ?>" alt="Imagem de destaque" class="img-fluid rounded border w-100" style="max-height: 300px; object-fit: cover;">
+                <div class="news-article-featured">
+                    <img src="<?= base_path('/' . ltrim((string)$newsItem['featured_image_path'], '/')) ?>" alt="<?= View::e((string)($newsItem['title'] ?? 'Imagem de destaque')) ?>">
                 </div>
             <?php endif; ?>
 
@@ -168,190 +315,12 @@ $alertCookieUserId = (int)($viewer['id'] ?? 0);
                 <?php endif; ?>
             </div>
         </article>
-
     </div>
 
-    <div class="col-12 col-xl-4">
-        <section class="section-card">
-            <div class="news-title-box">
-                <div class="section-title news-title">➧ Avisos</div>
-            </div>
-            <div class="alert dashboard-access-alert alert-<?= View::e($accessAlertClass) ?> border-0 d-flex align-items-start gap-2" role="alert">
-                <div class="dashboard-access-icon">
-                    <i class="bi <?= View::e($accessIcon) ?>"></i>
-                </div>
-                <div class="flex-grow-1">
-                    <div class="fw-semibold"><?= View::e($accessAlertText) ?></div>
-                <?php if ($accessAlertShowCountdown && !empty($accessAlertExpires) && !empty($accessAlertCountdown)): ?>
-                    <div class="small mt-1">
-                        <?php if (!empty($activePackageTitle)): ?>
-                            <span class="me-2"><i class="bi bi-box-seam me-1"></i><?= View::e((string)$activePackageTitle) ?></span>
-                        <?php endif; ?>
-                        <span><i class="bi bi-hourglass-split me-1"></i><span id="accessCountdown" data-expires="<?= View::e($accessAlertExpires) ?>"><?= View::e($accessAlertCountdown) ?></span></span>
-                    </div>
-                <?php endif; ?>
-                </div>
-            </div>
-
-            <?php if (!empty($notifications)): ?>
-                <?php
-                $prioMap = [
-                    'high' => 'danger',
-                    'medium' => 'warning',
-                    'low' => 'info',
-                ];
-                $prioIconMap = [
-                    'high' => 'bi-exclamation-octagon-fill',
-                    'medium' => 'bi-exclamation-triangle-fill',
-                    'low' => 'bi-info-circle-fill',
-                ];
-                ?>
-                <?php foreach ($notifications as $notification): ?>
-                    <?php
-                    $priority = (string)($notification['priority'] ?? 'low');
-                    $priorityClass = (string)($prioMap[$priority] ?? 'info');
-                    $priorityIcon = (string)($prioIconMap[$priority] ?? 'bi-info-circle-fill');
-                    $notifId = (int)($notification['id'] ?? 0);
-                    ?>
-                    <div class="alert dashboard-notification-alert alert-<?= View::e($priorityClass) ?> border-0 d-flex align-items-start gap-2 js-dismissible-alert" data-alert-key="notification-<?= $notifId ?>" role="alert">
-                        <div class="dashboard-notification-icon">
-                            <i class="bi <?= View::e($priorityIcon) ?>"></i>
-                        </div>
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="fw-semibold"><?= View::e((string)($notification['title'] ?? 'Notificação')) ?></div>
-                            <div class="small"><?= View::e((string)($notification['body'] ?? '')) ?></div>
-                        </div>
-                        <button type="button" class="btn-close btn-close-sm js-alert-close" aria-label="Fechar alerta"></button>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-            <div class="text-end d-none js-restore-wrapper">
-                <a href="#" class="small text-decoration-none js-restore-notifications">Recuperar notificações fechadas</a>
-            </div>
-        </section>
-
-        <section class="section-card mt-2">
-            <div class="news-title-box">
-                <div class="section-title news-title">➧ Top 5</div>
-            </div>
-            <?php $mostReadTop = array_slice($mostReadSeries ?? [], 0, 5); ?>
-            <?php if (empty($mostReadTop)): ?>
-                <div class="alert alert-secondary mb-0">Ainda nao ha leituras registradas.</div>
-            <?php else: ?>
-                <div class="list-group list-group-flush dashboard-list">
-                    <?php $position = 1; ?>
-                    <?php foreach ($mostReadTop as $mr): ?>
-                        <?php $mrName = (string)($mr['name'] ?? ''); ?>
-                        <?php $mrCategory = (string)($mr['category_name'] ?? ''); ?>
-                        <?php $mrCatId = (int)($mr['category_id'] ?? 0); ?>
-                        <div class="list-group-item dashboard-list-item d-flex align-items-center gap-2 py-2">
-                            <div class="dashboard-rank-badge"><?= $position++ ?></div>
-                            <div class="flex-grow-1 min-w-0">
-                                <a class="dashboard-list-title d-block" href="<?= base_path('/libraries/' . rawurlencode($mrCategory) . '/' . rawurlencode($mrName)) ?>">
-                                    <?= View::e($mrName) ?>
-                                </a>
-                                <div class="d-flex align-items-center gap-2 mt-1">
-                                    <?php
-                                    $badgeClass = $mrCatId > 0 ? 'cat-badge-' . $mrCatId : 'bg-secondary';
-                                    $badgeStyle = '';
-                                    if (!empty($mr['resolved_tag_color'])) {
-                                        $badgeStyle = ' style="background-color: ' . View::e((string)$mr['resolved_tag_color']) . '; color: #fff;"';
-                                    }
-                                    ?>
-                                    <span class="badge dashboard-list-badge <?= $badgeClass ?>"<?= $badgeStyle ?>><?= View::e($mrCategory) ?></span>
-                                    <span class="dashboard-list-meta">
-                                        <i class="bi bi-eye-fill me-1"></i><?= (int)($mr['read_count'] ?? 0) ?>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        </section>
-
-        <section class="section-card mt-2">
-            <div class="news-title-box">
-                <div class="section-title news-title">➧ Ultimos Lancamentos</div>
-            </div>
-            <?php if (empty($recentContent)): ?>
-                <div class="alert alert-secondary mb-0">Sem novos envios.</div>
-            <?php else: ?>
-                <?php $recentTop = array_slice($recentContent ?? [], 0, 5); ?>
-                <div class="list-group list-group-flush dashboard-list">
-                    <?php foreach ($recentTop as $rc): ?>
-                        <?php $rcCategory = (string)($rc['category_name'] ?? ''); ?>
-                        <?php $rcSeries = (string)($rc['series_name'] ?? ''); ?>
-                        <?php $rcTitle = (string)($rc['title'] ?? ''); ?>
-                        <?php $rcSeriesLabel = $rcSeries; ?>
-                        <?php $rcTitleLabel = $rcTitle; ?>
-                        <?php $rcCatId = (int)($rc['category_id'] ?? 0); ?>
-                        <div class="list-group-item dashboard-list-item d-flex align-items-center gap-2 py-2">
-                            <div class="dashboard-recent-icon">
-                                <i class="bi bi-stars"></i>
-                            </div>
-                            <div class="flex-grow-1 min-w-0">
-                                <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
-                                    <a class="dashboard-list-title d-block" href="<?= base_path('/libraries/' . rawurlencode($rcCategory) . '/' . rawurlencode($rcSeries)) ?>">
-                                        <?= View::e($rcSeriesLabel) ?>
-                                    </a>
-                                <?php else: ?>
-                                    <span class="dashboard-list-title d-block"><?= View::e($rcTitleLabel) ?></span>
-                                <?php endif; ?>
-                                <div class="d-flex align-items-center gap-2 mt-1">
-                                    <?php if ($rcCategory !== ''): ?>
-                                        <?php
-                                        $rcBadgeClass = $rcCatId > 0 ? 'cat-badge-' . $rcCatId : 'bg-secondary';
-                                        $rcBadgeStyle = '';
-                                        if (!empty($rc['category_tag_color'])) {
-                                            $rcBadgeStyle = ' style="background-color: ' . View::e((string)$rc['category_tag_color']) . '; color: #fff;"';
-                                        }
-                                        ?>
-                                        <span class="badge dashboard-list-badge <?= $rcBadgeClass ?>"<?= $rcBadgeStyle ?>><?= View::e($rcCategory) ?></span>
-                                    <?php endif; ?>
-                                    <?php if (!empty($rc['created_at'])): ?>
-                                        <span class="dashboard-list-meta">
-                                            <i class="bi bi-clock me-1"></i><?= View::e(time_ago((string)$rc['created_at'])) ?>
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        </section>
-
-        <section class="section-card mt-2">
-            <div class="news-title-box">
-                <div class="section-title news-title">➧ Publicações recentes</div>
-            </div>
-            <?php if (empty($recentNews)): ?>
-                <div class="alert alert-secondary mb-0">Sem noticias recentes.</div>
-            <?php else: ?>
-                <div class="list-group list-group-flush dashboard-list">
-                    <?php foreach ($recentNews as $rn): ?>
-                        <div class="list-group-item dashboard-list-item d-flex align-items-center gap-2 py-2">
-                            <div class="dashboard-news-icon">
-                                <i class="bi bi-newspaper"></i>
-                            </div>
-                            <div class="flex-grow-1 min-w-0">
-                                <a class="dashboard-list-title d-block" href="<?= base_path('/news/' . (int)$rn['id']) ?>">
-                                    <?= View::e((string)($rn['title'] ?? '')) ?>
-                                </a>
-                                <?php $rnDate = (string)($rn['published_at'] ?? $rn['created_at'] ?? ''); ?>
-                                <?php if ($rnDate !== ''): ?>
-                                    <div class="dashboard-list-meta mt-1">
-                                        <i class="bi bi-clock me-1"></i><?= View::e(time_ago($rnDate)) ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        </section>
+    <div class="col-12 col-xl-4 sidebar">
+        <?php require __DIR__ . '/../partials/dashboard_sidebar_content.php'; ?>
     </div>
+</div>
 </div>
 <script>
     (function () {

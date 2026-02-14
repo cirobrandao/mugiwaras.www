@@ -60,7 +60,14 @@
     };
     
     const applyTheme = (theme) => {
+        // Apply to both systems for full compatibility
         document.documentElement.setAttribute('data-theme', theme);
+        
+        if (theme === 'dark') {
+            document.body.classList.add('theme-dark');
+        } else {
+            document.body.classList.remove('theme-dark');
+        }
         
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {

@@ -40,6 +40,37 @@ final class Category
         return $row ?: null;
     }
 
+    public static function findBySlug(string $slug): ?array
+    {
+        $stmt = Database::connection()->prepare('SELECT * FROM categories WHERE slug = :s');
+        $stmt->execute(['s' => $slug]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public static function generateSlug(string $name): string
+    {
+        // Remove acentos e caracteres especiais
+        $slug = mb_strtolower($name, 'UTF-8');
+        $replacements = [
+            'á' => 'a', 'à' => 'a', 'ã' => 'a', 'â' => 'a', 'ä' => 'a',
+            'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
+            'í' => 'i', 'ì' => 'i', 'î' => 'i', 'ï' => 'i',
+            'ó' => 'o', 'ò' => 'o', 'õ' => 'o', 'ô' => 'o', 'ö' => 'o',
+            'ú' => 'u', 'ù' => 'u', 'û' => 'u', 'ü' => 'u',
+            'ç' => 'c', 'ñ' => 'n',
+            '\'' => '', '"' => '', ' ' => '-'
+        ];
+        $slug = strtr($slug, $replacements);
+        // Remove tudo que não é letra, número ou hífen
+        $slug = preg_replace('/[^a-z0-9-]/', '', $slug);
+        // Remove hífens duplicados
+        $slug = preg_replace('/-+/', '-', $slug);
+        // Remove hífens do início e fim
+        $slug = trim($slug, '-');
+        return $slug;
+    }
+
     public static function create(
         string $name,
         ?string $bannerPath = null,

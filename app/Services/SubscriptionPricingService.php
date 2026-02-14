@@ -132,13 +132,21 @@ final class SubscriptionPricingService
             }
         }
 
-        $months = (int)($payment['months'] ?? 1);
-        $months = max(1, $months);
-        $cycleDays = (int)($package['subscription_days'] ?? 0);
-        if ($cycleDays <= 0) {
-            $cycleDays = 30;
+        $voucherDays = (int)($payment['voucher_days'] ?? 0);
+        $extensionDays = 0;
+        
+        if ($voucherDays > 0) {
+            $extensionDays = $voucherDays;
+        } else {
+            $months = (int)($payment['months'] ?? 1);
+            $months = max(1, $months);
+            $cycleDays = (int)($package['subscription_days'] ?? 0);
+            if ($cycleDays <= 0) {
+                $cycleDays = 30;
+            }
+            $extensionDays = $cycleDays * $months;
         }
-        $extensionDays = $cycleDays * $months;
+        
         $newExpiresAt = $base->modify('+' . $extensionDays . ' days');
 
         User::setSubscriptionExpiresAt($userId, $newExpiresAt->format('Y-m-d H:i:s'));

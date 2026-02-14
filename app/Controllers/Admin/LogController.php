@@ -16,7 +16,7 @@ final class LogController extends Controller
     {
         $currentUser = Auth::user();
         if (!$currentUser || !Auth::isAdmin($currentUser)) {
-            Response::redirect(base_path('/dashboard'));
+            Response::redirect(base_path('/home'));
         }
 
         $query = trim((string)($request->get['q'] ?? ''));

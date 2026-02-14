@@ -10,7 +10,7 @@ $message = $message ?? 'Pagina nao encontrada.';
 		<p class="text-muted mb-3"><?= View::e($message) ?></p>
 		<div class="d-flex flex-wrap gap-2">
 			<a class="btn btn-primary" href="<?= base_path('/') ?>">Voltar ao inicio</a>
-			<a class="btn btn-outline-secondary" href="<?= base_path('/dashboard') ?>">Ir para o dashboard</a>
+			<a class="btn btn-outline-secondary" href="<?= base_path('/home') ?>">Ir para a página inicial</a>
 		</div>
 	</div>
 </div>

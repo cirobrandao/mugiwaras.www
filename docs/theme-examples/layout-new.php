@@ -43,7 +43,7 @@ include __DIR__ . '/partials/header.php';
         
         <?php include __DIR__ . '/partials/topbar.php'; ?>
         
-        <div class="app-content">
+        <div>
             <?= $content ?>
         </div>
         

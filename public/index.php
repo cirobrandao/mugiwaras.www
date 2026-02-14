@@ -130,7 +130,7 @@ $router->post('/support/{id}/reply', [new App\Controllers\SupportController(), '
 
 $router->get('/avatar-gallery', [new App\Controllers\AvatarGalleryController(), 'index']);
 
-$router->get('/dashboard', [new App\Controllers\DashboardController(), 'index'], [App\Core\Auth::requireRole(['user','admin','equipe','superadmin']), App\Core\Middleware::requireActiveAccess()]);
+$router->get('/home', [new App\Controllers\DashboardController(), 'index'], [App\Core\Auth::requireRole(['user','admin','equipe','superadmin']), App\Core\Middleware::requireActiveAccess()]);
 
 $router->get('/news/{id}', [new App\Controllers\NewsController(), 'show'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 
@@ -142,32 +142,32 @@ $router->get('/loja/history', [new App\Controllers\PaymentController(), 'history
 $router->post('/loja/proof', [new App\Controllers\PaymentController(), 'uploadProof']);
 
 
-$router->get('/libraries', [new App\Controllers\LibraryController(), 'index'], [App\Core\Middleware::requireActiveAccess()]);
-$router->get('/libraries/search', [new App\Controllers\LibraryController(), 'search'], [App\Core\Middleware::requireActiveAccess()]);
-$router->get('/libraries/{category}', [new App\Controllers\LibraryController(), 'category'], [App\Core\Middleware::requireActiveAccess()]);
-$router->get('/libraries/{category}/{series}', [new App\Controllers\LibraryController(), 'series'], [App\Core\Middleware::requireActiveAccess()]);
+$router->get('/lib', [new App\Controllers\LibraryController(), 'index'], [App\Core\Middleware::requireActiveAccess()]);
+$router->get('/lib/search', [new App\Controllers\LibraryController(), 'search'], [App\Core\Middleware::requireActiveAccess()]);
+$router->get('/lib/{category}', [new App\Controllers\LibraryController(), 'category'], [App\Core\Middleware::requireActiveAccess()]);
+$router->get('/lib/{category}/{series}', [new App\Controllers\LibraryController(), 'series'], [App\Core\Middleware::requireActiveAccess()]);
 
 $router->get('/upload', [new App\Controllers\UploadController(), 'form'], [App\Core\Auth::requireUploadAccess(), App\Core\Middleware::requireActiveAccess()]);
 $router->post('/upload', [new App\Controllers\UploadController(), 'submit'], [App\Core\Auth::requireUploadAccess(), App\Core\Middleware::requireActiveAccess()]);
 $router->post('/upload/process-pending', [new App\Controllers\UploadController(), 'processPending'], [App\Core\Auth::requireUploadAccess(), App\Core\Middleware::requireActiveAccess()]);
 
 
-$router->get('/libraries', [new App\Controllers\LibraryController(), 'index'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->get('/libraries/{category}', [new App\Controllers\LibraryController(), 'category'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->get('/libraries/{category}/{series}', [new App\Controllers\LibraryController(), 'series'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/content/update', [new App\Controllers\LibraryController(), 'updateContent'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/content/order', [new App\Controllers\LibraryController(), 'updateContentOrder'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/content/delete', [new App\Controllers\LibraryController(), 'deleteContent'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/favorite', [new App\Controllers\LibraryController(), 'toggleFavorite'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/read', [new App\Controllers\LibraryController(), 'toggleRead'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/series/read', [new App\Controllers\LibraryController(), 'markSeriesRead'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/series/unread', [new App\Controllers\LibraryController(), 'markSeriesUnread'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/progress', [new App\Controllers\LibraryController(), 'updateProgress'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/series/favorite', [new App\Controllers\LibraryController(), 'toggleSeriesFavorite'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/series/update', [new App\Controllers\LibraryController(), 'updateSeries'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/series/pin', [new App\Controllers\LibraryController(), 'pinSeries'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/series/adult', [new App\Controllers\LibraryController(), 'updateSeriesAdult'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
-$router->post('/libraries/series/delete', [new App\Controllers\LibraryController(), 'deleteSeries'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->get('/lib', [new App\Controllers\LibraryController(), 'index'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->get('/lib/{category}', [new App\Controllers\LibraryController(), 'category'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->get('/lib/{category}/{series}', [new App\Controllers\LibraryController(), 'series'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/content/update', [new App\Controllers\LibraryController(), 'updateContent'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/content/order', [new App\Controllers\LibraryController(), 'updateContentOrder'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/content/delete', [new App\Controllers\LibraryController(), 'deleteContent'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/favorite', [new App\Controllers\LibraryController(), 'toggleFavorite'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/read', [new App\Controllers\LibraryController(), 'toggleRead'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/series/read', [new App\Controllers\LibraryController(), 'markSeriesRead'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/series/unread', [new App\Controllers\LibraryController(), 'markSeriesUnread'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/progress', [new App\Controllers\LibraryController(), 'updateProgress'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/series/favorite', [new App\Controllers\LibraryController(), 'toggleSeriesFavorite'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/series/update', [new App\Controllers\LibraryController(), 'updateSeries'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/series/pin', [new App\Controllers\LibraryController(), 'pinSeries'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/series/adult', [new App\Controllers\LibraryController(), 'updateSeriesAdult'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
+$router->post('/lib/series/delete', [new App\Controllers\LibraryController(), 'deleteSeries'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 
 $router->get('/reader/{id}', [new App\Controllers\ReaderController(), 'open'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);
 $router->get('/epub/{id}', [new App\Controllers\ReaderController(), 'epubOpen'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);

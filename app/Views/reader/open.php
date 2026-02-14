@@ -1,6 +1,7 @@
 <?php
 use App\Core\View;
 ob_start();
+$categorySlug = !empty($content['category_name']) ? \App\Models\Category::generateSlug((string)$content['category_name']) : '';
 ?>
 <?php if (!empty($error)): ?>
 	<div class="alert alert-warning d-flex flex-column gap-2">
@@ -13,7 +14,7 @@ ob_start();
 		<div class="reader-header-container">
 			<div class="reader-header-left">
 				<?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
-					<a class="btn btn-sm btn-outline-secondary reader-back-btn" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>">
+				<a class="btn btn-sm btn-outline-secondary reader-back-btn" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode((string)$content['series_name'])) ?>">
 						<i class="bi bi-arrow-left"></i>
 						<span class="reader-desktop-only">Voltar</span>
 					</a>
@@ -52,10 +53,7 @@ ob_start();
 						<option value="height" selected>Altura</option>
 						<option value="original">Original</option>
 					</select>
-					<select class="form-select form-select-sm" id="readerMode">
-						<option value="page" <?= (($cbzMode ?? 'page') === 'page') ? 'selected' : '' ?>>Página</option>
-						<option value="scroll" <?= (($cbzMode ?? '') === 'scroll') ? 'selected' : '' ?>>Scroll</option>
-					</select>
+
 					<div class="toolbar-zoom">
 						<i class="bi bi-zoom-in"></i>
 						<input type="range" id="readerZoom" min="60" max="160" step="5" value="100">
@@ -69,7 +67,7 @@ ob_start();
 					<button class="btn btn-sm btn-outline-secondary" id="readerExpand" title="Tela cheia"><i class="bi bi-arrows-fullscreen"></i></button>
 					<?php $favBtnClass = !empty($isFavorite) ? 'btn-warning' : 'btn-outline-warning'; ?>
 					<?php $favIconClass = !empty($isFavorite) ? 'bi-star-fill' : 'bi-star'; ?>
-					<form method="post" action="<?= base_path('/libraries/favorite') ?>" class="m-0">
+			<form method="post" action="<?= base_path('/lib/favorite') ?>" class="m-0">
 						<input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
 						<input type="hidden" name="id" value="<?= (int)($content['id'] ?? 0) ?>">
 						<input type="hidden" name="action" value="<?= !empty($isFavorite) ? 'remove' : 'add' ?>">
@@ -102,8 +100,9 @@ ob_start();
 				<div class="reader-progress-bar" id="readerProgress" style="width: 0%"></div>
 			</div>
 		</div>
-		<!-- Mobile Controls (simplified) -->
-		<div class="reader-mobile-controls">
+		
+		<!-- Mobile Controls - Page Mode -->
+		<div class="reader-mobile-controls mobile-controls-page">
 			<div class="mobile-controls-container">
 				<button class="btn btn-sm btn-secondary" id="prevPageMobile"><i class="bi bi-chevron-left"></i></button>
 				<div class="mobile-page-info">
@@ -113,6 +112,31 @@ ob_start();
 			</div>
 			<div class="reader-progress-modern mobile-progress">
 				<div class="reader-progress-bar" id="readerProgressMobile" style="width: 0%"></div>
+			</div>
+		</div>
+		
+		<!-- Mobile Controls - Scroll Mode (Chapter Navigation) -->
+		<div class="reader-mobile-controls mobile-controls-scroll" style="display: none;">
+			<div class="mobile-controls-container mobile-controls-chapters">
+				<?php if (!empty($previousChapterUrl)): ?>
+					<a class="btn btn-secondary mobile-chapter-btn" href="<?= $previousChapterUrl ?>">
+						<i class="bi bi-skip-backward-fill me-2"></i> Cap. Anterior
+					</a>
+				<?php else: ?>
+					<button class="btn btn-secondary mobile-chapter-btn" disabled>
+						<i class="bi bi-skip-backward-fill me-2"></i> Cap. Anterior
+					</button>
+				<?php endif; ?>
+				
+				<?php if (!empty($nextChapterUrl)): ?>
+					<a class="btn btn-secondary mobile-chapter-btn" href="<?= $nextChapterUrl ?>">
+						Próximo Cap. <i class="bi bi-skip-forward-fill ms-2"></i>
+					</a>
+				<?php else: ?>
+					<button class="btn btn-secondary mobile-chapter-btn" disabled>
+						Próximo Cap. <i class="bi bi-skip-forward-fill ms-2"></i>
+					</button>
+				<?php endif; ?>
 			</div>
 		</div>
 		
@@ -148,9 +172,9 @@ ob_start();
 				<button class="btn btn-sm btn-primary" disabled><i class="bi bi-skip-forward-fill me-1"></i>Próximo capítulo</button>
 			<?php endif; ?>
 			<?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
-				<a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>"><i class="bi bi-list-ul me-1"></i>Capítulos</a>
+				<a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode((string)$content['series_name'])) ?>"><i class="bi bi-list-ul me-1"></i>Capítulos</a>
 			<?php endif; ?>
-			<a class="btn btn-sm btn-outline-primary" href="<?= base_path('/libraries') ?>"><i class="bi bi-book me-1"></i>Biblioteca</a>
+		<a class="btn btn-sm btn-outline-primary" href="<?= base_path('/lib') ?>"><i class="bi bi-book me-1"></i>Biblioteca</a>
 		</div>
 	</div>
 	

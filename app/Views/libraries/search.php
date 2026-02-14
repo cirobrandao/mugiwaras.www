@@ -24,29 +24,33 @@ $resultCount = is_array($seriesResults ?? null) ? count($seriesResults) : 0;
         <?php else: ?>
             <div class="list-group list-group-flush d-none d-md-block">
                 <?php foreach ($seriesResults as $s): ?>
-                    <?php $categoryName = (string)($s['category_name'] ?? ''); ?>
                     <?php $seriesName = (string)($s['name'] ?? ''); ?>
-                    <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="<?= base_path('/libraries/' . rawurlencode($categoryName) . '/' . rawurlencode($seriesName)) ?>">
+                    <?php $categoryName = (string)($s['category_name'] ?? ''); ?>
+                    <?php $categorySlug = !empty($s['category_slug']) ? (string)$s['category_slug'] : \App\Models\Category::generateSlug($categoryName); ?>
+                    <?php $chapterCount = (int)($s['chapter_count'] ?? 0); ?>
+                    <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode($seriesName)) ?>">
                         <div class="d-flex flex-column">
                             <span class="fw-semibold"><?= View::e($seriesName) ?></span>
                             <span class="small text-muted"><?= View::e($categoryName) ?></span>
                         </div>
-                        <span class="badge bg-secondary"><?= (int)($s['chapter_count'] ?? 0) ?></span>
+                        <span class="badge bg-secondary"><?= $chapterCount ?></span>
                     </a>
                 <?php endforeach; ?>
             </div>
             <div class="d-md-none">
                 <?php foreach ($seriesResults as $s): ?>
-                    <?php $categoryName = (string)($s['category_name'] ?? ''); ?>
                     <?php $seriesName = (string)($s['name'] ?? ''); ?>
-                    <a class="card mb-2 library-list-card text-decoration-none" href="<?= base_path('/libraries/' . rawurlencode($categoryName) . '/' . rawurlencode($seriesName)) ?>">
+                    <?php $categoryName = (string)($s['category_name'] ?? ''); ?>
+                    <?php $categorySlug = !empty($s['category_slug']) ? (string)$s['category_slug'] : \App\Models\Category::generateSlug($categoryName); ?>
+                    <?php $chapterCount = (int)($s['chapter_count'] ?? 0); ?>
+                    <a class="card mb-2 library-list-card text-decoration-none" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode($seriesName)) ?>">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start gap-2 library-card-row">
                                 <div>
                                     <div class="fw-semibold text-dark"><?= View::e($seriesName) ?></div>
                                     <div class="small text-muted"><?= View::e($categoryName) ?></div>
                                 </div>
-                                <span class="badge bg-secondary"><?= (int)($s['chapter_count'] ?? 0) ?></span>
+                                <span class="badge bg-secondary"><?= $chapterCount ?></span>
                             </div>
                         </div>
                     </a>

@@ -2,62 +2,155 @@
 use App\Core\View;
 $metaRobots = 'noindex, nofollow, noarchive, nosnippet';
 $hideHeader = true;
+$authHeroTitle = 'Bem-vindo de volta!';
+$authHeroText = 'Acesse sua conta para continuar lendo seus mangás favoritos e acompanhar seu progresso.';
+$authHeroFeatures = [
+    [
+        'icon' => 'bi bi-book',
+        'title' => 'Biblioteca completa',
+        'text' => 'Acesso a centenas de títulos'
+    ],
+    [
+        'icon' => 'bi bi-bookmark-check',
+        'title' => 'Progresso sincronizado',
+        'text' => 'Continue de onde parou'
+    ],
+    [
+        'icon' => 'bi bi-star',
+        'title' => 'Seus favoritos',
+        'text' => 'Organize e acompanhe suas séries'
+    ]
+];
 ob_start();
 ?>
-<div class="row">
-    <div class="col-12">
-        <h1 class="h4 mb-3">Entrar</h1>
-        <?php if (!empty($_GET['registered'])): ?>
-            <div class="alert alert-success">Cadastro realizado com sucesso. Faça login.</div>
-        <?php endif; ?>
-        <?php if (!empty($_GET['reset'])): ?>
-            <div class="alert alert-success">Senha atualizada. Faça login.</div>
-        <?php endif; ?>
-        <?php if (!empty($error)): ?>
-            <div class="alert alert-danger"><?= View::e($error) ?></div>
-        <?php endif; ?>
-        <form method="post" action="<?= base_path('/login') ?>">
-            <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-            <div class="mb-3">
-                <label class="form-label" for="login-username">Usuario ou email</label>
-                <input id="login-username" type="text" name="username" class="form-control" required autocapitalize="none" oninput="this.value = this.value.toLowerCase()">
-                <div class="form-text">Voce pode entrar com usuario ou email.</div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label" for="login-password">Senha</label>
-                <div class="input-group">
-                    <input id="login-password" type="password" name="password" class="form-control" required>
-                    <button type="button" class="btn btn-outline-secondary" id="togglePassword" aria-label="Mostrar senha" title="Mostrar senha">👁️</button>
-                </div>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="remember" id="remember">
-                    <label class="form-check-label" for="remember">Lembrar de mim</label>
-                </div>
-                <a class="small" href="<?= base_path('/recover') ?>">Esqueceu a senha?</a>
-            </div>
-            <button class="btn btn-primary w-100" type="submit">Entrar</button>
-        </form>
+<div class="auth-header">
+    <h1>Entrar</h1>
+    <p>Acesse sua conta</p>
+</div>
+
+<?php if (!empty($_GET['registered'])): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        Cadastro realizado! Faça login.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<?php if (!empty($_GET['reset'])): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        Senha atualizada! Faça login.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<?php if (!empty($error)): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <?= View::e($error) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<form method="post" action="<?= base_path('/login') ?>" autocomplete="on">
+    <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
+    
+    <div class="mb-3">
+        <label class="form-label" for="login-username">
+            Usuário ou e-mail
+        </label>
+        <div class="input-group">
+            <span class="input-group-text">
+                <i class="bi bi-person"></i>
+            </span>
+            <input 
+                id="login-username" 
+                type="text" 
+                name="username" 
+                class="form-control" 
+                placeholder="Digite seu usuário ou e-mail"
+                required 
+                autocomplete="username"
+                autocapitalize="none" 
+                oninput="this.value = this.value.toLowerCase()"
+            >
+        </div>
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label d-flex justify-content-between align-items-center" for="login-password">
+            <span>Senha</span>
+            <a href="<?= base_path('/recover') ?>" class="text-decoration-none small">
+                Esqueceu a senha?
+            </a>
+        </label>
+        <div class="input-group">
+            <span class="input-group-text">
+                <i class="bi bi-lock"></i>
+            </span>
+            <input 
+                id="login-password" 
+                type="password" 
+                name="password" 
+                class="form-control" 
+                placeholder="Digite sua senha"
+                required
+                autocomplete="current-password"
+            >
+            <button 
+                type="button" 
+                class="btn btn-outline-secondary password-toggle" 
+                id="togglePassword" 
+                aria-label="Mostrar senha"
+                title="Mostrar senha"
+            >
+                <i class="bi bi-eye"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="mb-4">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="remember" id="remember">
+            <label class="form-check-label" for="remember">
+                Lembrar de mim neste dispositivo
+            </label>
+        </div>
+    </div>
+    
+    <button class="btn btn-primary w-100 mb-3" type="submit">
+        <i class="bi bi-box-arrow-in-right me-2"></i>
+        Entrar
+    </button>
+</form>
+
+<div class="auth-footer">
+    <span>Ainda não tem uma conta?</span>
+    <a href="<?= base_path('/register') ?>">Cadastre-se gratuitamente</a>
+    <div class="mt-2">
+        <a href="<?= base_path('/support') ?>" class="text-muted">
+            <i class="bi bi-headset me-1"></i>
+            Precisa de ajuda?
+        </a>
     </div>
 </div>
-<?php
-$content = ob_get_clean();
-?>
+
 <script>
 document.addEventListener('DOMContentLoaded', function(){
-    var pwd = document.getElementById('login-password');
-    var btn = document.getElementById('togglePassword');
+    const pwd = document.getElementById('login-password');
+    const btn = document.getElementById('togglePassword');
     if (!pwd || !btn) return;
+    
     btn.addEventListener('click', function(){
+        const icon = btn.querySelector('i');
         if (pwd.type === 'password'){
             pwd.type = 'text';
-            btn.textContent = '🙈';
+            icon.className = 'bi bi-eye-slash';
             btn.setAttribute('aria-label','Ocultar senha');
             btn.title = 'Ocultar senha';
         } else {
             pwd.type = 'password';
-            btn.textContent = '👁️';
+            icon.className = 'bi bi-eye';
             btn.setAttribute('aria-label','Mostrar senha');
             btn.title = 'Mostrar senha';
         }
@@ -65,4 +158,5 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 <?php
+$content = ob_get_clean();
 require __DIR__ . '/../layout.php';

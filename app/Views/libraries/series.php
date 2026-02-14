@@ -4,7 +4,8 @@ ob_start();
 $itemCount = is_array($items ?? null) ? count($items) : 0;
 ?>
 <?php
-$seriesBaseUrl = base_path('/libraries/' . rawurlencode((string)($category['name'] ?? '')) . '/' . rawurlencode((string)($series['name'] ?? '')));
+$categorySlug = !empty($category['slug']) ? (string)$category['slug'] : \App\Models\Category::generateSlug((string)($category['name'] ?? ''));
+$seriesBaseUrl = base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode((string)($series['name'] ?? '')));
 $baseQuery = [];
 if (!empty($format)) $baseQuery[] = 'format=' . urlencode((string)$format);
 if (!empty($iosTest)) $baseQuery[] = 'ios_test=1';
@@ -44,11 +45,12 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
     <div class="alert alert-secondary">Nenhum arquivo encontrado.</div>
 <?php else: ?>
     <?php $hasPdf = false; ?>
-    <section class="section-card app-card">
-        <div class="news-title-box d-flex align-items-center justify-content-between gap-2">
-            <nav aria-label="breadcrumb" class="breadcrumb-inline border rounded px-2 py-1 bg-white">
+<div class="portal-container">
+    <section class="series-content">
+        <div class="series-header">
+            <nav aria-label="breadcrumb" class="series-breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="<?= base_path('/libraries/' . rawurlencode((string)($category['name'] ?? ''))) ?>"><?= View::e((string)($category['name'] ?? '')) ?></a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_path('/lib/' . rawurlencode($categorySlug)) ?>"><?= View::e((string)($category['name'] ?? '')) ?></a></li>
                     <li class="breadcrumb-item active" aria-current="page">
                         <?= View::e((string)($series['name'] ?? '')) ?>
                         <?php if (!empty($series['adult_only'])): ?>
@@ -57,15 +59,17 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                     </li>
                 </ol>
             </nav>
-            <div class="d-flex align-items-center gap-2">
+            <div class="series-actions">
                 <?php $bulkLabel = 'Acoes de leitura'; ?>
                 <?php $bulkIcon = 'bi-eye'; ?>
                 <?php $bulkModalId = 'bulk-read-modal-' . (int)($series['id'] ?? 0); ?>
                 <button class="btn btn-sm btn-outline-secondary" type="button" title="<?= View::e($bulkLabel) ?>" aria-label="<?= View::e($bulkLabel) ?>" data-bs-toggle="modal" data-bs-target="#<?= $bulkModalId ?>">
                     <i class="bi <?= $bulkIcon ?>"></i>
+                    <span class="d-none d-md-inline ms-1">Ações</span>
                 </button>
-                <a class="btn btn-sm btn-outline-secondary border" href="<?= $orderUrl ?>" title="<?= View::e($orderBtnLabel) ?>" aria-label="<?= View::e($orderBtnLabel) ?>">
+                <a class="btn btn-sm btn-outline-secondary" href="<?= $orderUrl ?>" title="<?= View::e($orderBtnLabel) ?>" aria-label="<?= View::e($orderBtnLabel) ?>">
                     <i class="bi bi-sort-numeric-down"></i>
+                    <span class="d-none d-md-inline ms-1"><?= View::e($orderLabel) ?></span>
                 </a>
             </div>
         </div>
@@ -76,7 +80,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                         <h5 class="modal-title">Acoes de leitura</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                     </div>
-                    <form method="post" action="<?= base_path('/libraries/series/read') ?>">
+                    <form method="post" action="<?= base_path('/lib/series/read') ?>">
                         <div class="modal-body">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                             <input type="hidden" name="series_id" value="<?= (int)($series['id'] ?? 0) ?>">
@@ -110,7 +114,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                 </div>
             </div>
         </div>
-        <div class="list-group list-group-flush d-none d-md-block">
+        <div class="series-list">
         <?php foreach ($items as $item): ?>
             <?php $itemPath = (string)($item['cbz_path'] ?? ''); ?>
             <?php $itemExt = strtolower(pathinfo($itemPath, PATHINFO_EXTENSION)); ?>
@@ -121,37 +125,26 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php if ($isPdf) { $hasPdf = true; } ?>
             <?php $editModalId = 'edit-content-' . (int)$item['id']; ?>
             <?php $deleteModalId = 'delete-content-' . (int)$item['id']; ?>
-            <div class="list-group-item library-desktop-item py-3" data-series-title="<?= View::e((string)($series['name'] ?? '')) ?>" data-item-title="<?= View::e((string)($item['title'] ?? '')) ?>">
-                <div class="d-flex justify-content-between align-items-center gap-3">
-                    <div class="d-flex align-items-center gap-3 flex-grow-1 min-w-0">
-                        <form method="post" action="<?= base_path('/libraries/favorite') ?>" class="flex-shrink-0">
-                            <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                            <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
-                            <?php $isFav = !empty($favorites) && in_array((int)$item['id'], $favorites, true); ?>
-                            <input type="hidden" name="action" value="<?= $isFav ? 'remove' : 'add' ?>">
-                            <button class="btn btn-sm <?= $isFav ? 'btn-warning' : 'btn-outline-warning' ?>" type="submit" aria-label="<?= $isFav ? 'Remover favorito' : 'Favoritar' ?>">
-                                <?= $isFav ? '★' : '☆' ?>
-                            </button>
-                        </form>
-                        <div class="flex-grow-1 min-w-0">
-                            <div>
-                                <a class="library-desktop-title text-decoration-none fw-semibold" href="<?= $isPdf ? base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf ? 'data-open-pdf' : '' ?> <?= $isPdf ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?> <?= $isPdf ? 'data-reader-url="' . base_path('/reader/pdf/' . (int)$item['id']) . '"' : '' ?>>
-                                    <?= View::e(str_replace('_', ' ', (string)$item['title'])) ?>
-                                </a>
-                                <div class="d-inline-flex flex-wrap gap-1 align-items-center ms-2">
-                                    <?php if ($isPdf): ?>
-                                        <span class="badge bg-warning text-dark">PDF</span>
-                                    <?php elseif ($isEpub): ?>
-                                        <span class="badge bg-info text-dark">EPUB</span>
-                                    <?php endif; ?>
-                                    <?php if (!empty($read) && in_array((int)$item['id'], $read, true)): ?>
-                                        <span class="badge bg-success">Lido</span>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
+            <?php $isFav = !empty($favorites) && in_array((int)$item['id'], $favorites, true); ?>
+            <?php $isRead = !empty($read) && in_array((int)$item['id'], $read, true); ?>
+            <div class="series-item" data-series-title="<?= View::e((string)($series['name'] ?? '')) ?>" data-item-title="<?= View::e((string)($item['title'] ?? '')) ?>">
+                <div class="series-item-content">
+                    <div class="series-item-info">
+                        <a class="series-item-title" href="<?= $isPdf ? base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf ? 'data-open-pdf' : '' ?> <?= $isPdf ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?> <?= $isPdf ? 'data-reader-url="' . base_path('/reader/pdf/' . (int)$item['id']) . '"' : '' ?>>
+                            <?= View::e(str_replace('_', ' ', (string)$item['title'])) ?>
+                        </a>
+                        <div class="series-item-badges">
+                            <?php if ($isPdf): ?>
+                                <span class="badge bg-warning text-dark">PDF</span>
+                            <?php elseif ($isEpub): ?>
+                                <span class="badge bg-info text-dark">EPUB</span>
+                            <?php endif; ?>
+                            <?php if ($isRead): ?>
+                                <span class="badge bg-success">Lido</span>
+                            <?php endif; ?>
                         </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="series-item-actions">
                         <?php if ($pdfDownloadUrl !== ''): ?>
                             <a class="btn btn-sm btn-outline-primary" href="<?= $pdfDownloadUrl ?>" title="Download PDF">
                                 <i class="bi bi-download"></i>
@@ -161,104 +154,29 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                                 <i class="bi bi-download"></i>
                             </a>
                         <?php endif; ?>
-                        <form method="post" action="<?= base_path('/libraries/read') ?>">
+                        <form method="post" action="<?= base_path('/lib/read') ?>" class="d-inline">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                             <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
-                            <input type="hidden" name="read" value="<?= (!empty($read) && in_array((int)$item['id'], $read, true)) ? '0' : '1' ?>">
-                            <?php $isRead = !empty($read) && in_array((int)$item['id'], $read, true); ?>
+                            <input type="hidden" name="read" value="<?= $isRead ? '0' : '1' ?>">
                             <button class="btn btn-sm btn-outline-secondary" type="submit" title="<?= $isRead ? 'Marcar não lido' : 'Marcar lido' ?>">
                                 <i class="bi <?= $isRead ? 'bi-eye-slash' : 'bi-eye' ?>"></i>
                             </button>
                         </form>
                         <?php if (!empty($user) && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))): ?>
-                            <span class="text-muted">|</span>
-                            <form method="post" action="<?= base_path('/libraries/content/order') ?>" class="d-flex align-items-center gap-1">
-                                <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                                <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
-                                <input class="form-control form-control-sm" type="number" name="content_order" value="<?= (int)($item['content_order'] ?? 0) ?>" style="width: 80px;" min="0">
-                                <button class="btn btn-sm btn-outline-primary" type="submit">Salvar</button>
-                            </form>
-                            <button class="btn btn-sm btn-outline-secondary" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#<?= $editModalId ?>">
-                                <i class="bi bi-pencil-square"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" type="button" title="Excluir" data-bs-toggle="modal" data-bs-target="#<?= $deleteModalId ?>">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        <?php endforeach; ?>
-        </div>
-        <div class="d-md-none">
-        <?php foreach ($items as $item): ?>
-            <?php $itemPath = (string)($item['cbz_path'] ?? ''); ?>
-            <?php $itemExt = strtolower(pathinfo($itemPath, PATHINFO_EXTENSION)); ?>
-            <?php $isPdf = $itemExt === 'pdf'; ?>
-            <?php $isEpub = $itemExt === 'epub'; ?>
-            <?php $downloadToken = !empty($downloadTokens[(int)$item['id']]) ? (string)$downloadTokens[(int)$item['id']] : ''; ?>
-            <?php $pdfDownloadUrl = !empty($pdfDownloadUrls[(int)$item['id']]) ? (string)$pdfDownloadUrls[(int)$item['id']] : ''; ?>
-            <?php if ($isPdf) { $hasPdf = true; } ?>
-            <?php $editModalId = 'edit-content-' . (int)$item['id']; ?>
-            <?php $deleteModalId = 'delete-content-' . (int)$item['id']; ?>
-            <?php $isRead = !empty($read) && in_array((int)$item['id'], $read, true); ?>
-            <?php $isFav = !empty($favorites) && in_array((int)$item['id'], $favorites, true); ?>
-            <div class="card mb-2 library-volume-card" data-series-title="<?= View::e((string)($series['name'] ?? '')) ?>" data-item-title="<?= View::e((string)($item['title'] ?? '')) ?>">
-                <a href="<?= $isPdf ? base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) : ($isEpub ? base_path('/epub/' . (int)$item['id']) : base_path('/reader/' . (int)$item['id'])) ?>" <?= $isPdf ? 'data-open-pdf' : '' ?> <?= $isPdf ? 'data-url="' . base_path('/download/' . (int)$item['id'] . '?inline=1&token=' . urlencode($downloadToken)) . '"' : '' ?> <?= $isPdf ? 'data-reader-url="' . base_path('/reader/pdf/' . (int)$item['id']) . '"' : '' ?> class="text-decoration-none text-dark library-volume-link">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start gap-2">
-                            <div class="flex-grow-1 min-w-0">
-                                <h6 class="mb-1 fw-semibold"><?= View::e(str_replace('_', ' ', (string)$item['title'])) ?></h6>
-                                <div class="d-flex flex-wrap gap-1">
-                                    <?php if ($isPdf): ?>
-                                        <span class="badge bg-warning text-dark">PDF</span>
-                                    <?php elseif ($isEpub): ?>
-                                        <span class="badge bg-info text-dark">EPUB</span>
-                                    <?php endif; ?>
-                                    <?php if ($isRead): ?>
-                                        <span class="badge bg-success">Lido</span>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                            <div class="library-volume-actions" onclick="event.preventDefault(); event.stopPropagation();">
-                                <form method="post" action="<?= base_path('/libraries/favorite') ?>" class="d-inline">
+                            <div class="series-item-admin">
+                                <form method="post" action="<?= base_path('/lib/content/order') ?>" class="d-inline-flex align-items-center gap-1">
                                     <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                                     <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
-                                    <input type="hidden" name="action" value="<?= $isFav ? 'remove' : 'add' ?>">
-                                    <button class="btn btn-sm <?= $isFav ? 'btn-warning' : 'btn-outline-warning' ?>" type="submit" aria-label="<?= $isFav ? 'Remover favorito' : 'Favoritar' ?>">
-                                        <?= $isFav ? '★' : '☆' ?>
-                                    </button>
+                                    <input class="form-control form-control-sm" type="number" name="content_order" value="<?= (int)($item['content_order'] ?? 0) ?>" style="width: 70px;" min="0">
+                                    <button class="btn btn-sm btn-outline-primary" type="submit"><i class="bi bi-check"></i></button>
                                 </form>
+                                <button class="btn btn-sm btn-outline-secondary" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#<?= $editModalId ?>">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" type="button" title="Excluir" data-bs-toggle="modal" data-bs-target="#<?= $deleteModalId ?>">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </div>
-                        </div>
-                    </div>
-                </a>
-                <div class="card-footer bg-white border-0 pt-0" onclick="event.preventDefault(); event.stopPropagation();">
-                    <div class="d-flex flex-wrap align-items-center gap-2">
-                        <?php if ($pdfDownloadUrl !== ''): ?>
-                            <a class="btn btn-sm btn-outline-primary" href="<?= $pdfDownloadUrl ?>" title="Download PDF">
-                                <i class="bi bi-download"></i> Download
-                            </a>
-                        <?php elseif ($isPdf && $downloadToken !== ''): ?>
-                            <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/download/' . (int)$item['id'] . '?token=' . urlencode($downloadToken)) ?>" title="Download">
-                                <i class="bi bi-download"></i> Download
-                            </a>
-                        <?php endif; ?>
-                        <form method="post" action="<?= base_path('/libraries/read') ?>" class="d-inline">
-                            <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
-                            <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
-                            <input type="hidden" name="read" value="<?= $isRead ? '0' : '1' ?>">
-                            <button class="btn btn-sm btn-outline-secondary" type="submit" title="<?= $isRead ? 'Marcar não lido' : 'Marcar lido' ?>">
-                                <i class="bi <?= $isRead ? 'bi-eye-slash' : 'bi-eye' ?>"></i> <?= $isRead ? 'Não lido' : 'Lido' ?>
-                            </button>
-                        </form>
-                        <?php if (!empty($user) && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))): ?>
-                            <button class="btn btn-sm btn-outline-secondary" type="button" title="Editar" data-bs-toggle="modal" data-bs-target="#<?= $editModalId ?>">
-                                <i class="bi bi-pencil-square"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" type="button" title="Excluir" data-bs-toggle="modal" data-bs-target="#<?= $deleteModalId ?>">
-                                <i class="bi bi-trash"></i>
-                            </button>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -276,7 +194,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                                 <h5 class="modal-title">Editar conteúdo</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                             </div>
-                            <form method="post" action="<?= base_path('/libraries/content/update') ?>">
+                            <form method="post" action="<?= base_path('/lib/content/update') ?>">
                                 <div class="modal-body">
                                     <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                                     <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
@@ -303,7 +221,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <form method="post" action="<?= base_path('/libraries/content/delete') ?>" class="m-0">
+                                <form method="post" action="<?= base_path('/lib/content/delete') ?>" class="m-0">
                                     <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                                     <input type="hidden" name="id" value="<?= (int)$item['id'] ?>">
                                     <button class="btn btn-danger" type="submit">Confirmar exclusão</button>
@@ -315,6 +233,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php endforeach; ?>
         <?php endif; ?>
     </section>
+</div>
     <?php if ($hasPdf): ?>
         <div id="pdfViewerModal" class="pdf-viewer-modal">
                 <div id="pdfViewerDialog" class="pdf-viewer-dialog">

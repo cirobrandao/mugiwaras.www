@@ -1,6 +1,7 @@
 <?php
 use App\Core\View;
 ob_start();
+$categorySlug = !empty($content['category_name']) ? \App\Models\Category::generateSlug((string)$content['category_name']) : '';
 ?>
 <?php if (!empty($error)): ?>
     <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -18,7 +19,7 @@ ob_start();
         <div class="reader-header reader-shell-header">
             <div class="reader-header-left">
                 <?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
-                    <a class="btn btn-sm btn-outline-secondary reader-back" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>">
+                    <a class="btn btn-sm btn-outline-secondary reader-back" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode((string)$content['series_name'])) ?>">
                         <i class="bi bi-chevron-left me-1"></i>
                         <span>Voltar aos capítulos</span>
                     </a>
@@ -70,7 +71,7 @@ ob_start();
                         <button class="btn btn-sm btn-outline-secondary" id="readerExpand" type="button" title="Expandir leitor" aria-label="Expandir leitor"><i class="bi bi-arrows-fullscreen"></i></button>
                         <?php $favBtnClass = !empty($isFavorite) ? 'btn-warning' : 'btn-outline-warning'; ?>
                         <?php $favIconClass = !empty($isFavorite) ? 'bi-star-fill' : 'bi-star'; ?>
-                        <form method="post" action="<?= base_path('/libraries/favorite') ?>" class="m-0">
+                        <form method="post" action="<?= base_path('/lib/favorite') ?>" class="m-0">
                             <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
                             <input type="hidden" name="id" value="<?= (int)($content['id'] ?? 0) ?>">
                             <input type="hidden" name="action" value="<?= !empty($isFavorite) ? 'remove' : 'add' ?>">
@@ -134,12 +135,12 @@ ob_start();
                         </button>
                     <?php endif; ?>
                     <?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
-                        <a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/libraries/' . rawurlencode((string)$content['category_name']) . '/' . rawurlencode((string)$content['series_name'])) ?>">
+                        <a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode((string)$content['series_name'])) ?>">
                             <i class="bi bi-list-ul me-1"></i>
                             <span>Capítulos</span>
                         </a>
                     <?php endif; ?>
-                    <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/libraries') ?>">
+                    <a class="btn btn-sm btn-outline-primary" href="<?= base_path('/lib') ?>">
                         <i class="bi bi-book me-1"></i>
                         <span>Biblioteca</span>
                     </a>
