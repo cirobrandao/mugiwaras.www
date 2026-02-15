@@ -104,7 +104,7 @@ if ($diskPercent === 0 && $diskUsed > 0) {
 }
 $paymentsSeries = (array)($charts['payments_by_month'] ?? []);
 $uploadsSeries = (array)($charts['uploads_by_week'] ?? []);
-$maxPayments = 1000.0;
+$maxPayments = 2000.0;
 $uploadsValues = [];
 foreach ($uploadsSeries as $row) {
     $uploadsValues[] = (int)round($parseNumber((string)($row['value'] ?? '0')));
