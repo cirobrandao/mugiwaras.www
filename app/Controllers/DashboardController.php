@@ -26,6 +26,8 @@ final class DashboardController extends Controller
         $recentUsers = [];
         $categoryColors = [];
         $categoryColorsByName = [];
+        $categorySlugs = [];
+        $categorySlugsByName = [];
         $isAdmin = Auth::isAdmin($user);
         $recentContent = [];
         $accessInfo = [
@@ -90,9 +92,50 @@ final class DashboardController extends Controller
             $id = (int)($cat['id'] ?? 0);
             $name = (string)($cat['name'] ?? '');
             $color = (string)($cat['tag_color'] ?? '');
+            $slug = (string)($cat['slug'] ?? '');
             $categoryColors[$id] = $color;
+            $categorySlugs[$id] = $slug;
             if ($name !== '') {
                 $categoryColorsByName[$normalizeName($name)] = $color;
+                $categorySlugsByName[$normalizeName($name)] = $slug;
+            }
+        }
+
+        if (!empty($favoriteSeries)) {
+            foreach ($favoriteSeries as $idx => $row) {
+                $catId = (int)($row['category_id'] ?? 0);
+                $slug = (string)($row['category_slug'] ?? '');
+                if ($slug === '' && $catId > 0) {
+                    $slug = (string)($categorySlugs[$catId] ?? '');
+                }
+                if ($slug === '') {
+                    $catName = (string)($row['category_name'] ?? '');
+                    if ($catName !== '') {
+                        $slug = (string)($categorySlugsByName[$normalizeName($catName)] ?? '');
+                    }
+                }
+                if ($slug !== '') {
+                    $favoriteSeries[$idx]['category_slug'] = $slug;
+                }
+            }
+        }
+
+        if (!empty($recentContent)) {
+            foreach ($recentContent as $idx => $row) {
+                $catId = (int)($row['category_id'] ?? 0);
+                $slug = (string)($row['category_slug'] ?? '');
+                if ($slug === '' && $catId > 0) {
+                    $slug = (string)($categorySlugs[$catId] ?? '');
+                }
+                if ($slug === '') {
+                    $catName = (string)($row['category_name'] ?? '');
+                    if ($catName !== '') {
+                        $slug = (string)($categorySlugsByName[$normalizeName($catName)] ?? '');
+                    }
+                }
+                if ($slug !== '') {
+                    $recentContent[$idx]['category_slug'] = $slug;
+                }
             }
         }
 
@@ -100,23 +143,36 @@ final class DashboardController extends Controller
             foreach ($mostReadSeries as $idx => $row) {
                 $color = (string)($row['category_tag_color'] ?? '');
                 $catId = (int)($row['category_id'] ?? 0);
+                $slug = (string)($row['category_slug'] ?? '');
                 if ($catId > 0 && !empty($categoryColors[$catId])) {
                     $color = (string)$categoryColors[$catId];
+                }
+                if ($slug === '' && $catId > 0) {
+                    $slug = (string)($categorySlugs[$catId] ?? '');
                 }
                 if ($color === '') {
                     $catName = (string)($row['category_name'] ?? '');
                     if ($catName !== '') {
                         $color = (string)($categoryColorsByName[$normalizeName($catName)] ?? '');
+                        if ($slug === '') {
+                            $slug = (string)($categorySlugsByName[$normalizeName($catName)] ?? '');
+                        }
                     }
                 }
                 if ($color === '' && $catId > 0) {
                     $cat = Category::findById($catId);
                     $color = (string)($cat['tag_color'] ?? '');
+                    if ($slug === '') {
+                        $slug = (string)($cat['slug'] ?? '');
+                    }
                 }
                 if ($color === '') {
                     $color = '#6c757d';
                 }
                 $mostReadSeries[$idx]['resolved_tag_color'] = $color;
+                if ($slug !== '') {
+                    $mostReadSeries[$idx]['category_slug'] = $slug;
+                }
             }
         }
 

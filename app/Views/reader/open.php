@@ -1,7 +1,9 @@
 <?php
 use App\Core\View;
 ob_start();
-$categorySlug = !empty($content['category_name']) ? \App\Models\Category::generateSlug((string)$content['category_name']) : '';
+$categorySlug = !empty($content['category_slug'])
+	? (string)$content['category_slug']
+	: (!empty($content['category_name']) ? \App\Models\Category::generateSlug((string)$content['category_name']) : '');
 ?>
 <?php if (!empty($error)): ?>
 	<div class="alert alert-warning d-flex flex-column gap-2">
@@ -14,18 +16,28 @@ $categorySlug = !empty($content['category_name']) ? \App\Models\Category::genera
 		<div class="reader-header-container">
 			<div class="reader-header-left">
 				<?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
-				<a class="btn btn-sm btn-outline-secondary reader-back-btn" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode((string)$content['series_name'])) ?>">
-						<i class="bi bi-arrow-left"></i>
-						<span class="reader-desktop-only">Voltar</span>
+				<a class="btn btn-sm btn-outline-secondary reader-back-btn" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . (int)$content['series_id']) ?>" title="Voltar para a série">
+						<i class="bi bi-arrow-left"></i><span class="reader-back-text ms-1">Voltar para capítulos</span>
 					</a>
 				<?php endif; ?>
 			</div>
 			<div class="reader-title-modern"><?= View::e($content['title'] ?? 'Conteúdo') ?></div>
 			<div class="reader-header-right">
-				<select class="form-select form-select-sm reader-mode-selector" id="readerModeMobile">
-					<option value="page" <?= (($cbzMode ?? 'page') === 'page') ? 'selected' : '' ?>>Página</option>
-					<option value="scroll" <?= (($cbzMode ?? '') === 'scroll') ? 'selected' : '' ?>>Scroll</option>
-				</select>
+				<?php if (!empty($nextChapterUrl)): ?>
+					<a class="btn btn-sm reader-mobile-next-top" id="readerNextChapterTop" href="<?= $nextChapterUrl ?>" title="Próximo capítulo" aria-label="Próximo capítulo">
+						<i class="bi bi-skip-forward-fill"></i>
+					</a>
+				<?php else: ?>
+					<button type="button" class="btn btn-sm reader-mobile-next-top" id="readerNextChapterTop" disabled title="Sem próximo capítulo" aria-label="Sem próximo capítulo">
+						<i class="bi bi-skip-forward-fill"></i>
+					</button>
+				<?php endif; ?>
+				<button type="button" class="btn btn-sm reader-mobile-fullscreen" id="readerExpandMobile" title="Tela cheia" aria-label="Tela cheia">
+					<i class="bi bi-arrows-fullscreen"></i>
+				</button>
+				<button type="button" class="btn btn-sm reader-mode-toggle" id="readerModeToggle" data-mode="<?= (($cbzMode ?? 'page') === 'scroll') ? 'scroll' : 'page' ?>">
+					<?= (($cbzMode ?? 'page') === 'scroll') ? 'Modo: Scroll' : 'Modo: Página' ?>
+				</button>
 			</div>
 		</div>
 	</div>
@@ -44,6 +56,15 @@ $categorySlug = !empty($content['category_name']) ? \App\Models\Category::genera
 					<span id="pageNumberDisplay">1</span> / <span id="pageTotalDisplay">0</span>
 				</div>
 				<button class="btn btn-sm btn-secondary" id="nextPageMobile"><i class="bi bi-chevron-right"></i></button>
+				<?php if (!empty($nextChapterUrl)): ?>
+					<a class="btn btn-sm btn-primary mobile-next-chapter-btn" href="<?= $nextChapterUrl ?>" title="Próximo capítulo" aria-label="Próximo capítulo">
+						<i class="bi bi-skip-forward-fill"></i>
+					</a>
+				<?php else: ?>
+					<button class="btn btn-sm btn-primary mobile-next-chapter-btn" disabled title="Sem próximo capítulo" aria-label="Sem próximo capítulo">
+						<i class="bi bi-skip-forward-fill"></i>
+					</button>
+				<?php endif; ?>
 			</div>
 			<div class="reader-progress-modern mobile-progress">
 				<div class="reader-progress-bar" id="readerProgressMobile" style="width: 0%"></div>
@@ -86,26 +107,17 @@ $categorySlug = !empty($content['category_name']) ? \App\Models\Category::genera
 						<?php else: ?>
 							<button class="btn btn-sm btn-outline-secondary" disabled><i class="bi bi-skip-backward-fill"></i></button>
 						<?php endif; ?>
-						<button class="btn btn-sm btn-secondary" id="readerFirst"><i class="bi bi-chevron-double-left"></i></button>
-						<button class="btn btn-sm btn-secondary" id="prevPage"><i class="bi bi-chevron-left"></i></button>
+						<button class="btn btn-sm btn-secondary reader-page-nav-btn" id="readerFirst"><i class="bi bi-chevron-double-left"></i></button>
+						<button class="btn btn-sm btn-secondary reader-page-nav-btn" id="prevPage"><i class="bi bi-chevron-left"></i></button>
 					</div>
 					<div class="toolbar-section toolbar-controls">
-						<select class="form-select form-select-sm" id="readerFitMode">
-							<option value="width">Largura</option>
-							<option value="height" selected>Altura</option>
-							<option value="original">Original</option>
-						</select>
-
 						<div class="toolbar-zoom">
 							<i class="bi bi-zoom-in"></i>
 							<input type="range" id="readerZoom" min="60" max="160" step="5" value="100">
 						</div>
-						<div class="form-check form-switch">
-							<input class="form-check-input" type="checkbox" id="readerWheel" checked>
-							<label class="form-check-label" for="readerWheel">Scroll</label>
-						</div>
 					</div>
 					<div class="toolbar-section toolbar-actions">
+						<span id="pageCompact" class="reader-page-compact d-none" aria-live="polite">1/0</span>
 						<button class="btn btn-sm btn-outline-secondary" id="readerExpand" title="Tela cheia"><i class="bi bi-arrows-fullscreen"></i></button>
 						<?php if (!empty($downloadToken)): ?>
 							<div class="btn-group">
@@ -121,8 +133,8 @@ $categorySlug = !empty($content['category_name']) ? \App\Models\Category::genera
 								</ul>
 							</div>
 						<?php endif; ?>
-						<button class="btn btn-sm btn-secondary" id="nextPage"><i class="bi bi-chevron-right"></i></button>
-						<button class="btn btn-sm btn-secondary" id="readerLast"><i class="bi bi-chevron-double-right"></i></button>
+						<button class="btn btn-sm btn-secondary reader-page-nav-btn" id="nextPage"><i class="bi bi-chevron-right"></i></button>
+						<button class="btn btn-sm btn-secondary reader-page-nav-btn" id="readerLast"><i class="bi bi-chevron-double-right"></i></button>
 						<?php if (!empty($nextChapterUrl)): ?>
 							<a class="btn btn-sm btn-outline-secondary" href="<?= $nextChapterUrl ?>" title="Próximo capítulo"><i class="bi bi-skip-forward-fill"></i></a>
 						<?php else: ?>
@@ -135,8 +147,13 @@ $categorySlug = !empty($content['category_name']) ? \App\Models\Category::genera
 				</div>
 			</div>
 			
+			<button class="btn btn-sm btn-dark reader-exit-fullscreen d-none" id="readerExitFullscreen" title="Sair da tela cheia" aria-label="Sair da tela cheia">
+				<i class="bi bi-fullscreen-exit"></i>
+			</button>
 			<div class="reader-overlay d-none" id="readerOverlay">Carregando...</div>
-			<img id="readerImage" alt="Página" class="reader-image-modern">
+			<div id="readerPagesHost" class="reader-pages-host">
+				<img id="readerImage" alt="Página" class="reader-image-modern">
+			</div>
 			<!-- Mobile tap zones -->
 			<div class="reader-tap-zone tap-zone-left" id="tapZoneLeft"></div>
 			<div class="reader-tap-zone tap-zone-right" id="tapZoneRight"></div>
@@ -148,7 +165,7 @@ $categorySlug = !empty($content['category_name']) ? \App\Models\Category::genera
 	
 	<!-- Reader Footer -->
 	<div class="reader-footer-modern" id="readerFooter">
-		<div class="footer-page-control reader-desktop-only">
+		<div id="readerPageGuide" class="footer-page-control reader-desktop-only">
 			<button class="btn btn-sm btn-secondary" id="prevPageFooter"><i class="bi bi-chevron-left"></i></button>
 			<div class="footer-page-input">
 				<span>Página</span>
@@ -158,16 +175,21 @@ $categorySlug = !empty($content['category_name']) ? \App\Models\Category::genera
 			<button class="btn btn-sm btn-secondary" id="nextPageFooter"><i class="bi bi-chevron-right"></i></button>
 		</div>
 		<div class="footer-actions" id="readerEndActions">
-			<button id="readerBottomTop" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-up me-1"></i>Topo</button>
-			<?php if (!empty($nextChapterUrl)): ?>
-				<a class="btn btn-sm btn-primary" href="<?= $nextChapterUrl ?>"><i class="bi bi-skip-forward-fill me-1"></i>Próximo capítulo</a>
+			<button id="readerBottomTop" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-up me-1"></i>Ir ao topo</button>
+			<?php if (!empty($previousChapterUrl)): ?>
+				<a class="btn btn-sm btn-outline-secondary" href="<?= $previousChapterUrl ?>"><i class="bi bi-skip-backward-fill me-1"></i>Capítulo anterior</a>
 			<?php else: ?>
-				<button class="btn btn-sm btn-primary" disabled><i class="bi bi-skip-forward-fill me-1"></i>Próximo capítulo</button>
+				<button class="btn btn-sm btn-outline-secondary" disabled><i class="bi bi-skip-backward-fill me-1"></i>Sem capítulo anterior</button>
 			<?php endif; ?>
 			<?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
-				<a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode((string)$content['series_name'])) ?>"><i class="bi bi-list-ul me-1"></i>Capítulos</a>
+				<a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . (int)$content['series_id']) ?>"><i class="bi bi-list-ul me-1"></i>Lista de capítulos</a>
 			<?php endif; ?>
-		<a class="btn btn-sm btn-outline-primary" href="<?= base_path('/lib') ?>"><i class="bi bi-book me-1"></i>Biblioteca</a>
+		<a class="btn btn-sm btn-outline-primary" href="<?= base_path('/lib') ?>"><i class="bi bi-book me-1"></i>Voltar à biblioteca</a>
+			<?php if (!empty($nextChapterUrl)): ?>
+				<a class="btn btn-sm btn-primary" href="<?= $nextChapterUrl ?>"><i class="bi bi-skip-forward-fill me-1"></i>Ir para próximo capítulo</a>
+			<?php else: ?>
+				<button class="btn btn-sm btn-primary" disabled><i class="bi bi-skip-forward-fill me-1"></i>Sem próximo capítulo</button>
+			<?php endif; ?>
 		</div>
 	</div>
 	

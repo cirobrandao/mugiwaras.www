@@ -264,7 +264,7 @@ final class LibraryController extends Controller
             Response::redirect(base_path('/'));
         }
         $categorySlug = rawurldecode($category);
-        $seriesName = rawurldecode($series);
+        $seriesParam = rawurldecode($series);
         if (!Category::isReady()) {
             http_response_code(500);
             echo $this->view('libraries/series', ['error' => 'Biblioteca ainda não inicializada.']);
@@ -290,11 +290,27 @@ final class LibraryController extends Controller
                 }
             }
         }
-        $ser = Series::findByName((int)$cat['id'], $seriesName);
+        $ser = null;
+        if ($seriesParam !== '' && ctype_digit($seriesParam)) {
+            $candidate = Series::findById((int)$seriesParam);
+            if ($candidate && (int)($candidate['category_id'] ?? 0) === (int)($cat['id'] ?? 0)) {
+                $ser = $candidate;
+            }
+        }
+        if (!$ser) {
+            $ser = Series::findByName((int)$cat['id'], $seriesParam);
+        }
         if (!$ser) {
             http_response_code(404);
             echo $this->view('libraries/series', ['error' => 'Série não encontrada.']);
             return;
+        }
+
+        if (!ctype_digit($seriesParam)) {
+            $resolvedCategorySlug = !empty($cat['slug']) ? (string)$cat['slug'] : Category::generateSlug((string)($cat['name'] ?? ''));
+            $canonicalPath = '/lib/' . rawurlencode($resolvedCategorySlug) . '/' . (int)($ser['id'] ?? 0);
+            $queryString = (string)($_SERVER['QUERY_STRING'] ?? '');
+            Response::redirect(base_path($canonicalPath . ($queryString !== '' ? ('?' . $queryString) : '')));
         }
         $isAdultUser = $this->isAdultUser($user);
         if (!$isStaff && !$isAdultUser && (!empty($cat['adult_only']) || !empty($ser['adult_only']))) {

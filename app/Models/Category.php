@@ -118,6 +118,12 @@ final class Category
         $stmt->execute(['n' => $name, 'id' => $id]);
     }
 
+    public static function updateSlug(int $id, string $slug): void
+    {
+        $stmt = Database::connection()->prepare('UPDATE categories SET slug = :s WHERE id = :id');
+        $stmt->execute(['s' => $slug, 'id' => $id]);
+    }
+
     public static function updateBanner(int $id, ?string $bannerPath): void
     {
         $stmt = Database::connection()->prepare('UPDATE categories SET banner_path = :b WHERE id = :id');

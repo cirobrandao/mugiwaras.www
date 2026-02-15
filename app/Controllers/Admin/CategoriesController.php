@@ -91,6 +91,7 @@ final class CategoriesController extends Controller
         }
         $id = (int)($request->post['id'] ?? 0);
         $name = trim((string)($request->post['name'] ?? ''));
+        $slugInput = trim((string)($request->post['slug'] ?? ''));
         $tagColor = trim((string)($request->post['tag_color'] ?? ''));
         $displayOrientation = (string)($request->post['display_orientation'] ?? 'vertical');
         $cbzDirection = (string)($request->post['cbz_direction'] ?? 'rtl');
@@ -111,7 +112,16 @@ final class CategoriesController extends Controller
         if ($id <= 0 || $name === '') {
             Response::redirect(base_path('/admin/categories?error=required'));
         }
+        $slug = $slugInput !== '' ? Category::generateSlug($slugInput) : Category::generateSlug($name);
+        if ($slug === '') {
+            $slug = 'categoria-' . $id;
+        }
+        $existingBySlug = Category::findBySlug($slug);
+        if ($existingBySlug && (int)($existingBySlug['id'] ?? 0) !== $id) {
+            Response::redirect(base_path('/admin/categories?error=slug'));
+        }
         Category::rename($id, $name);
+        Category::updateSlug($id, $slug);
         Category::updateTagColor($id, $tagColor);
         Category::updatePreferences(
             $id,

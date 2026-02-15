@@ -16,6 +16,8 @@ ob_start();
 <?php elseif (!empty($_GET['error'])): ?>
         <?php if ($_GET['error'] === 'inuse'): ?>
             <div class="alert alert-danger">Categoria em uso (séries ou conteúdos vinculados).</div>
+        <?php elseif ($_GET['error'] === 'slug'): ?>
+            <div class="alert alert-danger">Slug já está em uso por outra categoria.</div>
         <?php elseif ($_GET['error'] === 'banner'): ?>
             <div class="alert alert-danger">Banner inválido. Use imagem (jpg, png, webp).</div>
         <?php else: ?>
@@ -223,6 +225,11 @@ ob_start();
                                 <div class="mb-2">
                                     <label class="form-label">Nome</label>
                                     <input class="form-control" type="text" name="name" value="<?= View::e((string)$c['name']) ?>" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Slug</label>
+                                    <input class="form-control" type="text" name="slug" value="<?= View::e((string)($c['slug'] ?? '')) ?>" placeholder="ex: manga-shonen">
+                                    <div class="form-text">Se vazio, será gerado automaticamente com base no nome.</div>
                                 </div>
                                 <div class="mb-2">
                                     <label class="form-label">Ordem</label>

@@ -67,6 +67,7 @@ final class ReaderController extends Controller
             }
             if ($cat) {
                 $content['category_name'] = $cat['name'] ?? null;
+                $content['category_slug'] = $cat['slug'] ?? null;
                 $cbzModeRaw = strtolower(trim((string)($cat['cbz_mode'] ?? 'page')));
                 $cbzMode = $cbzModeRaw === 'scroll' ? 'scroll' : 'page';
                 $cbzDirectionRaw = strtolower(trim((string)($cat['cbz_direction'] ?? 'rtl')));

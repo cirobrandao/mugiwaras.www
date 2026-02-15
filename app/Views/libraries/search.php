@@ -28,7 +28,8 @@ $resultCount = is_array($seriesResults ?? null) ? count($seriesResults) : 0;
                     <?php $categoryName = (string)($s['category_name'] ?? ''); ?>
                     <?php $categorySlug = !empty($s['category_slug']) ? (string)$s['category_slug'] : \App\Models\Category::generateSlug($categoryName); ?>
                     <?php $chapterCount = (int)($s['chapter_count'] ?? 0); ?>
-                    <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode($seriesName)) ?>">
+                    <?php $seriesId = (int)($s['id'] ?? 0); ?>
+                    <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . $seriesId) ?>">
                         <div class="d-flex flex-column">
                             <span class="fw-semibold"><?= View::e($seriesName) ?></span>
                             <span class="small text-muted"><?= View::e($categoryName) ?></span>
@@ -43,7 +44,8 @@ $resultCount = is_array($seriesResults ?? null) ? count($seriesResults) : 0;
                     <?php $categoryName = (string)($s['category_name'] ?? ''); ?>
                     <?php $categorySlug = !empty($s['category_slug']) ? (string)$s['category_slug'] : \App\Models\Category::generateSlug($categoryName); ?>
                     <?php $chapterCount = (int)($s['chapter_count'] ?? 0); ?>
-                    <a class="card mb-2 library-list-card text-decoration-none" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode($seriesName)) ?>">
+                    <?php $seriesId = (int)($s['id'] ?? 0); ?>
+                    <a class="card mb-2 library-list-card text-decoration-none" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . $seriesId) ?>">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start gap-2 library-card-row">
                                 <div>

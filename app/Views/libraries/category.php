@@ -62,7 +62,7 @@ $seriesCount = is_array($series ?? null) ? count($series) : 0;
                             <?php $isAdultSeries = !empty($s['adult_only']); ?>
                             <?php
                                 $categorySlug = !empty($category['slug']) ? (string)$category['slug'] : \App\Models\Category::generateSlug((string)$category['name']);
-                                $seriesUrl = base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode((string)$s['name']) . '?format=' . $entry['format'] . (!empty($iosTest) ? '&ios_test=1' : ''));
+                                $seriesUrl = base_path('/lib/' . rawurlencode($categorySlug) . '/' . (int)($s['id'] ?? 0) . '?format=' . $entry['format'] . (!empty($iosTest) ? '&ios_test=1' : ''));
                             ?>
                             <a class="category-item-title" href="<?= $seriesUrl ?>">
                                 <?= View::e((string)$s['name']) ?>

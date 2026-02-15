@@ -187,6 +187,106 @@ ob_start();
         </form>
     </div>
 </div>
+<script>
+(() => {
+    // PIX Key Copy functionality
+    const copyBtn = document.getElementById('copyPixKey');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            const input = document.getElementById('pixKeyValue');
+            if (input) {
+                input.select();
+                input.setSelectionRange(0, 99999); // For mobile devices
+                
+                navigator.clipboard.writeText(input.value).then(() => {
+                    const originalHtml = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="bi bi-check-lg"></i> Copiado!';
+                    copyBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHtml;
+                        copyBtn.style.background = '';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Erro ao copiar:', err);
+                    // Fallback for older browsers
+                    try {
+                        document.execCommand('copy');
+                        const originalHtml = copyBtn.innerHTML;
+                        copyBtn.innerHTML = '<i class="bi bi-check-lg"></i> Copiado!';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalHtml;
+                        }, 2000);
+                    } catch (e) {
+                        alert('Não foi possível copiar automaticamente. Por favor, copie manualmente.');
+                    }
+                });
+            }
+        });
+    }
+
+    // File validation
+    const form = document.getElementById('proofForm');
+    const fileInput = form?.querySelector('input[type="file"]');
+    const errorDiv = document.getElementById('proofError');
+    const submitBtn = document.getElementById('proofSubmit');
+    
+    if (form && fileInput && errorDiv && submitBtn) {
+        const maxSize = 4 * 1024 * 1024; // 4MB
+        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf', 'image/x-png'];
+        
+        fileInput.addEventListener('change', () => {
+            errorDiv.style.display = 'none';
+            const file = fileInput.files && fileInput.files[0];
+            
+            if (!file) return;
+            
+            if (file.size > maxSize) {
+                errorDiv.textContent = 'Arquivo maior que 4MB. Por favor, escolha um arquivo menor.';
+                errorDiv.style.display = 'block';
+                fileInput.value = '';
+                return;
+            }
+            
+            if (!allowedTypes.includes(file.type)) {
+                errorDiv.textContent = 'Tipo inválido. Envie apenas JPG, PNG ou PDF.';
+                errorDiv.style.display = 'block';
+                fileInput.value = '';
+                return;
+            }
+        });
+        
+        form.addEventListener('submit', (e) => {
+            const file = fileInput.files && fileInput.files[0];
+            
+            if (!file) {
+                e.preventDefault();
+                errorDiv.textContent = 'Por favor, selecione um comprovante.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (file.size > maxSize) {
+                e.preventDefault();
+                errorDiv.textContent = 'Arquivo maior que 4MB.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (!allowedTypes.includes(file.type)) {
+                e.preventDefault();
+                errorDiv.textContent = 'Tipo inválido. Envie apenas JPG, PNG ou PDF.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
+        });
+    }
+})();
+</script>
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../layout.php';

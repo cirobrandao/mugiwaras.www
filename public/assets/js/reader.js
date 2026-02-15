@@ -1,8 +1,30 @@
+/**
+ * Reader.js - Premium CBZ/Manga Reader
+ * 
+ * Features:
+ * - Page mode: Single page navigation with preloading
+ * - Scroll mode: Continuous scroll with lazy loading
+ * - Mobile support: Swipe gestures and tap zones
+ * - Keyboard shortcuts:
+ *   - Arrow Left/Right: Navigate pages (respects RTL/LTR)
+ *   - Home/End: First/Last page (page mode) or scroll to top/bottom (scroll mode)
+ *   - Page Up/Down, Space: Navigate pages
+ *   - +/=: Zoom in
+ *   - -/_: Zoom out
+ *   - 0: Reset zoom to 100%
+ *   - F: Toggle fullscreen
+ *   - Escape: Exit fullscreen
+ * - Auto-save reading progress
+ * - Image retry on load failure
+ * - RTL (manga) and LTR support
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
   const readerEl = document.getElementById('reader');
   const total = readerEl ? parseInt(readerEl.dataset.total || '0', 10) : (window.__READER && window.__READER.total) || 0;
   let page = 0;
   const img = document.getElementById('readerImage');
+  const pagesHost = document.getElementById('readerPagesHost');
   const info = document.getElementById('pageInfo');
   const prev = document.getElementById('prevPage');
   const next = document.getElementById('nextPage');
@@ -16,7 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const zoomInput = document.getElementById('readerZoom');
   const progress = document.getElementById('readerProgress');
   const expandBtn = document.getElementById('readerExpand');
+  const expandBtnMobile = document.getElementById('readerExpandMobile');
+  const exitFullscreenBtn = document.getElementById('readerExitFullscreen');
   const modeSelectMobile = document.getElementById('readerModeMobile');
+  const modeToggleBtn = document.getElementById('readerModeToggle');
+  const mobileNextChapterTop = document.getElementById('readerNextChapterTop');
   const overlay = document.getElementById('readerOverlay');
   const firstBtn = document.getElementById('readerFirst');
   const wheelToggle = document.getElementById('readerWheel');
@@ -27,16 +53,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const pageCompact = document.getElementById('pageCompact');
   const pageGuide = document.getElementById('readerPageGuide');
   const endActions = document.getElementById('readerEndActions');
+  const readerFooter = document.getElementById('readerFooter');
   const prevChapterUrl = readerEl ? (readerEl.dataset.previousChapterUrl || '') : '';
   const nextChapterUrl = readerEl ? (readerEl.dataset.nextChapterUrl || '') : '';
   const isRtl = readerEl ? (readerEl.dataset.direction || 'rtl') === 'rtl' : false;
-  let scrollMode = modeSelectMobile ? modeSelectMobile.value === 'scroll' : false;
+  let scrollMode = modeSelectMobile
+    ? modeSelectMobile.value === 'scroll'
+    : (modeToggleBtn ? modeToggleBtn.dataset.mode === 'scroll' : false);
   let wheelPaging = wheelToggle ? wheelToggle.checked : true;
   const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
 
   // Mobile controls elements
   const mobileControlsPage = document.querySelector('.mobile-controls-page');
   const mobileControlsScroll = document.querySelector('.mobile-controls-scroll');
+  
+  // Mobile tap zones
+  const tapZoneLeft = document.getElementById('tapZoneLeft');
+  const tapZoneRight = document.getElementById('tapZoneRight');
+
+  // Touch/Swipe support for mobile
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchEndX = 0;
+  let touchEndY = 0;
+  const minSwipeDistance = 50; // minimum distance for swipe to register
 
   // Cookie helpers for storing reader preferences
   const setCookie = (name, value, days = 365) => {
@@ -55,19 +95,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // Toast notification system for reader actions
+  let toastTimeout = null;
+  const showToast = (message, duration = 2000) => {
+    let toast = document.getElementById('readerToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'readerToast';
+      toast.className = 'reader-toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+      toast.classList.remove('show');
+    }, duration);
+  };
+
   const loadSavedSettings = () => {
     try {
       const fit = getCookie('reader_fit_mode');
       if (fit && fitMode) fitMode.value = fit;
       const mode = getCookie('reader_mode');
       if (mode && modeSelectMobile) modeSelectMobile.value = mode;
+      if (mode && modeToggleBtn) modeToggleBtn.dataset.mode = mode === 'scroll' ? 'scroll' : 'page';
       const zoom = getCookie('reader_zoom');
       if (zoom && zoomInput) zoomInput.value = String(Math.min(160, Math.max(60, parseInt(zoom, 10) || 100)));
       const wheel = getCookie('reader_wheel');
       if (wheel !== null && wheelToggle) wheelToggle.checked = (wheel === '1' || wheel === 'true');
       // update derived state
-      scrollMode = modeSelectMobile ? modeSelectMobile.value === 'scroll' : scrollMode;
+      scrollMode = modeSelectMobile
+        ? modeSelectMobile.value === 'scroll'
+        : (modeToggleBtn ? modeToggleBtn.dataset.mode === 'scroll' : scrollMode);
       wheelPaging = wheelToggle ? wheelToggle.checked : wheelPaging;
+      syncModeToggleUi();
     } catch (e) {}
   };
 
@@ -97,6 +160,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (mobileControlsPage) mobileControlsPage.style.display = 'block';
       if (mobileControlsScroll) mobileControlsScroll.style.display = 'none';
     }
+    // Toggle tap zones visibility based on scroll mode
+    if (tapZoneLeft) tapZoneLeft.style.display = scrollMode ? 'none' : 'block';
+    if (tapZoneRight) tapZoneRight.style.display = scrollMode ? 'none' : 'block';
+    if (mobileNextChapterTop) mobileNextChapterTop.classList.toggle('d-none', scrollMode);
+  };
+
+  const syncModeToggleUi = () => {
+    if (!modeToggleBtn) return;
+    modeToggleBtn.dataset.mode = scrollMode ? 'scroll' : 'page';
+    modeToggleBtn.textContent = isMobile
+      ? (scrollMode ? 'Scroll' : 'Página')
+      : (scrollMode ? 'Modo: Scroll' : 'Modo: Página');
+    modeToggleBtn.setAttribute('aria-label', scrollMode ? 'Alternar para modo Página' : 'Alternar para modo Scroll');
   };
 
   const updateScrollTopVisibility = () => {
@@ -105,9 +181,24 @@ document.addEventListener('DOMContentLoaded', () => {
       scrollTopBtn.classList.add('d-none');
       return;
     }
-    // show when the reader content is scrollable (height exceeds viewport) — or if user scrolled
-    const canScroll = readerEl.scrollHeight > (readerEl.clientHeight + 20);
-    const scrolled = readerEl.scrollTop > 80;
+    const getActiveScrollContainer = () => {
+      if (!scrollMode || !readerEl) return window;
+      if (document.fullscreenElement === readerEl) return readerEl;
+      if (wrap && wrap.classList.contains('is-expanded')) return wrap;
+      return window;
+    };
+
+    const scroller = getActiveScrollContainer();
+    let canScroll = false;
+    let scrolled = false;
+
+    if (scroller === window) {
+      canScroll = readerEl.scrollHeight > (window.innerHeight + 20);
+      scrolled = window.scrollY > (readerEl.offsetTop + 80);
+    } else {
+      canScroll = scroller.scrollHeight > (scroller.clientHeight + 20);
+      scrolled = scroller.scrollTop > 80;
+    }
     if (canScroll || scrolled) {
       scrollTopBtn.classList.remove('d-none');
     } else {
@@ -115,17 +206,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   const syncPageGuide = () => {
+    const isReaderExpanded = Boolean(
+      (readerEl && document.fullscreenElement === readerEl) ||
+      (wrap && wrap.classList.contains('is-expanded'))
+    );
     if (scrollMode) {
       pageGuide?.classList.add('d-none');
       pageCompact?.classList.add('d-none');
       endActions?.classList.remove('d-none');
+      if (readerFooter) {
+        readerFooter.classList.toggle('scroll-pinned', isMobile);
+        readerFooter.classList.toggle('d-none', !isMobile);
+      }
+      if (wrap) wrap.classList.toggle('has-pinned-footer', false);
       // hide footer prev/next buttons in scroll mode
       if (prevFooter) prevFooter.classList.add('d-none');
       if (nextFooter) nextFooter.classList.add('d-none');
     } else {
       pageGuide?.classList.remove('d-none');
-      pageCompact?.classList.add('d-none');
+      pageCompact?.classList.toggle('d-none', !isReaderExpanded);
       endActions?.classList.add('d-none');
+      if (readerFooter) {
+        readerFooter.classList.remove('scroll-pinned');
+        readerFooter.classList.remove('d-none');
+      }
+      if (wrap) wrap.classList.remove('has-pinned-footer');
       // show footer prev/next buttons in page mode (desktop only)
       if (prevFooter) prevFooter.classList.remove('d-none');
       if (nextFooter) nextFooter.classList.remove('d-none');
@@ -133,6 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   let saveTimer = null;
   let readMarked = false;
+  let imageRetryCount = 0;
+  const maxImageRetries = 3;
 
   const setStatus = (text) => {
     if (status) status.textContent = text || '\u00A0';
@@ -146,6 +253,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const getPageModeMaxHeight = () => {
+    if (!readerEl) return 520;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+    const toolbarEl = readerEl.querySelector('.reader-toolbar-modern');
+    const headerEl = document.querySelector('.reader-modern-header');
+    const footerVisible = readerFooter && !readerFooter.classList.contains('scroll-pinned');
+
+    const toolbarHeight = toolbarEl ? toolbarEl.getBoundingClientRect().height : 0;
+    const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
+    const footerHeight = footerVisible ? readerFooter.getBoundingClientRect().height : 0;
+    const verticalGutters = 28;
+
+    return Math.max(280, Math.round(viewportHeight - headerHeight - toolbarHeight - footerHeight - verticalGutters));
+  };
+
+  const getPageModeMaxWidth = () => {
+    if (!readerEl) return Math.max(280, (window.innerWidth || 1280) - 24);
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || readerEl.clientWidth || 0;
+    const readerWidth = readerEl.clientWidth || viewportWidth;
+    const usableWidth = Math.min(viewportWidth - 24, readerWidth - 12);
+    return Math.max(280, Math.round(usableWidth));
+  };
+
   const clampPage = (value) => {
     if (Number.isNaN(value)) return 0;
     if (value < 0) return 0;
@@ -153,15 +283,40 @@ document.addEventListener('DOMContentLoaded', () => {
     return value;
   };
 
+  const preloadImage = (pageNum) => {
+    if (pageNum < 0 || pageNum >= total || scrollMode) return;
+    const baseUrl = readerEl ? readerEl.dataset.baseUrl : (window.__READER && window.__READER.baseUrl);
+    if (!baseUrl) return;
+    const query = readerEl ? (readerEl.dataset.query || '') : (window.__READER && window.__READER.query) || '';
+    const preloadImg = new Image();
+    preloadImg.src = `${baseUrl}/${pageNum}${query}`;
+  };
+
+  const preloadAdjacentPages = () => {
+    if (scrollMode) return; // no need to preload in scroll mode as all images are rendered
+    // preload next and previous pages for smoother navigation
+    preloadImage(page + 1);
+    preloadImage(page - 1);
+  };
+
   const applyFitMode = () => {
     if (!img || !readerEl) return;
     const mode = fitMode ? fitMode.value : 'height';
-    img.style.width = '';
-    img.style.height = '';
-    img.style.maxWidth = '';
-    img.style.maxHeight = '';
+    const targets = scrollMode
+      ? Array.from((pagesHost || readerEl).querySelectorAll('img'))
+      : [img];
+
+    targets.forEach((target) => {
+      target.style.width = '';
+      target.style.height = '';
+      target.style.maxWidth = '';
+      target.style.maxHeight = '';
+    });
+
     // Page mode: keep page fixed and constrain height to viewport (show original by default)
     if (!scrollMode) {
+      const pageMaxHeight = getPageModeMaxHeight();
+      const pageMaxWidth = getPageModeMaxWidth();
       readerEl.classList.add('page-fixed');
       readerEl.style.display = 'flex';
       readerEl.style.justifyContent = 'center';
@@ -171,15 +326,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (mode === 'width') {
         img.style.width = '100%';
         img.style.height = 'auto';
-        img.style.maxHeight = 'calc(100vh - 160px)';
+        img.style.maxHeight = `${pageMaxHeight}px`;
+        img.style.maxWidth = `${pageMaxWidth}px`;
       } else if (mode === 'height') {
-        img.style.maxHeight = 'calc(100vh - 160px)';
+        img.style.maxHeight = `${pageMaxHeight}px`;
         img.style.width = 'auto';
+        img.style.maxWidth = `${pageMaxWidth}px`;
       } else {
         img.style.width = 'auto';
         img.style.height = 'auto';
-        img.style.maxHeight = 'calc(100vh - 160px)';
-        img.style.maxWidth = 'none';
+        img.style.maxHeight = `${pageMaxHeight}px`;
+        img.style.maxWidth = `${pageMaxWidth}px`;
       }
     } else {
       // Scroll mode: regular behaviour
@@ -189,14 +346,23 @@ document.addEventListener('DOMContentLoaded', () => {
       readerEl.style.alignItems = '';
       readerEl.style.overflow = '';
       if (mode === 'height') {
-        img.style.maxHeight = '80vh';
-        img.style.width = 'auto';
+        targets.forEach((target) => {
+          target.style.maxHeight = '80vh';
+          target.style.width = 'auto';
+          target.style.maxWidth = '100%';
+        });
       } else if (mode === 'original') {
-        img.style.width = 'auto';
-        img.style.height = 'auto';
+        targets.forEach((target) => {
+          target.style.width = 'auto';
+          target.style.height = 'auto';
+          target.style.maxWidth = '100%';
+        });
       } else {
-        img.style.width = '100%';
-        img.style.height = 'auto';
+        targets.forEach((target) => {
+          target.style.width = '100%';
+          target.style.height = 'auto';
+          target.style.maxWidth = '100%';
+        });
       }
     }
   };
@@ -219,9 +385,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const applyZoom = () => {
     if (!img) return;
-    const z = zoomInput ? parseInt(zoomInput.value || '100', 10) : 100;
-    img.style.transform = `scale(${z / 100})`;
-    img.style.transformOrigin = 'center top';
+    let z = zoomInput ? parseInt(zoomInput.value || '100', 10) : 100;
+
+    if (!scrollMode && readerEl) {
+      const pageMaxHeight = getPageModeMaxHeight();
+      const pageMaxWidth = getPageModeMaxWidth();
+      const currentScaleMatch = (img.style.transform || '').match(/scale\(([^)]+)\)/);
+      const currentScale = currentScaleMatch ? (parseFloat(currentScaleMatch[1]) || 1) : 1;
+      const rect = img.getBoundingClientRect();
+      const baseWidth = Math.max(1, rect.width / currentScale);
+      const baseHeight = Math.max(1, rect.height / currentScale);
+      const maxScaleByWidth = pageMaxWidth / baseWidth;
+      const maxScaleByHeight = pageMaxHeight / baseHeight;
+      const maxAllowedZoom = Math.max(60, Math.floor(Math.min(maxScaleByWidth, maxScaleByHeight) * 100));
+
+      if (z > maxAllowedZoom) {
+        z = maxAllowedZoom;
+        if (zoomInput) zoomInput.value = String(z);
+      }
+    }
+
+    const targets = scrollMode
+      ? Array.from((pagesHost || readerEl).querySelectorAll('img'))
+      : [img];
+    targets.forEach((target) => {
+      target.style.transform = `scale(${z / 100})`;
+      target.style.transformOrigin = 'center top';
+    });
   };
 
   const goNext = () => {
@@ -241,6 +431,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const update = () => {
     if (!img) return;
     const baseUrl = readerEl ? readerEl.dataset.baseUrl : (window.__READER && window.__READER.baseUrl);
+    
+    // Add loading state
+    if (img) img.classList.add('loading');
+    
     if (baseUrl) {
       const query = readerEl ? (readerEl.dataset.query || '') : (window.__READER && window.__READER.query) || '';
       img.src = `${baseUrl}/${page}${query}`;
@@ -262,6 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyZoom();
     scheduleSaveProgress();
     markReadIfLast();
+    preloadAdjacentPages(); // preload next/prev pages for smoother navigation
     if (typeof updateMobileDisplay === 'function') updateMobileDisplay();
   };
 
@@ -298,25 +493,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const renderScrollMode = () => {
     if (!readerEl || !img) return;
+    const host = pagesHost || readerEl;
     readerEl.classList.toggle('scroll-mode', scrollMode);
     // Toggle scroll-active class on wrap container for CSS styling
     if (wrap) wrap.classList.toggle('scroll-active', scrollMode);
     // ensure any page-mode inline styles are cleared when switching to scroll
     try { applyFitMode(); } catch (e) {}
     if (!scrollMode) {
+      // restore page mode host/state
+      if (readerEl) {
+        readerEl.scrollTop = 0;
+      }
+      host.innerHTML = '';
+      host.appendChild(img);
       update();
       return;
     }
-    readerEl.innerHTML = '';
+    host.innerHTML = '';
     for (let i = 0; i < total; i += 1) {
       const im = document.createElement('img');
       const baseUrl = readerEl.dataset.baseUrl;
       const query = readerEl.dataset.query || '';
       im.src = `${baseUrl}/${i}${query}`;
       im.alt = `Página ${i + 1}`;
-      readerEl.appendChild(im);
+      im.loading = 'lazy'; // Enable native lazy loading for better performance
+      im.classList.add('reader-scroll-image');
+      host.appendChild(im);
     }
     setStatus('');
+    applyFitMode();
+    applyZoom();
     // compute visibility for scroll-top overlay after images render
     setTimeout(() => { if (typeof updateScrollTopVisibility === 'function') updateScrollTopVisibility(); }, 80);
   };
@@ -324,7 +530,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const applyMobileMode = () => {
     if (!isMobile) return;
     document.body.classList.add('reader-mobile');
-    scrollMode = modeSelectMobile ? modeSelectMobile.value === 'scroll' : false;
+    scrollMode = modeSelectMobile
+      ? modeSelectMobile.value === 'scroll'
+      : (modeToggleBtn ? modeToggleBtn.dataset.mode === 'scroll' : false);
     if (wheelWrap) wheelWrap.classList.add('d-none');
     syncWheelToggle();
     syncMobileControls();
@@ -347,8 +555,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (img) {
-    img.addEventListener('load', () => setStatus(''));
-    img.addEventListener('error', () => setStatus('Falha ao carregar a página.'));
+    img.addEventListener('load', () => {
+      setStatus('');
+      if (img) img.classList.remove('loading');
+      imageRetryCount = 0; // reset retry count on successful load
+    });
+    img.addEventListener('error', () => {
+      if (imageRetryCount < maxImageRetries) {
+        imageRetryCount++;
+        setStatus(`Tentando recarregar... (${imageRetryCount}/${maxImageRetries})`);
+        // Retry loading the image after a short delay
+        setTimeout(() => {
+          if (img) {
+            const currentSrc = img.src;
+            img.src = ''; // Clear src to force reload
+            img.src = currentSrc + (currentSrc.includes('?') ? '&' : '?') + '_retry=' + Date.now();
+          }
+        }, 1000 * imageRetryCount); // Exponential backoff
+      } else {
+        setStatus('Falha ao carregar a página. Tente novamente.');
+        if (img) img.classList.remove('loading');
+        imageRetryCount = 0;
+      }
+    });
     img.addEventListener('click', (e) => {
       if (scrollMode) return;
       if (e.shiftKey) {
@@ -380,11 +609,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const readerProgressMobile = document.getElementById('readerProgressMobile');
   const pageNumberDisplay = document.getElementById('pageNumberDisplay');
   const pageTotalDisplay = document.getElementById('pageTotalDisplay');
-  const tapZoneLeft = document.getElementById('tapZoneLeft');
-  const tapZoneRight = document.getElementById('tapZoneRight');
 
-  if (prevPageMobile) prevPageMobile.addEventListener('click', () => { goPrev(); });
-  if (nextPageMobile) nextPageMobile.addEventListener('click', () => { goNext(); });
+  if (prevPageMobile) {
+    prevPageMobile.addEventListener('click', (e) => { e.preventDefault(); goPrev(); });
+    prevPageMobile.addEventListener('touchend', (e) => { e.preventDefault(); goPrev(); }, { passive: false });
+  }
+  if (nextPageMobile) {
+    nextPageMobile.addEventListener('click', (e) => { e.preventDefault(); goNext(); });
+    nextPageMobile.addEventListener('touchend', (e) => { e.preventDefault(); goNext(); }, { passive: false });
+  }
 
   // Mobile tap zones (tap left side = prev, tap right side = next)
   // For RTL (manga), reverse the behavior
@@ -419,6 +652,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (prevPageMobile) prevPageMobile.disabled = page <= 0;
     if (nextPageMobile) nextPageMobile.disabled = page >= total - 1;
   };
+
+  // Swipe gesture support for mobile in page mode
+  const handleSwipe = () => {
+    if (scrollMode) return; // disable swipe in scroll mode
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+    // Only register horizontal swipes (ignore vertical scrolling)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+      if (deltaX > 0) {
+        // Swipe right
+        if (isRtl) goNext(); else goPrev();
+      } else {
+        // Swipe left
+        if (isRtl) goPrev(); else goNext();
+      }
+    }
+  };
+
+  if (isMobile && img) {
+    img.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    img.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+      handleSwipe();
+    }, { passive: true });
+  }
  
 
   if (pageInput) {
@@ -446,44 +709,96 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return;
     }
+    const getActiveScrollContainer = () => {
+      if (!scrollMode || !readerEl) return window;
+      if (document.fullscreenElement === readerEl) return readerEl;
+      if (wrap && wrap.classList.contains('is-expanded')) return wrap;
+      return window;
+    };
     if (scrollMode && readerEl) {
+      const scroller = getActiveScrollContainer();
       if (e.key === 'Home') {
         e.preventDefault();
-        readerEl.scrollTo({ top: 0, behavior: 'smooth' });
+        if (scroller === window) {
+          window.scrollTo({ top: Math.max(0, readerEl.offsetTop - 8), behavior: 'smooth' });
+        } else {
+          scroller.scrollTo({ top: 0, behavior: 'smooth' });
+        }
         return;
       }
       if (e.key === 'End') {
         e.preventDefault();
-        readerEl.scrollTo({ top: readerEl.scrollHeight, behavior: 'smooth' });
+        if (scroller === window) {
+          const readerBottom = readerEl.offsetTop + readerEl.scrollHeight;
+          window.scrollTo({ top: Math.max(0, readerBottom - window.innerHeight), behavior: 'smooth' });
+        } else {
+          scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
+        }
         return;
       }
       if (e.key === 'PageDown' || e.key === ' ') {
         e.preventDefault();
-        readerEl.scrollBy({ top: readerEl.clientHeight * 0.9, behavior: 'smooth' });
+        if (scroller === window) {
+          window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' });
+        } else {
+          scroller.scrollBy({ top: scroller.clientHeight * 0.9, behavior: 'smooth' });
+        }
         return;
       }
       if (e.key === 'PageUp') {
         e.preventDefault();
-        readerEl.scrollBy({ top: -readerEl.clientHeight * 0.9, behavior: 'smooth' });
+        if (scroller === window) {
+          window.scrollBy({ top: -window.innerHeight * 0.9, behavior: 'smooth' });
+        } else {
+          scroller.scrollBy({ top: -(scroller.clientHeight * 0.9), behavior: 'smooth' });
+        }
         return;
       }
     }
-    if (e.key === '+') {
+    if (e.key === '+' || e.key === '=') {
+      e.preventDefault();
       if (zoomInput) {
-        zoomInput.value = String(Math.min(160, parseInt(zoomInput.value || '100', 10) + 5));
+        const newZoom = Math.min(160, parseInt(zoomInput.value || '100', 10) + 5);
+        zoomInput.value = String(newZoom);
+        setCookie('reader_zoom', String(zoomInput.value));
         applyZoom();
+        showToast(`Zoom: ${newZoom}%`, 1500);
       }
     }
-    if (e.key === '-') {
+    if (e.key === '-' || e.key === '_') {
+      e.preventDefault();
       if (zoomInput) {
-        zoomInput.value = String(Math.max(60, parseInt(zoomInput.value || '100', 10) - 5));
+        const newZoom = Math.max(60, parseInt(zoomInput.value || '100', 10) - 5);
+        zoomInput.value = String(newZoom);
+        setCookie('reader_zoom', String(zoomInput.value));
         applyZoom();
+        showToast(`Zoom: ${newZoom}%`, 1500);
+      }
+    }
+    if (e.key === '0') {
+      e.preventDefault();
+      // Reset zoom to 100%
+      if (zoomInput) {
+        zoomInput.value = '100';
+        setCookie('reader_zoom', '100');
+        applyZoom();
+        showToast('Zoom resetado: 100%', 1500);
+      }
+    }
+    if (e.key === 'f' || e.key === 'F') {
+      e.preventDefault();
+      // Toggle fullscreen
+      if (expandBtn) {
+        expandBtn.click();
+        showToast(document.fullscreenElement ? 'Modo tela cheia' : 'Tela cheia desativada', 1500);
       }
     }
     if (e.key === 'ArrowLeft') {
+      e.preventDefault();
       if (isRtl) goNext(); else goPrev();
     }
     if (e.key === 'ArrowRight') {
+      e.preventDefault();
       if (isRtl) goPrev(); else goNext();
     }
     if (e.key === 'Home') {
@@ -530,23 +845,31 @@ document.addEventListener('DOMContentLoaded', () => {
     renderScrollMode();
   }
 
+  const applyReaderModeChange = () => {
+    setCookie('reader_mode', scrollMode ? 'scroll' : 'page');
+    if (modeSelectMobile) modeSelectMobile.value = scrollMode ? 'scroll' : 'page';
+    syncModeToggleUi();
+    syncWheelToggle();
+    syncMobileControls();
+    syncPageGuide();
+    applyScrollDefaults();
+    if (scrollTopBtn) { if (scrollMode) setTimeout(() => { try { updateScrollTopVisibility(); } catch(e){} }, 80); else scrollTopBtn.classList.add('d-none'); }
+    renderScrollMode();
+    showToast(scrollMode ? 'Modo Scroll ativado' : 'Modo Página ativado', 2000);
+    renderChapterControls();
+  };
+
   if (modeSelectMobile) {
     modeSelectMobile.addEventListener('change', () => {
       scrollMode = modeSelectMobile.value === 'scroll';
-      setCookie('reader_mode', modeSelectMobile.value);
-      syncWheelToggle();
-      syncMobileControls();
-      syncPageGuide();
-      applyScrollDefaults();
-      if (scrollTopBtn) { if (scrollMode) setTimeout(() => { try { updateScrollTopVisibility(); } catch(e){} }, 80); else scrollTopBtn.classList.add('d-none'); }
-      if (scrollMode) {
-        renderScrollMode();
-      } else {
-        readerEl.innerHTML = '';
-        readerEl.appendChild(img);
-        update();
-      }
-      renderChapterControls();
+      applyReaderModeChange();
+    });
+  }
+
+  if (modeToggleBtn) {
+    modeToggleBtn.addEventListener('click', () => {
+      scrollMode = !scrollMode;
+      applyReaderModeChange();
     });
   }
   
@@ -554,8 +877,24 @@ document.addEventListener('DOMContentLoaded', () => {
   if (scrollTopBtn) {
     scrollTopBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      if (readerEl) readerEl.scrollTo({ top: 0, behavior: 'smooth' });
-      else window.scrollTo({ top: 0, behavior: 'smooth' });
+      const getActiveScrollContainer = () => {
+        if (!scrollMode || !readerEl) return window;
+        if (document.fullscreenElement === readerEl) return readerEl;
+        if (wrap && wrap.classList.contains('is-expanded')) return wrap;
+        return window;
+      };
+      const scroller = getActiveScrollContainer();
+      if (scrollMode && readerEl) {
+        if (scroller === window) {
+          window.scrollTo({ top: Math.max(0, readerEl.offsetTop - 8), behavior: 'smooth' });
+        } else {
+          scroller.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } else if (readerEl) {
+        readerEl.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     });
     setTimeout(() => { try { if (typeof updateScrollTopVisibility === 'function') updateScrollTopVisibility(); } catch (e) {} }, 120);
   }
@@ -597,9 +936,24 @@ document.addEventListener('DOMContentLoaded', () => {
         goPrev();
       }
     }, { passive: false });
-    readerEl.addEventListener('scroll', () => {
+    const syncScrollModeProgress = () => {
       if (!scrollMode || !readerEl || total <= 0) return;
-      const ratio = readerEl.scrollTop / Math.max(1, readerEl.scrollHeight - readerEl.clientHeight);
+      const getActiveScrollContainer = () => {
+        if (document.fullscreenElement === readerEl) return readerEl;
+        if (wrap && wrap.classList.contains('is-expanded')) return wrap;
+        return window;
+      };
+      const scroller = getActiveScrollContainer();
+      let ratio = 0;
+      if (scroller === window) {
+        const readerTop = readerEl.offsetTop;
+        const maxScroll = Math.max(1, readerEl.scrollHeight - window.innerHeight);
+        const relative = Math.max(0, window.scrollY - readerTop);
+        ratio = Math.min(1, relative / maxScroll);
+      } else {
+        const maxScroll = Math.max(1, scroller.scrollHeight - scroller.clientHeight);
+        ratio = Math.min(1, Math.max(0, scroller.scrollTop / maxScroll));
+      }
       const newPage = Math.min(total - 1, Math.max(0, Math.floor(ratio * total)));
       if (newPage !== page) {
         page = newPage;
@@ -614,19 +968,135 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       // update scroll-top overlay visibility while scrolling
       try { updateScrollTopVisibility(); } catch (e) {}
-      
+    };
+
+    readerEl.addEventListener('scroll', () => {
+      if (!scrollMode) return;
+      syncScrollModeProgress();
     });
+
+    if (wrap) {
+      wrap.addEventListener('scroll', () => {
+        if (!scrollMode) return;
+        syncScrollModeProgress();
+      }, { passive: true });
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!scrollMode) return;
+      syncScrollModeProgress();
+    }, { passive: true });
   }
 
+  window.addEventListener('resize', () => {
+    applyFitMode();
+    if (scrollMode) {
+      try { updateScrollTopVisibility(); } catch (e) {}
+    }
+  }, { passive: true });
 
-  if (expandBtn) {
-    expandBtn.addEventListener('click', () => {
-      document.body.classList.toggle('reader-expanded');
-      if (wrap) wrap.classList.toggle('is-expanded');
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      applyFitMode();
+      if (scrollMode) {
+        try { updateScrollTopVisibility(); } catch (e) {}
+      }
+    }, 120);
+  });
+
+
+  if (expandBtn || expandBtnMobile) {
+    const expandButtons = [expandBtn, expandBtnMobile].filter(Boolean);
+    const syncExpandButtonState = (active) => {
+      expandButtons.forEach((button) => {
+        if (!button) return;
+        const icon = button.querySelector('i');
+        if (icon) {
+          icon.classList.remove('bi-arrows-fullscreen', 'bi-fullscreen-exit');
+          icon.classList.add(active ? 'bi-fullscreen-exit' : 'bi-arrows-fullscreen');
+        }
+        button.setAttribute('title', active ? 'Sair da tela cheia' : 'Tela cheia');
+        button.setAttribute('aria-label', active ? 'Sair da tela cheia' : 'Tela cheia');
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      if (exitFullscreenBtn) {
+        exitFullscreenBtn.classList.toggle('d-none', !active);
+      }
+    };
+
+    const toggleExpand = () => {
+      const container = readerEl || wrap || document.documentElement;
+      const enterFallbackExpanded = () => {
+        document.body.classList.add('reader-expanded');
+        if (wrap) wrap.classList.add('is-expanded');
+        syncExpandButtonState(true);
+        syncPageGuide();
+      };
+      const exitFallbackExpanded = () => {
+        document.body.classList.remove('reader-expanded');
+        if (wrap) wrap.classList.remove('is-expanded');
+        syncExpandButtonState(false);
+        syncPageGuide();
+      };
+
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {
+          if (document.body.classList.contains('reader-expanded')) {
+            exitFallbackExpanded();
+          } else {
+            enterFallbackExpanded();
+          }
+        });
+      } else if (container && container.requestFullscreen) {
+        container.requestFullscreen().then(() => {
+          enterFallbackExpanded();
+        }).catch(() => {
+          if (document.body.classList.contains('reader-expanded')) {
+            exitFallbackExpanded();
+          } else {
+            enterFallbackExpanded();
+          }
+        });
+      } else {
+        if (document.body.classList.contains('reader-expanded')) {
+          exitFallbackExpanded();
+        } else {
+          enterFallbackExpanded();
+        }
+      }
+      setTimeout(() => {
+        if (typeof updateScrollTopVisibility === 'function') updateScrollTopVisibility();
+      }, 60);
+    };
+
+    expandButtons.forEach((button) => {
+      if (!button) return;
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleExpand();
+      });
+    });
+
+    if (exitFullscreenBtn) {
+      exitFullscreenBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleExpand();
+      });
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      const active = Boolean(document.fullscreenElement);
+      document.body.classList.toggle('reader-expanded', active);
+      if (wrap) wrap.classList.toggle('is-expanded', active);
+      syncExpandButtonState(active);
+      syncPageGuide();
       setTimeout(() => {
         if (typeof updateScrollTopVisibility === 'function') updateScrollTopVisibility();
       }, 60);
     });
+
+    // initial button state
+    syncExpandButtonState(Boolean(document.fullscreenElement || document.body.classList.contains('reader-expanded')));
   }
 
   if (bottomTopBtn) {

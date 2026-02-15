@@ -133,6 +133,59 @@ ob_start();
         </div>
     </div>
 </div>
+<script>
+(() => {
+    // Animate package cards on scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    const cards = document.querySelectorAll('.loja-package-card');
+    cards.forEach((card) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+    
+    // Animate voucher card
+    const voucherCard = document.querySelector('.voucher-card');
+    if (voucherCard) {
+        voucherCard.style.opacity = '0';
+        voucherCard.style.transform = 'translateY(30px)';
+        voucherCard.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(voucherCard);
+    }
+    
+    // Dynamic price calculation display
+    const packageForms = document.querySelectorAll('.loja-package-form');
+    packageForms.forEach((form) => {
+        const select = form.querySelector('select[name="months"]');
+        if (select) {
+            select.addEventListener('change', () => {
+                // Add a subtle animation when selecting different periods
+                form.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    form.style.transform = 'scale(1)';
+                }, 200);
+            });
+        }
+    });
+})();
+</script>
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../layout.php';

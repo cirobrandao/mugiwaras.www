@@ -83,11 +83,12 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
                 <?php $mrName = (string)($mr['name'] ?? ''); ?>
                 <?php $mrCategory = (string)($mr['category_name'] ?? ''); ?>
                 <?php $mrCatId = (int)($mr['category_id'] ?? 0); ?>
-                <?php $mrCategorySlug = $mrCategory !== '' ? \App\Models\Category::generateSlug($mrCategory) : ''; ?>
+                <?php $mrSeriesId = (int)($mr['id'] ?? 0); ?>
+                <?php $mrCategorySlug = !empty($mr['category_slug']) ? (string)$mr['category_slug'] : ($mrCategory !== '' ? \App\Models\Category::generateSlug($mrCategory) : ''); ?>
                 <div class="list-item">
                     <div class="rank-badge"><?= $position++ ?></div>
                     <div class="list-content">
-                        <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($mrCategorySlug) . '/' . rawurlencode($mrName)) ?>">
+                        <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($mrCategorySlug) . '/' . ($mrSeriesId > 0 ? $mrSeriesId : rawurlencode($mrName))) ?>">
                             <?= View::e($mrName) ?>
                         </a>
                         <div class="list-meta">
@@ -129,8 +130,9 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
                 <?php $rcSeriesLabel = $rcSeries; ?>
                 <?php $rcTitleLabel = $rcTitle; ?>
                 <?php $rcCatId = (int)($rc['category_id'] ?? 0); ?>
+                <?php $rcSeriesId = (int)($rc['series_id'] ?? 0); ?>
                 <?php $isNewContent = !empty($rc['is_new']); ?>
-                <?php $rcCategorySlug = $rcCategory !== '' ? \App\Models\Category::generateSlug($rcCategory) : ''; ?>
+                <?php $rcCategorySlug = !empty($rc['category_slug']) ? (string)$rc['category_slug'] : ($rcCategory !== '' ? \App\Models\Category::generateSlug($rcCategory) : ''); ?>
                 <div class="list-item <?= $isNewContent ? 'has-new-content' : '' ?>">
                     <?php if ($isNewContent): ?>
                         <div class="new-indicator"></div>
@@ -140,7 +142,7 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
                     </div>
                     <div class="list-content">
                         <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
-                            <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($rcCategorySlug) . '/' . rawurlencode($rcSeries)) ?>">
+                            <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($rcCategorySlug) . '/' . ($rcSeriesId > 0 ? $rcSeriesId : rawurlencode($rcSeries))) ?>">
                                 <?= View::e($rcSeriesLabel) ?>
                             </a>
                         <?php else: ?>

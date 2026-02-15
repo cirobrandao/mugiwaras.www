@@ -1,7 +1,9 @@
 <?php
 use App\Core\View;
 ob_start();
-$categorySlug = !empty($content['category_name']) ? \App\Models\Category::generateSlug((string)$content['category_name']) : '';
+$categorySlug = !empty($content['category_slug'])
+    ? (string)$content['category_slug']
+    : (!empty($content['category_name']) ? \App\Models\Category::generateSlug((string)$content['category_name']) : '');
 ?>
 <?php if (!empty($error)): ?>
     <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -19,7 +21,7 @@ $categorySlug = !empty($content['category_name']) ? \App\Models\Category::genera
         <div class="reader-header reader-shell-header">
             <div class="reader-header-left">
                 <?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
-                    <a class="btn btn-sm btn-outline-secondary reader-back" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode((string)$content['series_name'])) ?>">
+                    <a class="btn btn-sm btn-outline-secondary reader-back" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . (int)$content['series_id']) ?>">
                         <i class="bi bi-chevron-left me-1"></i>
                         <span>Voltar aos capítulos</span>
                     </a>
@@ -135,7 +137,7 @@ $categorySlug = !empty($content['category_name']) ? \App\Models\Category::genera
                         </button>
                     <?php endif; ?>
                     <?php if (!empty($content['category_id']) && !empty($content['series_id']) && !empty($content['category_name']) && !empty($content['series_name'])): ?>
-                        <a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode((string)$content['series_name'])) ?>">
+                        <a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . (int)$content['series_id']) ?>">
                             <i class="bi bi-list-ul me-1"></i>
                             <span>Capítulos</span>
                         </a>

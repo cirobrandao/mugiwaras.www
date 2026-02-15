@@ -5,7 +5,7 @@ $itemCount = is_array($items ?? null) ? count($items) : 0;
 ?>
 <?php
 $categorySlug = !empty($category['slug']) ? (string)$category['slug'] : \App\Models\Category::generateSlug((string)($category['name'] ?? ''));
-$seriesBaseUrl = base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode((string)($series['name'] ?? '')));
+$seriesBaseUrl = base_path('/lib/' . rawurlencode($categorySlug) . '/' . (int)($series['id'] ?? 0));
 $baseQuery = [];
 if (!empty($format)) $baseQuery[] = 'format=' . urlencode((string)$format);
 if (!empty($iosTest)) $baseQuery[] = 'ios_test=1';

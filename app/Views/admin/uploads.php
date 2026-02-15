@@ -200,8 +200,8 @@ $shortFileName = static function (string $name): string {
                     $seriesId = (int)($u['series_id'] ?? 0);
                     $seriesLabel = $seriesName !== '' ? $seriesName : ($seriesId > 0 ? ('#' . $seriesId) : '—');
                     $categorySlugForSeries = $categoryNameForSeries !== '' ? \App\Models\Category::generateSlug($categoryNameForSeries) : '';
-                    $seriesUrl = ($seriesName !== '' && $categorySlugForSeries !== '')
-                        ? base_path('/lib/' . rawurlencode($categorySlugForSeries) . '/' . rawurlencode($seriesName))
+                    $seriesUrl = ($seriesId > 0 && $categorySlugForSeries !== '')
+                        ? base_path('/lib/' . rawurlencode($categorySlugForSeries) . '/' . $seriesId)
                         : '';
                     ?>
                     <div class="d-inline-flex align-items-center gap-1" style="max-width: 190px;">

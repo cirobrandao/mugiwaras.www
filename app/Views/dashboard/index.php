@@ -150,6 +150,7 @@ if (!empty($accessInfo['package_title'])) {
                     <div class="series-grid">
                         <?php foreach ($favoriteTop as $s): ?>
                             <?php $seriesName = (string)($s['name'] ?? ''); ?>
+                            <?php $seriesId = (int)($s['id'] ?? 0); ?>
                             <?php $categoryName = (string)($s['category_name'] ?? ''); ?>
                             <?php $categorySlug = !empty($s['category_slug']) ? (string)$s['category_slug'] : \App\Models\Category::generateSlug($categoryName); ?>
                             <?php $chapterCount = (int)($s['chapter_count'] ?? 0); ?>
@@ -164,7 +165,7 @@ if (!empty($accessInfo['package_title'])) {
                                 <div class="series-icon">
                                     <i class="bi bi-bookmark-star-fill"></i>
                                 </div>
-                                <a class="series-title" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . rawurlencode($seriesName)) ?>">
+                                <a class="series-title" href="<?= base_path('/lib/' . rawurlencode($categorySlug) . '/' . $seriesId) ?>">
                                     <?= View::e($seriesName) ?>
                                 </a>
                                 <div class="series-meta">
