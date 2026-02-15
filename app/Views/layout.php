@@ -54,6 +54,8 @@ $isRestricted = $currentUser && ($currentUser['access_tier'] ?? '') === 'restrit
 $canUseSideMenu = $isAdmin || $isModerator || $isUploader || $isSupportStaff;
 
 $supportUrl = base_path('/support');
+$uploadBase = rtrim((string)config('app.upload_url', ''), '/');
+$uploadPanelUrl = $uploadBase !== '' ? $uploadBase . '/login' : upload_url('/upload');
 $supportBadge = 0;
 $pendingPayments = 0;
 $pendingSupport = 0;
@@ -230,7 +232,7 @@ if (function_exists('sys_getloadavg')) {
                                     <?php endif; ?>
                                     <?php if ($isAdmin || $isUploader || $isModerator): ?>
                                         <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="<?= base_path('/admin/uploads') ?>"><span><i class="bi bi-upload me-2"></i>Upload manager</span><?php if (!empty($pendingUploads)): ?><span class="badge bg-danger"><?= (int)$pendingUploads ?></span><?php endif; ?></a></li>
-                                        <li><a class="dropdown-item" href="<?= upload_url('/upload') ?>"><i class="bi bi-cloud-arrow-up me-2"></i>Enviar arquivo</a></li>
+                                        <li><a class="dropdown-item" href="<?= \App\Core\View::e($uploadPanelUrl) ?>"><i class="bi bi-cloud-arrow-up me-2"></i>Enviar arquivo</a></li>
                                     <?php endif; ?>
                                     <?php if ($isAdmin): ?>
                                         <li><a class="dropdown-item" href="<?= base_path('/admin/news') ?>"><i class="bi bi-megaphone me-2"></i>Notícias</a></li>

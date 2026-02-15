@@ -1,0 +1,33 @@
+.upload-admin-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.upload-admin-shell .section-card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.upload-admin-help {
+  font-size: .875rem;
+}
+
+.upload-admin-shell .upload-log-box {
+  min-height: 220px;
+}
+
+.upload-admin-shell .upload-log-box #uploadLog {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.upload-admin-shell .progress {
+  border-radius: 999px;
+}
+
+.upload-admin-shell .progress-bar {
+  transition: width .25s ease;
+}
+
+body.theme-dark .upload-admin-shell .section-card {
+  border-color: rgba(255, 255, 255, 0.12);
+}

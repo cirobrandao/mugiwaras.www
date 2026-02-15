@@ -79,6 +79,16 @@ $router->get('/assets/css/app.css', function (): void {
     readfile($path);
 });
 
+$router->get('/assets/css/upload-admin.css', function (): void {
+    $path = dirname(__DIR__) . '/public/assets/css/upload-admin.css';
+    if (!is_file($path)) {
+        http_response_code(404);
+        return;
+    }
+    header('Content-Type: text/css; charset=utf-8');
+    readfile($path);
+});
+
 $router->get('/assets/category-tags.css', function (): void {
     $path = dirname(__DIR__) . '/public/assets/category-tags.css';
     if (!is_file($path)) {
@@ -111,6 +121,16 @@ $router->get('/assets/js/app.js', function (): void {
 
 $router->get('/assets/js/theme.js', function (): void {
     $path = dirname(__DIR__) . '/public/assets/js/theme.js';
+    if (!is_file($path)) {
+        http_response_code(404);
+        return;
+    }
+    header('Content-Type: application/javascript; charset=utf-8');
+    readfile($path);
+});
+
+$router->get('/assets/js/upload.js', function (): void {
+    $path = dirname(__DIR__) . '/public/assets/js/upload.js';
     if (!is_file($path)) {
         http_response_code(404);
         return;
