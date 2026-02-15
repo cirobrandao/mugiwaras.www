@@ -10,7 +10,7 @@ ob_start();
     </div>
 <?php elseif (!empty($_GET['error'])): ?>
     <?php if ($_GET['error'] === 'limit'): ?>
-        <div class="alert alert-danger">O tamanho total do envio excede 5 GB.</div>
+        <div class="alert alert-danger">O tamanho total do envio excede 200 MB.</div>
     <?php elseif ($_GET['error'] === 'category'): ?>
         <div class="alert alert-danger">Selecione uma categoria válida.</div>
     <?php elseif ($_GET['error'] === 'files'): ?>
@@ -31,6 +31,9 @@ ob_start();
 <?php if (!empty($noCategories)): ?>
     <div class="alert alert-warning">Nenhuma categoria cadastrada. Crie uma categoria no painel administrativo.</div>
 <?php endif; ?>
+<?php
+$uploadBypassUrl = upload_url('/upload-admin/login');
+?>
 <div id="uploadResult"></div>
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     <div>
@@ -42,7 +45,10 @@ ob_start();
         <div class="progress" style="height: 6px;">
             <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>
         </div>
-        <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="5368709120" data-max-files="100">0 B / 5 GB · 0 / 100 arquivos</div>
+        <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="209715200" data-max-files="100">0 B / 200 MB · 0 / 100 arquivos</div>
+        <div class="small mt-2">
+            Para arquivos acima de 200 MB, use o painel de bypass: <a href="<?= \App\Core\View::e($uploadBypassUrl) ?>">Upload Admin</a>
+        </div>
     </div>
     <div class="row">
         <div class="col-lg-7">
@@ -65,7 +71,7 @@ ob_start();
         </div>
         <div class="mb-3">
             <label class="form-label">Arquivos</label>
-            <input type="file" name="file[]" class="form-control" multiple required data-max-bytes="5368709120" data-max-files="100">
+            <input type="file" name="file[]" class="form-control" multiple required data-max-bytes="209715200" data-max-files="100">
             <div class="form-text">Formatos aceitos: *.epub, *.cbr, *.cbz, *.zip (imagens).</div>
             <div class="form-text">PDF: sem leitor, apenas download (aparece sinalizado na biblioteca).</div>
         </div>

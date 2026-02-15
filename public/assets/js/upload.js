@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const submitBtn = document.getElementById('uploadSubmit');
   const uploadWait = document.getElementById('uploadWait');
 
-  const maxBytes = parseInt((fileInput && fileInput.dataset.maxBytes) || (limitInfo && limitInfo.dataset.maxBytes) || '5368709120', 10);
+  const maxBytes = parseInt((fileInput && fileInput.dataset.maxBytes) || (limitInfo && limitInfo.dataset.maxBytes) || '209715200', 10);
   const maxFiles = parseInt((fileInput && fileInput.dataset.maxFiles) || (limitInfo && limitInfo.dataset.maxFiles) || '100', 10);
 
   const formatBytes = (bytes) => {
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tooBig) {
       e.preventDefault();
       if (uploadResult) {
-        uploadResult.innerHTML = '<div class="alert alert-danger">Arquivo inválido ou acima do limite de 5 GB.</div>';
+        uploadResult.innerHTML = '<div class="alert alert-danger">Arquivo inválido ou acima do limite de 200 MB.</div>';
       }
       if (uploadWrap) uploadWrap.classList.add('d-none');
       if (submitBtn) submitBtn.disabled = false;

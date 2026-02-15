@@ -55,7 +55,7 @@ $uploadHost = mb_strtolower((string)(parse_url($uploadUrl, PHP_URL_HOST) ?? ''))
 
 // Redirect logic for upload domain
 if ($appUrl !== '' && $uploadUrl !== '' && $appHost !== '' && $uploadHost !== '' && $appHost !== $uploadHost) {
-    $isUploadRoute = preg_match('#^/(upload|loja/(proof|request))($|/|\?)#', $reqPath) === 1;
+    $isUploadRoute = preg_match('#^/(upload|upload-admin|loja/(proof|request))($|/|\?)#', $reqPath) === 1;
     $isAssetRoute = preg_match('#^/assets($|/)#', $reqPath) === 1;
     $isPublicFileRoute = preg_match('#^/(uploads|favicon\.ico)($|/)#', $reqPath) === 1;
     $hasTransitionToken = !empty($_GET['_t']);
@@ -151,6 +151,11 @@ $router->get('/lib/{category}/{series}', [new App\Controllers\LibraryController(
 $router->get('/upload', [new App\Controllers\UploadController(), 'form'], [App\Core\Auth::requireUploadAccess(), App\Core\Middleware::requireActiveAccess()]);
 $router->post('/upload', [new App\Controllers\UploadController(), 'submit'], [App\Core\Auth::requireUploadAccess(), App\Core\Middleware::requireActiveAccess()]);
 $router->post('/upload/process-pending', [new App\Controllers\UploadController(), 'processPending'], [App\Core\Auth::requireUploadAccess(), App\Core\Middleware::requireActiveAccess()]);
+
+$router->get('/upload-admin/login', [new App\Controllers\UploadAdminController(), 'loginForm']);
+$router->post('/upload-admin/login', [new App\Controllers\UploadAdminController(), 'login']);
+$router->get('/upload-admin/logout', [new App\Controllers\UploadAdminController(), 'logout']);
+$router->get('/upload-admin', [new App\Controllers\UploadAdminController(), 'form']);
 
 
 $router->get('/lib', [new App\Controllers\LibraryController(), 'index'], [App\Core\Middleware::requireAuth(), App\Core\Middleware::requireActiveAccess()]);

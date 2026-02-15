@@ -110,7 +110,7 @@ final class CrossDomainAuth
         }
         
         // Apenas para rotas de upload e proof
-        return preg_match('#^/(upload|loja/(proof|request))($|/|\?)#', $path) === 1;
+        return preg_match('#^/(upload|upload-admin|loja/(proof|request))($|/|\?)#', $path) === 1;
     }
     
     /**
