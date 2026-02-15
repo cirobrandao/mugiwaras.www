@@ -1,7 +1,6 @@
 <?php
 ob_start();
 ?>
-<link rel="stylesheet" href="<?= base_path('/assets/css/upload-admin.css') ?>">
 <div class="upload-admin-shell">
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     <div>
@@ -73,4 +72,4 @@ ob_start();
 <script src="<?= base_path('/assets/js/upload.js') ?>"></script>
 <?php
 $content = ob_get_clean();
-require __DIR__ . '/../layout.php';
+require __DIR__ . '/layout.php';
