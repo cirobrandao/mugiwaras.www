@@ -22,10 +22,10 @@ $tierLabelMap = [
 $tierIcon = $tierIconMap[$tier] ?? 'bi-person-fill';
 $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
 ?>
-<h1 class="h4 mb-3"><?= View::e($profileTitle) ?></h1>
-<div class="card">
-    <div class="card-body">
-        <div class="row g-3 align-items-start">
+<h1 class="h5 mb-2 fw-semibold"><?= View::e($profileTitle) ?></h1>
+<div class="card profile-card profile-card">
+    <div class="card-body profile-card-body">
+        <div class="row g-2 align-items-start">
             <div class="col-auto">
                 <div class="border rounded d-flex align-items-center justify-content-center profile-avatar-box">
                     <?php $avatarPath = (string)($user['avatar_path'] ?? ''); ?>
@@ -37,30 +37,30 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
                 </div>
             </div>
             <div class="col">
-                <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">
+                <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-1">
                     <div class="d-flex flex-column gap-1">
-                        <div class="fw-semibold fs-5 d-flex align-items-center gap-2">
+                        <div class="fw-semibold fs-6 d-flex align-items-center gap-2">
                             <span><?= View::e((string)($user['username'] ?? '')) ?></span>
                             <i class="bi <?= View::e($tierIcon) ?>" title="<?= View::e($tierLabel) ?>" aria-label="<?= View::e($tierLabel) ?>"></i>
                         </div>
-                        <div class="text-body-secondary small">Perfil do usuario</div>
+                        <div class="text-body-secondary" style="font-size: 0.8rem;">Perfil do usuario</div>
                     </div>
                     <?php if (!empty($canEditProfile)): ?>
-                        <a class="btn btn-outline-primary btn-sm" href="<?= base_path('/user/editar') ?>">Editor de perfil</a>
+                        <a class="btn btn-outline-primary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;" href="<?= base_path('/user/editar') ?>">Editor de perfil</a>
                     <?php endif; ?>
                 </div>
                 <div class="row g-2">
                     <div class="col-md-6 col-lg-4">
-                        <div class="text-muted small">Email</div>
-                        <div class="fw-medium text-break"><?= View::e((string)($user['email'] ?? '')) ?></div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Email</div>
+                        <div class="fw-medium text-break" style="font-size: 0.875rem;"><?= View::e((string)($user['email'] ?? '')) ?></div>
                     </div>
                     <div class="col-md-6 col-lg-4">
-                        <div class="text-muted small">Telefone</div>
-                            <div class="fw-medium"><?= View::e(phone_mask((string)($user['phone'] ?? ''))) ?></div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Telefone</div>
+                            <div class="fw-medium" style="font-size: 0.875rem;"><?= View::e(phone_mask((string)($user['phone'] ?? ''))) ?></div>
                     </div>
                     <div class="col-md-6 col-lg-4">
-                        <div class="text-muted small">Nascimento</div>
-                        <div class="fw-medium"><?= View::e((string)($user['birth_date'] ?? '')) ?></div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Nascimento</div>
+                        <div class="fw-medium" style="font-size: 0.875rem;"><?= View::e((string)($user['birth_date'] ?? '')) ?></div>
                     </div>
                 </div>
             </div>
@@ -68,12 +68,12 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
     </div>
 </div>
 
-<div class="row g-3 mt-2">
+<div class="row g-2 mt-1">
     <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h2 class="h6 mb-0">Historico de compras e vouchers</h2>
+        <div class="card profile-card profile-card h-100">
+            <div class="card-body profile-card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h2 class="mb-0 fw-semibold" style="font-size: 0.95rem;">Historico de compras e vouchers</h2>
                     <?php if (!empty($commerceHistoryMore)): ?>
                         <button class="btn btn-sm btn-link" type="button" data-bs-toggle="modal" data-bs-target="#paymentsModal">Ver mais</button>
                     <?php endif; ?>
@@ -81,8 +81,8 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
                 <?php if (empty($commerceHistory)): ?>
                     <div class="text-muted">Sem registros.</div>
                 <?php else: ?>
-                    <div class="table-responsive overflow-auto" style="max-height: 320px;">
-                        <table class="table table-sm align-middle mb-0 small">
+                    <div class="table-responsive overflow-auto" style="max-height: 280px;">
+                        <table class="table table-sm align-middle mb-0" style="font-size: 0.8rem;">
                             <thead class="table-light">
                             <tr>
                                 <th scope="col" style="width: 140px;">Data</th>
@@ -149,10 +149,10 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
         </div>
     </div>
     <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h2 class="h6 mb-0">Historico de acesso</h2>
+        <div class="card profile-card h-100">
+            <div class="card-body profile-card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h2 class="mb-0 fw-semibold" style="font-size: 0.95rem;">Historico de acesso</h2>
                     <?php if (!empty($loginHistoryMore)): ?>
                         <button class="btn btn-sm btn-link" type="button" data-bs-toggle="modal" data-bs-target="#loginHistoryModal">Ver mais</button>
                     <?php endif; ?>
@@ -186,10 +186,10 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
                         </table>
                     </div>
                     <?php if (!empty($loginFails ?? [])): ?>
-                        <div class="mt-3">
-                            <div class="text-muted small mb-2">Tentativas de acesso indevido</div>
+                        <div class="mt-2">
+                            <div class="text-muted mb-1" style="font-size: 0.75rem;">Tentativas de acesso indevido</div>
                             <div class="table-responsive">
-                                <table class="table table-sm align-middle mb-0 small">
+                                <table class="table table-sm align-middle mb-0" style="font-size: 0.8rem;">
                                     <thead class="table-light">
                                     <tr>
                                         <th scope="col" style="width: 140px;">Data</th>
@@ -223,17 +223,17 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
         </div>
     </div>
     <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h2 class="h6 mb-0">Historico de leitura</h2>
-                    <span class="badge bg-light text-muted border">Pagina <?= (int)($readPage ?? 1) ?> de <?= (int)($readPages ?? 1) ?></span>
+        <div class="card profile-card">
+            <div class="card-body profile-card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h2 class="mb-0 fw-semibold" style="font-size: 0.95rem;">Historico de leitura</h2>
+                    <span class="badge bg-light text-muted border" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Pag. <?= (int)($readPage ?? 1) ?>/<?= (int)($readPages ?? 1) ?></span>
                 </div>
                 <?php if (empty($readingHistory)): ?>
-                    <div class="text-muted">Sem registros.</div>
+                    <div class="text-muted" style="font-size: 0.85rem;">Sem registros.</div>
                 <?php else: ?>
                     <div class="table-responsive">
-                        <table class="table table-sm align-middle mb-0 small">
+                        <table class="table table-sm align-middle mb-0" style="font-size: 0.8rem;">
                             <thead class="table-light">
                             <tr>
                                 <th scope="col" style="width: 140px;">Data</th>
@@ -268,8 +268,8 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
                         $hasNext = $readPage < $readPages;
                     ?>
                     <?php if ($readPages > 1): ?>
-                        <nav class="mt-3" aria-label="Paginacao de leitura">
-                            <ul class="pagination pagination-sm mb-0">
+                        <nav class="mt-2" aria-label="Paginacao de leitura">
+                            <ul class="pagination pagination-sm mb-0 profile-pagination">
                                 <li class="page-item <?= $hasPrev ? '' : 'disabled' ?>">
                                     <a class="page-link" href="<?= base_path($profileBase . '?reads_page=' . max(1, $readPage - 1)) ?>" aria-label="Anterior">
                                         <span aria-hidden="true">&laquo;</span>

@@ -143,61 +143,69 @@ if (function_exists('sys_getloadavg')) {
     </div>
 <?php else: ?>
     <div class="app-shell">
-        <!-- Top Bar -->
-        <header class="app-topbar" role="banner">
-            <div class="app-topbar-inner">
-                <div class="topbar-left">
-                    <a class="topbar-brand" href="<?= base_path('/home') ?>" aria-label="Página inicial">
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg fixed-top app-navbar" role="banner">
+            <div class="container-fluid navbar-container">
+                <div class="navbar-brand-wrapper">
+                    <a class="navbar-brand" href="<?= base_path('/home') ?>" aria-label="Página inicial">
                         <?php if (!empty($systemLogo)): ?>
-                            <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="<?= View::e($systemName) ?>" class="topbar-brand-logo">
+                            <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="<?= View::e($systemName) ?>" class="navbar-logo">
                         <?php else: ?>
-                            <span class="topbar-brand-text"><?= View::e($systemName) ?></span>
+                            <span class="navbar-brand-text"><?= View::e($systemName) ?></span>
                         <?php endif; ?>
                     </a>
                     <?php if ($isLoggedIn): ?>
-                        <nav class="topbar-portal-nav" aria-label="Menu do portal">
-                            <a class="topbar-portal-link <?= $activePage === 'home' ? 'active' : '' ?>" href="<?= base_path('/home') ?>">
-                                <i class="bi bi-house-door"></i>
-                                <span>Início</span>
-                            </a>
-                            <?php if (!$isRestricted): ?>
-                                <a class="topbar-portal-link <?= $activePage === 'libraries' ? 'active' : '' ?>" href="<?= base_path('/lib') ?>">
-                                    <i class="bi bi-collection"></i>
-                                    <span>Biblioteca</span>
-                                </a>
-                                <a class="topbar-portal-link <?= $activePage === 'loja' ? 'active' : '' ?>" href="<?= base_path('/loja') ?>">
-                                    <i class="bi bi-bag"></i>
-                                    <span>Loja</span>
-                                </a>
-                            <?php endif; ?>
-                        </nav>
+                        <div class="collapse navbar-collapse" id="navbarPortalMenuMain">
+                            <div class="navbar-nav navbar-nav-portal">
+                                <?php if (!$isRestricted): ?>
+                                    <a class="nav-link <?= $activePage === 'libraries' ? 'active' : '' ?>" href="<?= base_path('/lib') ?>">
+                                        <i class="bi bi-collection"></i>
+                                        <span>Biblioteca</span>
+                                    </a>
+                                    <a class="nav-link <?= $activePage === 'loja' ? 'active' : '' ?>" href="<?= base_path('/loja') ?>">
+                                        <i class="bi bi-bag"></i>
+                                        <span>Loja</span>
+                                    </a>
+                                <?php endif; ?>
+                                <div class="navbar-mobile-user d-lg-none">
+                                    <hr class="navbar-mobile-divider">
+                                    <a class="nav-link" href="<?= base_path('/perfil') ?>"><span>Editar perfil</span></a>
+                                    <a class="nav-link" href="<?= base_path('/perfil/senha') ?>"><span>Mudar senha</span></a>
+                                    <?php if ($isAdmin): ?>
+                                        <hr class="navbar-mobile-divider">
+                                        <a class="nav-link" href="<?= base_path('/admin') ?>"><span>Painel Administrativo</span></a>
+                                        <hr class="navbar-mobile-divider">
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
                     <?php endif; ?>
                     <?php if ($isLoggedIn && !$isRestricted): ?>
-                        <form class="topbar-search" method="get" action="<?= base_path('/search') ?>" role="search" aria-label="Buscar nas bibliotecas">
-                            <button type="button" class="topbar-search-close" data-mobile-search-close aria-label="Fechar busca">
+                        <form class="navbar-search" method="get" action="<?= base_path('/search') ?>" role="search" aria-label="Buscar nas bibliotecas">
+                            <button type="button" class="navbar-search-close" data-mobile-search-close aria-label="Fechar busca">
                                 <i class="bi bi-x-lg"></i>
                             </button>
-                            <i class="bi bi-search topbar-search-icon" aria-hidden="true"></i>
+                            <i class="bi bi-search navbar-search-icon" aria-hidden="true"></i>
                             <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar" autocomplete="off" aria-label="Campo de busca">
                         </form>
                     <?php endif; ?>
                 </div>
-                <div class="topbar-right" role="toolbar" aria-label="Ações do usuário">
+                <div class="navbar-actions" role="toolbar" aria-label="Ações do usuário">
                     <?php if ($isLoggedIn): ?>
                         <?php if (!$isRestricted): ?>
-                            <button class="btn btn-icon topbar-search-btn" type="button" data-mobile-search-toggle aria-label="Abrir busca">
+                            <button class="btn btn-icon navbar-search-btn d-lg-none" type="button" data-mobile-search-toggle aria-label="Abrir busca">
                                 <i class="bi bi-search"></i>
                             </button>
                         <?php endif; ?>
                         <button class="btn btn-icon theme-toggle-btn" type="button" data-theme-toggle aria-label="Alternar tema claro/escuro">
                             <i class="fa-solid fa-moon" aria-hidden="true"></i>
                         </button>
-                        <div class="dropdown">
+                        <div class="dropdown d-none d-lg-block">
                             <button class="btn btn-ghost dropdown-toggle d-inline-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu do usuário">
                                 <?php if ($userAvatar !== ''): ?>
-                                    <img src="<?= base_path('/' . ltrim($userAvatar, '/')) ?>" alt="Avatar de <?= View::e($displayName) ?>" class="topbar-avatar">
+                                    <img src="<?= base_path('/' . ltrim($userAvatar, '/')) ?>" alt="Avatar de <?= View::e($displayName) ?>" class="navbar-avatar">
                                 <?php else: ?>
-                                    <span class="topbar-avatar-placeholder" aria-hidden="true"><?= View::e($initial) ?></span>
+                                    <span class="navbar-avatar-placeholder" aria-hidden="true"><?= View::e($initial) ?></span>
                                 <?php endif; ?>
                                 <span class="d-none d-md-inline"><?= View::e($displayName) ?></span>
                             </button>
@@ -232,6 +240,11 @@ if (function_exists('sys_getloadavg')) {
                                 <li><a class="dropdown-item" href="<?= base_path('/logout') ?>"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
                             </ul>
                         </div>
+                        <?php if (!$isRestricted): ?>
+                            <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPortalMenuMain" aria-controls="navbarPortalMenuMain" aria-expanded="false" aria-label="Toggle navigation">
+                                <span class="navbar-toggler-bars" aria-hidden="true">☰</span>
+                            </button>
+                        <?php endif; ?>
                     <?php else: ?>
                         <button class="btn btn-icon theme-toggle-btn" type="button" data-theme-toggle aria-label="Alternar tema claro/escuro">
                             <i class="fa-solid fa-moon" aria-hidden="true"></i>
@@ -241,7 +254,7 @@ if (function_exists('sys_getloadavg')) {
                     <?php endif; ?>
                 </div>
             </div>
-        </header>
+        </nav>
 
         <!-- Main Content Area -->
         <div class="app-main">

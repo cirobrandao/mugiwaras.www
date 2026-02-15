@@ -97,11 +97,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	document.querySelectorAll('.open-pdf, [data-open-pdf]').forEach((btn) => {
 		btn.addEventListener('click', (e) => {
-			e.preventDefault();
-			const url = btn.getAttribute('data-url') || '';
+			const url = btn.getAttribute('data-url') || btn.getAttribute('href') || '';
 			const title = btn.getAttribute('data-title') || '';
-			const itemEl = btn.closest('.list-group-item');
-			if (url) openPdf(url, title, itemEl);
+			const itemEl = btn.closest('.list-group-item, .series-item');
+			
+			// On desktop, always use modal popup
+			if (!isIOS && url) {
+				e.preventDefault();
+				openPdf(url, title, itemEl);
+			}
+			// On mobile (iOS), let default behavior happen (opens in new tab)
 		});
 	});
 	if (closeBtn) closeBtn.addEventListener('click', closePdf);
@@ -126,14 +131,14 @@ document.addEventListener('DOMContentLoaded', () => {
 		sync.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 	}
 
-	const topbar = document.querySelector('.app-topbar');
-	const searchInput = document.querySelector('.topbar-search input');
-	if (topbar && searchInput) {
+	const navbar = document.querySelector('.navbar.app-navbar');
+	const searchInput = document.querySelector('.navbar-search input');
+	if (navbar && searchInput) {
 		searchInput.addEventListener('focus', () => {
-			topbar.classList.add('search-focused');
+			navbar.classList.add('search-focused');
 		});
 		searchInput.addEventListener('blur', () => {
-			topbar.classList.remove('search-focused');
+			navbar.classList.remove('search-focused');
 		});
 	}
 });
@@ -527,7 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Mobile search toggle
 document.addEventListener('DOMContentLoaded', () => {
 	const searchBtn = document.querySelector('[data-mobile-search-toggle]');
-	const searchForm = document.querySelector('.topbar-search');
+	const searchForm = document.querySelector('.navbar-search');
 	const closeBtn = document.querySelector('[data-mobile-search-close]');
 	const searchInput = searchForm?.querySelector('input[name="q"]');
 
