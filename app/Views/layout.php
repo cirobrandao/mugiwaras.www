@@ -80,6 +80,10 @@ $displayName = (string)($currentUser['username'] ?? 'Usuário');
 $initial = $displayName !== '' ? mb_strtoupper(mb_substr($displayName, 0, 1)) : 'U';
 $userAvatar = (string)($currentUser['avatar_path'] ?? '');
 $activePage = $activePage ?? '';
+$uploadEntryUrl = upload_url('/upload');
+if ($currentUser && \App\Core\Auth::isAdmin($currentUser)) {
+    $uploadEntryUrl = base_path('/upload');
+}
 
 $loadLabel = 'indisponivel';
 $loadPercent = null;
@@ -230,7 +234,7 @@ if (function_exists('sys_getloadavg')) {
                                     <?php endif; ?>
                                     <?php if ($isAdmin || $isUploader || $isModerator): ?>
                                         <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="<?= base_path('/admin/uploads') ?>"><span><i class="bi bi-upload me-2"></i>Upload manager</span><?php if (!empty($pendingUploads)): ?><span class="badge bg-danger"><?= (int)$pendingUploads ?></span><?php endif; ?></a></li>
-                                        <li><a class="dropdown-item" href="<?= upload_url('/upload') ?>"><i class="bi bi-cloud-arrow-up me-2"></i>Enviar arquivo</a></li>
+                                        <li><a class="dropdown-item" href="<?= $uploadEntryUrl ?>"><i class="bi bi-cloud-arrow-up me-2"></i>Enviar arquivo</a></li>
                                     <?php endif; ?>
                                     <?php if ($isAdmin): ?>
                                         <li><a class="dropdown-item" href="<?= base_path('/admin/news') ?>"><i class="bi bi-megaphone me-2"></i>Notícias</a></li>

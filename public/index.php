@@ -55,7 +55,7 @@ $uploadHost = mb_strtolower((string)(parse_url($uploadUrl, PHP_URL_HOST) ?? ''))
 
 // Redirect logic for upload domain
 if ($appUrl !== '' && $uploadUrl !== '' && $appHost !== '' && $uploadHost !== '' && $appHost !== $uploadHost) {
-    $isUploadRoute = preg_match('#^/(upload|upload-admin|loja/(proof|request))($|/|\?)#', $reqPath) === 1;
+    $isUploadRoute = preg_match('#^/(upload|upload-admin)($|/|\?)#', $reqPath) === 1;
     $isAssetRoute = preg_match('#^/assets($|/)#', $reqPath) === 1;
     $isPublicFileRoute = preg_match('#^/(uploads|favicon\.ico)($|/)#', $reqPath) === 1;
     $hasTransitionToken = !empty($_GET['_t']);

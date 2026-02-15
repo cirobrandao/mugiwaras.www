@@ -11,6 +11,19 @@ namespace App\Core;
 final class CrossDomainAuth
 {
     private const TOKEN_LIFETIME = 30; // 30 segundos para transição
+
+    private static function shouldUseLocalUploadPath(string $path, ?array $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        if (!Auth::isAdmin($user)) {
+            return false;
+        }
+
+        return preg_match('#^/upload($|/|\?)#', $path) === 1;
+    }
     
     /**
      * Gera um token temporário para transição de domínio
@@ -109,8 +122,8 @@ final class CrossDomainAuth
             return false;
         }
         
-        // Apenas para rotas de upload e proof
-        return preg_match('#^/(upload|upload-admin|loja/(proof|request))($|/|\?)#', $path) === 1;
+        // Apenas para rotas de upload
+        return preg_match('#^/(upload|upload-admin)($|/|\?)#', $path) === 1;
     }
     
     /**
@@ -120,15 +133,20 @@ final class CrossDomainAuth
      */
     public static function buildUploadUrl(string $path): string
     {
+        $path = '/' . ltrim($path, '/');
+        $user = Auth::user();
+
+        if (self::shouldUseLocalUploadPath($path, $user)) {
+            return base_path($path);
+        }
+
         if (!self::shouldUseUploadDomain($path)) {
             return url($path);
         }
         
         $uploadUrl = rtrim((string)config('app.upload_url', ''), '/');
         $basePath = rtrim((string)config('app.base_path', ''), '/');
-        $path = '/' . ltrim($path, '/');
-        
-        $user = Auth::user();
+
         if (!$user) {
             return $uploadUrl . $basePath . $path;
         }
