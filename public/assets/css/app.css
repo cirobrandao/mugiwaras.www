@@ -525,7 +525,7 @@ body.theme-dark .theme-toggle-btn {
 	background: #1e293b;
 	padding: 0.75rem 1rem;
 	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
-	z-index: 1000;
+	z-index: 6100;
 }
 
 .mobile-controls-container {
@@ -773,7 +773,7 @@ body.theme-dark .theme-toggle-btn {
 	position: absolute;
 	top: 0.5rem;
 	right: 0.5rem;
-	z-index: 120;
+	z-index: 6200;
 	border-radius: 999px;
 	width: 34px;
 	height: 34px;
@@ -866,14 +866,26 @@ body.reader-expanded {
 	overflow: hidden;
 }
 
+body.reader-expanded .navbar.app-navbar {
+	display: none !important;
+}
+
+body.reader-expanded .app-main {
+	padding-top: 0 !important;
+}
+
 #readerWrap.is-expanded {
 	position: fixed;
 	inset: 0;
-	z-index: 1055;
+	z-index: 6000;
 	margin: 0;
 	padding: 0.5rem;
 	background: #0f172a;
 	overflow: auto;
+}
+
+body.reader-expanded .reader-modern-header {
+	z-index: 6050;
 }
 
 #readerWrap.is-expanded .reader-frame-modern {
