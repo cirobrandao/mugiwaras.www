@@ -44,32 +44,57 @@ final class UploadAdminController extends Controller
         $username = trim((string)($request->post['username'] ?? ''));
         $password = (string)($request->post['password'] ?? '');
 
-        $expectedUsername = (string)(env('UPLOAD_ADMIN_USER', 'uploadadmin') ?? 'uploadadmin');
-        $expectedPassword = (string)(env('UPLOAD_ADMIN_PASS', 'change_me') ?? 'change_me');
+        $fixedUsername = trim((string)(env('UPLOAD_ADMIN_USER', '') ?? ''));
+        $fixedPassword = (string)(env('UPLOAD_ADMIN_PASS', '') ?? '');
 
-        if (!hash_equals($expectedUsername, $username) || !hash_equals($expectedPassword, $password)) {
-            echo $this->view('upload_admin/login', [
-                'csrf' => Csrf::token(),
-                'error' => 'Credenciais inválidas.',
-                'hideHeader' => true,
-                'title' => 'Upload Admin Login',
-            ]);
-            return;
-        }
+        if ($fixedUsername !== '' || $fixedPassword !== '') {
+            if (!hash_equals($fixedUsername, $username) || !hash_equals($fixedPassword, $password)) {
+                echo $this->view('upload_admin/login', [
+                    'csrf' => Csrf::token(),
+                    'error' => 'Credenciais inválidas.',
+                    'hideHeader' => true,
+                    'title' => 'Upload Admin Login',
+                ]);
+                return;
+            }
 
-        $actingUser = $this->resolveActingUser();
-        if (!$actingUser) {
-            echo $this->view('upload_admin/login', [
-                'csrf' => Csrf::token(),
-                'error' => 'Configure UPLOAD_ADMIN_ACT_AS_USER_ID ou UPLOAD_ADMIN_ACT_AS_USERNAME com um usuário que tenha permissão de upload.',
-                'hideHeader' => true,
-                'title' => 'Upload Admin Login',
-            ]);
-            return;
+            $actingUser = $this->resolveActingUser();
+            if (!$actingUser) {
+                echo $this->view('upload_admin/login', [
+                    'csrf' => Csrf::token(),
+                    'error' => 'Configure UPLOAD_ADMIN_ACT_AS_USER_ID ou UPLOAD_ADMIN_ACT_AS_USERNAME com um usuário que tenha permissão de upload.',
+                    'hideHeader' => true,
+                    'title' => 'Upload Admin Login',
+                ]);
+                return;
+            }
+
+            $_SESSION['user_id'] = (int)$actingUser['id'];
+        } else {
+            if (!Auth::attempt($username, $password, false, $request)) {
+                echo $this->view('upload_admin/login', [
+                    'csrf' => Csrf::token(),
+                    'error' => 'Credenciais inválidas.',
+                    'hideHeader' => true,
+                    'title' => 'Upload Admin Login',
+                ]);
+                return;
+            }
+
+            $currentUser = Auth::user();
+            if (!Auth::canUpload($currentUser)) {
+                unset($_SESSION['user_id']);
+                echo $this->view('upload_admin/login', [
+                    'csrf' => Csrf::token(),
+                    'error' => 'Usuário sem permissão de upload.',
+                    'hideHeader' => true,
+                    'title' => 'Upload Admin Login',
+                ]);
+                return;
+            }
         }
 
         $_SESSION[self::SESSION_KEY] = 1;
-        $_SESSION['user_id'] = (int)$actingUser['id'];
         $_SESSION[self::SESSION_KEY . '_at'] = time();
 
         Response::redirect(base_path('/upload'));

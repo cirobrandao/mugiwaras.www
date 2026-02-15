@@ -6,7 +6,7 @@ ob_start();
     <div class="alert alert-danger"><?= \App\Core\View::e((string)$error) ?></div>
 <?php endif; ?>
 <div class="alert alert-info small">
-    Login básico para o painel de upload separado. Configure as credenciais em <code>UPLOAD_ADMIN_USER</code> e <code>UPLOAD_ADMIN_PASS</code>.
+    Use as mesmas credenciais da plataforma principal. Se quiser um login fixo dedicado, configure <code>UPLOAD_ADMIN_USER</code> e <code>UPLOAD_ADMIN_PASS</code>.
 </div>
 <form method="post" action="<?= base_path('/login') ?>" class="section-card p-3" style="max-width: 460px;">
     <input type="hidden" name="_csrf" value="<?= \App\Core\View::e($csrf ?? '') ?>">
