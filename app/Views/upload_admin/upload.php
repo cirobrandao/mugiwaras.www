@@ -18,13 +18,16 @@ ob_start();
 <div class="alert alert-info small">
     Este formulário é dedicado ao host/subdomínio com bypass de proxy. O upload real é processado pela rota padrão do sistema.
 </div>
+<?php if (!empty($_GET['error']) && $_GET['error'] === 'limit'): ?>
+    <div class="alert alert-danger">O tamanho total do envio excede 5 GB.</div>
+<?php endif; ?>
 <div id="uploadResult"></div>
 <section class="section-card mb-3 upload-card p-3">
     <div class="mb-3">
         <div class="progress" style="height: 6px;">
             <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>
         </div>
-        <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="209715200" data-max-files="100">0 B / 200 MB · 0 / 100 arquivos</div>
+        <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="5368709120" data-max-files="100">0 B / 5 GB · 0 / 100 arquivos</div>
     </div>
     <div class="row">
         <div class="col-lg-7">
@@ -47,7 +50,7 @@ ob_start();
                 </div>
                 <div class="mt-3 mb-3">
                     <label class="form-label">Arquivos</label>
-                    <input type="file" name="file[]" class="form-control" multiple required data-max-bytes="209715200" data-max-files="100">
+                    <input type="file" name="file[]" class="form-control" multiple required data-max-bytes="5368709120" data-max-files="100">
                     <div class="form-text">Formatos aceitos: *.epub, *.cbr, *.cbz, *.zip (imagens) e *.pdf.</div>
                 </div>
                 <div class="mb-3 d-none" id="uploadProgressWrap">

@@ -69,8 +69,9 @@ final class UploadController extends Controller
             }
             Response::redirect(base_path('/'));
         }
+        $isBypassUpload = !empty($_SESSION['_upload_admin_auth']);
         $requiresApproval = !(Auth::isAdmin($user) || Auth::isModerator($user));
-        $maxBytes = 200 * 1024 * 1024;
+        $maxBytes = $isBypassUpload ? (5 * 1024 * 1024 * 1024) : (200 * 1024 * 1024);
         $maxFiles = 50;
         if (!Category::isReady()) {
             if ($isAjax) {

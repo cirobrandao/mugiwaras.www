@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tooBig) {
       e.preventDefault();
       if (uploadResult) {
-        uploadResult.innerHTML = '<div class="alert alert-danger">Arquivo inválido ou acima do limite de 200 MB.</div>';
+        uploadResult.innerHTML = `<div class="alert alert-danger">Arquivo inválido ou acima do limite de ${formatBytes(maxBytes)}.</div>`;
       }
       if (uploadWrap) uploadWrap.classList.add('d-none');
       if (submitBtn) submitBtn.disabled = false;
