@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	const sync = document.querySelector('[data-last-sync]');
 	if (sync) {
 		const now = new Date();
-		sync.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+		sync.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 	}
 
 	const topbar = document.querySelector('.app-topbar');

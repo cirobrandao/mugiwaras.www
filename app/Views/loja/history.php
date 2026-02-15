@@ -2,7 +2,8 @@
 use App\Core\View;
 ob_start();
 ?>
-<h1 class="h4 mb-3">Histórico de compras</h1>
+<div style="margin-top: 1.5rem;"></div>
+<h1 class="h6 mb-2 fw-bold">Histórico de compras</h1>
 <?php if (!empty($_GET['uploaded'])): ?>
     <div class="alert alert-success">Comprovante enviado.</div>
 <?php endif; ?>

@@ -4,23 +4,43 @@ use App\Core\View;
 $displayName = (string)($currentUser['username'] ?? 'Usuário');
 $initial = $displayName !== '' ? mb_strtoupper(mb_substr($displayName, 0, 1)) : 'U';
 $userAvatar = (string)($currentUser['avatar_path'] ?? '');
+$currentPath = $_SERVER['REQUEST_URI'] ?? '';
+$basePath = base_path('');
+$isLibraries = str_contains($currentPath, '/lib');
+$isLoja = str_contains($currentPath, '/loja');
 ?>
 <header class="app-topbar">
     <div class="topbar-left">
         <?php if ($isLoggedIn): ?>
-            <form class="topbar-search" method="get" action="<?= base_path('/lib/search') ?>" role="search" aria-label="Buscar nas bibliotecas">
-                <i class="bi bi-search" aria-hidden="true"></i>
-                <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar nas bibliotecas" autocomplete="off" aria-label="Campo de busca">
-            </form>
+            <nav class="navbar">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link <?= $isLibraries ? 'active' : '' ?>" href="<?= base_path('/lib') ?>">
+                            <i class="bi bi-collection"></i>
+                            <span>Bibliotecas</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $isLoja ? 'active' : '' ?>" href="<?= base_path('/loja') ?>">
+                            <i class="bi bi-bag"></i>
+                            <span>Loja</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
         <?php endif; ?>
     </div>
     <div class="topbar-right">
         <?php if ($isLoggedIn): ?>
+            <form class="topbar-search" method="get" action="<?= base_path('/lib/search') ?>" role="search" aria-label="Buscar nas bibliotecas">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar" autocomplete="off" aria-label="Campo de busca">
+            </form>
             <button class="btn btn-icon theme-toggle-btn" type="button" data-theme-toggle aria-label="Alternar tema">
                 <i class="fa-solid fa-moon"></i>
             </button>
             <div class="dropdown">
-                <button class="btn btn-ghost dropdown-toggle d-inline-flex align-items-center gap-2" data-bs-toggle="dropdown">
+                <button class="btn btn-ghost dropdown-toggle d-inline-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false">
                     <?php if ($userAvatar !== ''): ?>
                         <img src="<?= base_path('/' . ltrim($userAvatar, '/')) ?>" alt="Avatar" class="topbar-avatar">
                     <?php else: ?>

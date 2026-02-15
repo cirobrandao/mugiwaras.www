@@ -53,10 +53,6 @@ $displaySystemName = trim(preg_replace('/\s*\[DEV\]\s*/i', '', (string)$systemNa
     <nav class="sidebar-nav">
         <?php if ($isLoggedIn): ?>
             <div class="nav-section">Navegacao</div>
-            <a class="nav-link <?= $activePage === 'home' ? 'active' : '' ?>" href="<?= base_path('/home') ?>">
-                <i class="bi bi-house"></i>
-                <span>Inicio</span>
-            </a>
             <?php if (!$isRestricted): ?>
                 <a class="nav-link <?= $activePage === 'libraries' ? 'active' : '' ?>" href="<?= base_path('/lib') ?>">
                     <i class="bi bi-collection"></i>

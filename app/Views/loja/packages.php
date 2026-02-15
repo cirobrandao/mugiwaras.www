@@ -2,11 +2,12 @@
 use App\Core\View;
 ob_start();
 ?>
-<div class="loja-header mb-4">
-    <div class="d-flex align-items-center justify-content-between gap-3 mb-2">
+<div style="margin-top: 1.5rem;"></div>
+<div class="loja-header mb-2">
+    <div class="d-flex align-items-center justify-content-between gap-2">
         <div>
-            <h1 class="h3 mb-1 fw-bold">Loja de Assinaturas</h1>
-            <p class="text-muted small mb-0">Escolha o plano ideal para você</p>
+            <h1 class="h5 mb-0 fw-bold">Loja de Assinaturas</h1>
+            <p class="text-white-50 mb-0" style="font-size: 0.75rem;">Escolha o plano ideal</p>
         </div>
         <div class="loja-icon">
             <i class="bi bi-bag-heart"></i>

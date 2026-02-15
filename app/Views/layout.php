@@ -132,7 +132,7 @@ if (function_exists('sys_getloadavg')) {
                 <?php endif; ?>
             </div>
             <div class="auth-hero-footer">
-                © <?= date('Y') ?> <?= View::e($displaySystemName !== '' ? $displaySystemName : $systemName) ?>. Todos os direitos reservados.
+                © <?= date('Y') ?> <?= View::e($displaySystemName !== '' ? $displaySystemName : $systemName) ?>
             </div>
         </div>
         <div class="auth-panel">
@@ -244,7 +244,7 @@ if (function_exists('sys_getloadavg')) {
                 <div class="footer-content">
                     <div class="footer-copyright">
                         <i class="bi bi-c-circle me-1" aria-hidden="true"></i>
-                        <?= date('Y') ?> <?= View::e($systemName) ?>. Todos os direitos reservados.
+                        <?= date('Y') ?> <?= View::e($systemName) ?>
                     </div>
                     <div class="footer-info">
                         <span class="server-status" aria-label="Carga do servidor">

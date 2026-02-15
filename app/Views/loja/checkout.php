@@ -2,20 +2,21 @@
 use App\Core\View;
 ob_start();
 ?>
-<div class="checkout-header mb-4">
-    <div class="d-flex align-items-center justify-content-between gap-3">
-        <div class="d-flex align-items-center gap-3">
+<div style="margin-top: 1.5rem;"></div>
+<div class="checkout-header mb-2">
+    <div class="d-flex align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
             <div class="checkout-icon">
                 <i class="bi bi-credit-card"></i>
             </div>
             <div>
-                <h1 class="h3 mb-1 fw-bold">Confirmar compra</h1>
-                <p class="text-muted small mb-0">Revise os detalhes e envie o comprovante</p>
+                <h1 class="h6 mb-0 fw-bold">Confirmar compra</h1>
+                <p class="text-muted mb-0" style="font-size: 0.6875rem;">Revise e envie o comprovante</p>
             </div>
         </div>
-        <div class="badge bg-warning-subtle text-warning px-3 py-2 fw-semibold">
-            <i class="bi bi-clock-history me-1"></i>
-            Pagamento
+        <div class="badge bg-warning-subtle text-warning px-2 py-1 fw-semibold" style="font-size: 0.6875rem;">
+            <i class="bi bi-clock-history" style="font-size: 0.75rem;"></i>
+            Pag.
         </div>
     </div>
 </div>
@@ -24,7 +25,7 @@ ob_start();
     <div class="alert alert-danger small"><?= View::e((string)$pricingError) ?></div>
 <?php endif; ?>
 
-<div class="row g-3 mb-3">
+<div class="row g-2 mb-2">
     <div class="col-md-6">
         <div class="checkout-card">
             <div class="checkout-card-header">

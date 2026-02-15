@@ -1228,30 +1228,30 @@ body.theme-dark .reader-overlay {
    CHECKOUT COMPONENTS
    ============================================== */
 .checkout-header {
-	margin-bottom: 2rem;
+	margin-bottom: 0.5rem;
 }
 
 .checkout-icon {
-	width: 64px;
-	height: 64px;
+	width: 36px;
+	height: 36px;
 	background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
-	border-radius: 16px;
+	border-radius: 8px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	color: #ffffff;
-	font-size: 2rem;
-	box-shadow: 0 4px 12px rgba(251, 146, 60, 0.3);
-	margin-bottom: 1rem;
+	font-size: 1.125rem;
+	box-shadow: 0 2px 6px rgba(251, 146, 60, 0.3);
+	margin-bottom: 0;
 }
 
 .checkout-card {
 	background: #ffffff;
-	border-radius: 16px;
-	padding: 2rem;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	border-radius: 8px;
+	padding: 0.875rem;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 	border: 1px solid #e2e8f0;
-	margin-bottom: 1.5rem;
+	margin-bottom: 0.625rem;
 }
 
 .checkout-card:hover {
@@ -1262,19 +1262,19 @@ body.theme-dark .reader-overlay {
 .checkout-card-header {
 	display: flex;
 	align-items: center;
-	gap: 1rem;
-	margin-bottom: 1.5rem;
-	padding-bottom: 1rem;
-	border-bottom: 2px solid #e2e8f0;
+	gap: 0.5rem;
+	margin-bottom: 0.625rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid #e2e8f0;
 }
 
 .checkout-card-header i {
-	font-size: 1.5rem;
+	font-size: 1rem;
 	color: #fb923c;
 }
 
 .checkout-card-title {
-	font-size: 1.25rem;
+	font-size: 0.9375rem;
 	font-weight: 700;
 	color: #1e293b;
 	margin: 0;
@@ -1286,33 +1286,35 @@ body.theme-dark .reader-overlay {
 
 .checkout-package-info {
 	background: #f8fafc;
-	padding: 1.5rem;
-	border-radius: 12px;
-	margin-bottom: 1.5rem;
+	padding: 0.625rem;
+	border-radius: 6px;
+	margin-bottom: 0.625rem;
 }
 
 .package-title {
-	font-size: 1.5rem;
+	font-size: 1rem;
 	font-weight: 700;
 	color: #1e293b;
-	margin-bottom: 0.5rem;
+	margin-bottom: 0.25rem;
 }
 
 .package-desc {
 	color: #64748b;
 	margin: 0;
+	font-size: 0.8125rem;
 }
 
 .checkout-summary {
-	margin: 1.5rem 0;
+	margin: 0.625rem 0;
 }
 
 .summary-item {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 0.75rem 0;
+	padding: 0.375rem 0;
 	border-bottom: 1px dashed #e2e8f0;
+	font-size: 0.8125rem;
 }
 
 .summary-item:last-child {
@@ -1332,64 +1334,65 @@ body.theme-dark .reader-overlay {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 1.5rem;
+	padding: 0.625rem 0.75rem;
 	background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-	border-radius: 12px;
-	margin-top: 1.5rem;
+	border-radius: 6px;
+	margin-top: 0.625rem;
 }
 
 .summary-total span {
 	color: #1e40af;
 	font-weight: 600;
+	font-size: 0.8125rem;
 }
 
 .summary-total strong {
 	color: #1e40af;
-	font-size: 1.75rem;
+	font-size: 1.125rem;
 	font-weight: 700;
 }
 
 .summary-divider {
-	height: 2px;
+	height: 1px;
 	background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
-	margin: 1.5rem 0;
+	margin: 0.5rem 0;
 }
 
 .summary-note {
 	background: #fef3c7;
 	color: #78350f;
-	padding: 1rem;
-	border-radius: 8px;
-	font-size: 0.875rem;
-	border-left: 4px solid #f59e0b;
+	padding: 0.5rem;
+	border-radius: 4px;
+	font-size: 0.75rem;
+	border-left: 2px solid #f59e0b;
 }
 
 .checkout-pix-info {
 	background: #f0fdfa;
-	padding: 1.5rem;
-	border-radius: 12px;
-	border: 2px solid #5eead4;
+	padding: 0.625rem;
+	border-radius: 6px;
+	border: 1px solid #5eead4;
 }
 
 .pix-info-title {
-	font-size: 1.125rem;
+	font-size: 0.875rem;
 	font-weight: 600;
 	color: #134e4a;
-	margin-bottom: 1rem;
+	margin-bottom: 0.5rem;
 }
 
 .pix-info-items {
 	display: flex;
 	flex-direction: column;
-	gap: 1rem;
+	gap: 0.375rem;
 }
 
 .pix-info-item {
 	display: flex;
 	align-items: center;
-	gap: 0.75rem;
+	gap: 0.375rem;
 	color: #0f766e;
-	font-size: 0.875rem;
+	font-size: 0.75rem;
 }
 
 .pix-info-label {
@@ -1404,58 +1407,59 @@ body.theme-dark .reader-overlay {
 
 .checkout-file-info {
 	background: #eff6ff;
-	padding: 1rem;
-	border-radius: 8px;
+	padding: 0.5rem 0.625rem;
+	border-radius: 4px;
 	display: flex;
 	align-items: center;
-	gap: 0.5rem;
+	gap: 0.375rem;
 	color: #1e40af;
-	font-size: 0.875rem;
+	font-size: 0.75rem;
 }
 
 .pix-key-section {
-	margin-top: 1.5rem;
-	padding-top: 1.5rem;
+	margin-top: 0.625rem;
+	padding-top: 0.625rem;
 	border-top: 1px dashed #99f6e4;
 }
 
 .pix-key-label {
-	font-size: 0.875rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 	color: #134e4a;
-	margin-bottom: 0.75rem;
+	margin-bottom: 0.375rem;
 }
 
 .pix-key-copy {
 	display: flex;
-	gap: 0.5rem;
+	gap: 0.375rem;
 	align-items: stretch;
 }
 
 .pix-key-copy input {
 	flex: 1;
-	padding: 0.75rem 1rem;
-	border: 2px solid #5eead4;
-	border-radius: 8px;
+	padding: 0.5rem 0.625rem;
+	border: 1px solid #5eead4;
+	border-radius: 4px;
 	background: #ffffff;
 	color: #0f766e;
 	font-family: 'Courier New', monospace;
-	font-size: 0.875rem;
+	font-size: 0.75rem;
 	font-weight: 600;
 }
 
 .pix-key-copy button {
-	padding: 0.75rem 1.5rem;
+	padding: 0.5rem 0.875rem;
 	background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
 	color: #ffffff;
 	border: none;
-	border-radius: 8px;
+	border-radius: 4px;
 	font-weight: 600;
+	font-size: 0.75rem;
 	cursor: pointer;
 	transition: all 0.2s ease;
 	display: flex;
 	align-items: center;
-	gap: 0.5rem;
+	gap: 0.25rem;
 }
 
 .pix-key-copy button:hover {
@@ -1471,17 +1475,17 @@ body.theme-dark .reader-overlay {
 /* Responsive checkout */
 @media (max-width: 768px) {
 	.checkout-header {
-		margin-bottom: 1.5rem;
+		margin-bottom: 0.375rem;
 	}
 	
 	.checkout-icon {
-		width: 48px;
-		height: 48px;
-		font-size: 1.5rem;
+		width: 32px;
+		height: 32px;
+		font-size: 1rem;
 	}
 	
 	.checkout-card {
-		padding: 1.5rem;
+		padding: 0.625rem;
 	}
 	
 	.pix-key-copy {
@@ -1493,42 +1497,42 @@ body.theme-dark .reader-overlay {
    LOJA (STORE) COMPONENTS
    ============================================== */
 .loja-header {
-	margin-bottom: 2rem;
-	padding: 2rem;
+	margin-bottom: 0.75rem;
+	padding: 0.875rem;
 	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	border-radius: 20px;
-	box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
+	border-radius: 10px;
+	box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
 	color: #ffffff;
 }
 
 .loja-icon {
-	width: 72px;
-	height: 72px;
+	width: 40px;
+	height: 40px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	background: rgba(255, 255, 255, 0.2);
 	color: white;
-	border-radius: 20px;
-	font-size: 2.5rem;
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+	border-radius: 10px;
+	font-size: 1.5rem;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 	backdrop-filter: blur(10px);
 }
 
 .loja-packages-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-	gap: 2rem;
-	margin-bottom: 3rem;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 0.75rem;
+	margin-bottom: 1rem;
 }
 
 .loja-package-card {
 	background: #ffffff;
-	border-radius: 24px;
-	padding: 2rem;
-	box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
-	transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-	border: 2px solid transparent;
+	border-radius: 10px;
+	padding: 1rem;
+	box-shadow: 0 1px 6px rgba(15, 23, 42, 0.08);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	border: 1px solid #e2e8f0;
 	position: relative;
 	overflow: hidden;
 }
@@ -1539,16 +1543,16 @@ body.theme-dark .reader-overlay {
 	top: 0;
 	left: 0;
 	right: 0;
-	height: 5px;
+	height: 3px;
 	background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
 	transform: scaleX(0);
 	transform-origin: left;
-	transition: transform 0.4s ease;
+	transition: transform 0.3s ease;
 }
 
 .loja-package-card:hover {
-	transform: translateY(-12px);
-	box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15);
+	transform: translateY(-3px);
+	box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 	border-color: rgba(102, 126, 234, 0.3);
 }
 
@@ -1558,58 +1562,58 @@ body.theme-dark .reader-overlay {
 
 .loja-package-header {
 	text-align: center;
-	margin-bottom: 2rem;
-	padding-bottom: 1.5rem;
-	border-bottom: 2px solid #f1f5f9;
+	margin-bottom: 0.75rem;
+	padding-bottom: 0.625rem;
+	border-bottom: 1px solid #f1f5f9;
 }
 
 .loja-package-icon {
-	width: 80px;
-	height: 80px;
-	margin: 0 auto 1.5rem;
+	width: 48px;
+	height: 48px;
+	margin: 0 auto 0.625rem;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
 	color: white;
-	border-radius: 20px;
-	font-size: 2rem;
-	box-shadow: 0 8px 20px rgba(251, 191, 36, 0.35);
+	border-radius: 10px;
+	font-size: 1.375rem;
+	box-shadow: 0 2px 8px rgba(251, 191, 36, 0.35);
 	animation: pulse-icon 2s ease-in-out infinite;
 }
 
 @keyframes pulse-icon {
 	0%, 100% {
 		transform: scale(1);
-		box-shadow: 0 8px 20px rgba(251, 191, 36, 0.35);
+		box-shadow: 0 2px 8px rgba(251, 191, 36, 0.35);
 	}
 	50% {
-		transform: scale(1.05);
-		box-shadow: 0 10px 30px rgba(251, 191, 36, 0.45);
+		transform: scale(1.03);
+		box-shadow: 0 3px 12px rgba(251, 191, 36, 0.4);
 	}
 }
 
 .loja-package-title {
-	font-size: 1.75rem;
+	font-size: 1.125rem;
 	font-weight: 800;
 	color: #0f172a;
-	margin: 0 0 0.75rem 0;
+	margin: 0 0 0.25rem 0;
 	line-height: 1.2;
 }
 
 .loja-package-desc {
-	font-size: 0.9375rem;
+	font-size: 0.75rem;
 	color: #64748b;
 	margin: 0;
-	line-height: 1.5;
+	line-height: 1.3;
 }
 
 .loja-package-price {
 	text-align: center;
-	padding: 2rem 0;
-	margin-bottom: 2rem;
+	padding: 0.75rem 0;
+	margin-bottom: 0.75rem;
 	background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
-	border-radius: 16px;
+	border-radius: 8px;
 	position: relative;
 }
 
@@ -1617,8 +1621,8 @@ body.theme-dark .reader-overlay {
 	content: '';
 	position: absolute;
 	inset: 0;
-	border-radius: 16px;
-	padding: 2px;
+	border-radius: 8px;
+	padding: 1px;
 	background: linear-gradient(135deg, #667eea, #764ba2);
 	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
 	-webkit-mask-composite: xor;
@@ -1629,7 +1633,7 @@ body.theme-dark .reader-overlay {
 
 .price-value {
 	display: block;
-	font-size: 3rem;
+	font-size: 1.625rem;
 	font-weight: 900;
 	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 	-webkit-background-clip: text;
@@ -1641,21 +1645,21 @@ body.theme-dark .reader-overlay {
 
 .price-period {
 	display: block;
-	font-size: 1rem;
+	font-size: 0.75rem;
 	color: #64748b;
-	margin-top: 0.75rem;
+	margin-top: 0.375rem;
 	font-weight: 600;
 }
 
 .loja-package-features {
-	margin-bottom: 2rem;
+	margin-bottom: 0.875rem;
 }
 
 .features-label {
-	font-size: 0.9375rem;
+	font-size: 0.6875rem;
 	font-weight: 700;
 	color: #334155;
-	margin-bottom: 1.25rem;
+	margin-bottom: 0.5rem;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 }
@@ -1666,16 +1670,16 @@ body.theme-dark .reader-overlay {
 	margin: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 1rem;
+	gap: 0.375rem;
 }
 
 .feature-item {
 	display: flex;
 	align-items: center;
-	gap: 1rem;
-	font-size: 0.9375rem;
-	padding: 0.75rem;
-	border-radius: 12px;
+	gap: 0.5rem;
+	font-size: 0.75rem;
+	padding: 0.375rem 0.5rem;
+	border-radius: 6px;
 	transition: all 0.2s ease;
 }
 
@@ -1690,7 +1694,7 @@ body.theme-dark .reader-overlay {
 
 .feature-item.active i {
 	color: #10b981;
-	font-size: 1.375rem;
+	font-size: 0.9375rem;
 	flex-shrink: 0;
 }
 
@@ -1701,7 +1705,7 @@ body.theme-dark .reader-overlay {
 
 .feature-item.inactive i {
 	color: #cbd5e1;
-	font-size: 1.375rem;
+	font-size: 0.9375rem;
 	flex-shrink: 0;
 }
 
@@ -1714,34 +1718,34 @@ body.theme-dark .reader-overlay {
 }
 
 .loja-package-form .form-label {
-	font-size: 0.9375rem;
+	font-size: 0.75rem;
 	font-weight: 700;
 	color: #334155;
-	margin-bottom: 0.75rem;
+	margin-bottom: 0.375rem;
 }
 
 .loja-package-form .form-select {
-	border: 2px solid #e2e8f0;
-	border-radius: 12px;
-	padding: 0.875rem 1rem;
-	font-size: 0.9375rem;
+	border: 1px solid #e2e8f0;
+	border-radius: 6px;
+	padding: 0.5rem 0.625rem;
+	font-size: 0.8125rem;
 	transition: all 0.2s ease;
 }
 
 .loja-package-form .form-select:focus {
 	border-color: #667eea;
-	box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+	box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
 }
 
 .loja-package-form .btn-primary {
-	padding: 1rem 1.5rem;
+	padding: 0.5rem 0.875rem;
 	font-weight: 700;
-	font-size: 1rem;
-	border-radius: 14px;
+	font-size: 0.8125rem;
+	border-radius: 6px;
 	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 	border: none;
 	transition: all 0.3s ease;
-	box-shadow: 0 4px 14px rgba(102, 126, 234, 0.3);
+	box-shadow: 0 1px 4px rgba(102, 126, 234, 0.3);
 }
 
 .loja-package-form .btn-primary:hover {
@@ -1754,38 +1758,38 @@ body.theme-dark .reader-overlay {
 }
 
 .loja-voucher-section {
-	margin-top: 4rem;
+	margin-top: 1.25rem;
 }
 
 .voucher-card {
 	background: linear-gradient(135deg, #f8fafc 0%, #e5e7eb 100%);
-	border-radius: 24px;
-	padding: 2.5rem;
+	border-radius: 10px;
+	padding: 0.875rem;
 	display: flex;
 	align-items: center;
-	gap: 2.5rem;
-	box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
-	border: 2px solid #e5e7eb;
+	gap: 0.875rem;
+	box-shadow: 0 1px 6px rgba(15, 23, 42, 0.08);
+	border: 1px solid #e5e7eb;
 	transition: all 0.3s ease;
 }
 
 .voucher-card:hover {
 	border-color: #10b981;
-	box-shadow: 0 8px 30px rgba(16, 185, 129, 0.15);
+	box-shadow: 0 2px 12px rgba(16, 185, 129, 0.15);
 }
 
 .voucher-icon {
 	flex-shrink: 0;
-	width: 96px;
-	height: 96px;
+	width: 48px;
+	height: 48px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 	color: white;
-	border-radius: 24px;
-	font-size: 3rem;
-	box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+	border-radius: 10px;
+	font-size: 1.5rem;
+	box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
 }
 
 .voucher-content {
@@ -1793,33 +1797,33 @@ body.theme-dark .reader-overlay {
 }
 
 .voucher-title {
-	font-size: 1.75rem;
+	font-size: 1rem;
 	font-weight: 800;
 	color: #0f172a;
-	margin: 0 0 0.75rem 0;
+	margin: 0 0 0.25rem 0;
 }
 
 .voucher-desc {
-	font-size: 1rem;
+	font-size: 0.75rem;
 	color: #64748b;
-	margin: 0 0 1.5rem 0;
+	margin: 0 0 0.625rem 0;
 }
 
 .voucher-form {
-	max-width: 600px;
+	max-width: 400px;
 }
 
 .voucher-form .input-group {
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-	border-radius: 14px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+	border-radius: 6px;
 	overflow: hidden;
-	border: 2px solid #e5e7eb;
+	border: 1px solid #e5e7eb;
 }
 
 .voucher-form .form-control {
 	border: none;
-	padding: 1rem 1.5rem;
-	font-size: 1rem;
+	padding: 0.5rem 0.625rem;
+	font-size: 0.8125rem;
 	font-weight: 500;
 }
 
@@ -1829,8 +1833,9 @@ body.theme-dark .reader-overlay {
 
 .voucher-form .btn-success {
 	border: none;
-	padding: 1rem 2rem;
+	padding: 0.5rem 0.875rem;
 	font-weight: 700;
+	font-size: 0.8125rem;
 	white-space: nowrap;
 	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 	transition: all 0.2s ease;
@@ -1844,21 +1849,21 @@ body.theme-dark .reader-overlay {
 /* Responsive loja */
 @media (max-width: 992px) {
 	.loja-packages-grid {
-		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-		gap: 1.5rem;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: 0.625rem;
 	}
 	
 	.voucher-card {
 		flex-direction: column;
 		text-align: center;
-		gap: 1.5rem;
-		padding: 2rem;
+		gap: 0.625rem;
+		padding: 0.875rem;
 	}
 	
 	.voucher-icon {
-		width: 80px;
-		height: 80px;
-		font-size: 2.5rem;
+		width: 44px;
+		height: 44px;
+		font-size: 1.5rem;
 	}
 	
 	.voucher-form {
@@ -1868,13 +1873,13 @@ body.theme-dark .reader-overlay {
 
 @media (max-width: 768px) {
 	.loja-header {
-		padding: 1.5rem;
+		padding: 0.625rem;
 	}
 	
 	.loja-icon {
-		width: 56px;
-		height: 56px;
-		font-size: 2rem;
+		width: 36px;
+		height: 36px;
+		font-size: 1.25rem;
 	}
 	
 	.loja-packages-grid {
@@ -1882,31 +1887,31 @@ body.theme-dark .reader-overlay {
 	}
 	
 	.loja-package-card {
-		padding: 1.5rem;
+		padding: 0.875rem;
 	}
 	
 	.loja-package-icon {
-		width: 64px;
-		height: 64px;
-		font-size: 1.75rem;
+		width: 40px;
+		height: 40px;
+		font-size: 1.125rem;
 	}
 	
 	.loja-package-title {
-		font-size: 1.5rem;
+		font-size: 1rem;
 	}
 	
 	.price-value {
-		font-size: 2.5rem;
+		font-size: 1.5rem;
 	}
 	
 	.voucher-icon {
-		width: 64px;
-		height: 64px;
-		font-size: 2rem;
+		width: 40px;
+		height: 40px;
+		font-size: 1.375rem;
 	}
 	
 	.voucher-title {
-		font-size: 1.5rem;
+		font-size: 0.9375rem;
 	}
 }
 
@@ -2108,14 +2113,15 @@ body.theme-dark .checkout-file-info {
    ============================================== */
 .payment-history-table {
 	background: #ffffff;
-	border-radius: 16px;
-	padding: 1.5rem;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	border-radius: 8px;
+	padding: 0.625rem;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 	border: 1px solid #e2e8f0;
 }
 
 .payment-history-table .table {
 	margin-bottom: 0;
+	font-size: 0.8125rem;
 }
 
 .payment-history-table .table thead th {
@@ -2123,14 +2129,14 @@ body.theme-dark .checkout-file-info {
 	color: #475569;
 	font-weight: 700;
 	text-transform: uppercase;
-	font-size: 0.8125rem;
+	font-size: 0.6875rem;
 	letter-spacing: 0.05em;
-	border-bottom: 2px solid #e2e8f0;
-	padding: 1rem 0.75rem;
+	border-bottom: 1px solid #e2e8f0;
+	padding: 0.5rem 0.375rem;
 }
 
 .payment-history-table .table tbody td {
-	padding: 1rem 0.75rem;
+	padding: 0.5rem 0.375rem;
 	vertical-align: middle;
 	border-bottom: 1px solid #f1f5f9;
 }
@@ -2144,26 +2150,26 @@ body.theme-dark .checkout-file-info {
 }
 
 .proofForm {
-	margin-top: 0.75rem;
+	margin-top: 0.375rem;
 }
 
 .proofForm .form-control {
-	font-size: 0.875rem;
-	padding: 0.5rem 0.75rem;
-	border-radius: 8px;
-	border: 2px solid #e2e8f0;
+	font-size: 0.75rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	border: 1px solid #e2e8f0;
 	transition: all 0.2s ease;
 }
 
 .proofForm .form-control:focus {
 	border-color: #667eea;
-	box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+	box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.1);
 }
 
 .proofForm .btn-primary {
-	font-size: 0.875rem;
-	padding: 0.5rem 1rem;
-	border-radius: 8px;
+	font-size: 0.75rem;
+	padding: 0.375rem 0.625rem;
+	border-radius: 4px;
 	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 	border: none;
 	font-weight: 600;
@@ -2176,20 +2182,20 @@ body.theme-dark .checkout-file-info {
 }
 
 .proofForm .proofError {
-	font-size: 0.8125rem;
-	margin-top: 0.5rem;
-	padding: 0.5rem;
-	border-radius: 6px;
+	font-size: 0.6875rem;
+	margin-top: 0.25rem;
+	padding: 0.25rem;
+	border-radius: 3px;
 	background: #fee2e2;
 }
 
 .payment-status-badge {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.375rem;
-	padding: 0.375rem 0.75rem;
+	gap: 0.125rem;
+	padding: 0.1875rem 0.5rem;
 	border-radius: 9999px;
-	font-size: 0.8125rem;
+	font-size: 0.6875rem;
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.025em;
