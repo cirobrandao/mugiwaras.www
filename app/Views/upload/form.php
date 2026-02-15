@@ -32,7 +32,8 @@ ob_start();
     <div class="alert alert-warning">Nenhuma categoria cadastrada. Crie uma categoria no painel administrativo.</div>
 <?php endif; ?>
 <?php
-$uploadBypassUrl = upload_url('/upload-admin/login');
+$uploadBase = rtrim((string)config('app.upload_url', ''), '/');
+$uploadBypassUrl = $uploadBase !== '' ? $uploadBase . '/login' : upload_url('/upload-admin/login');
 ?>
 <div id="uploadResult"></div>
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">

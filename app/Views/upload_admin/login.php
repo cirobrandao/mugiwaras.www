@@ -8,7 +8,7 @@ ob_start();
 <div class="alert alert-info small">
     Login básico para o painel de upload separado. Configure as credenciais em <code>UPLOAD_ADMIN_USER</code> e <code>UPLOAD_ADMIN_PASS</code>.
 </div>
-<form method="post" action="<?= upload_url('/upload-admin/login') ?>" class="section-card p-3" style="max-width: 460px;">
+<form method="post" action="<?= base_path('/login') ?>" class="section-card p-3" style="max-width: 460px;">
     <input type="hidden" name="_csrf" value="<?= \App\Core\View::e($csrf ?? '') ?>">
     <div class="mb-3">
         <label class="form-label">Usuário</label>

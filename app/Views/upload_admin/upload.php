@@ -3,8 +3,7 @@ ob_start();
 ?>
 <h1 class="h4 mb-3">Painel de Upload (Bypass)</h1>
 <div class="d-flex flex-wrap gap-2 mb-3">
-    <a class="btn btn-outline-secondary" href="<?= upload_url('/upload') ?>">Abrir upload padrão</a>
-    <a class="btn btn-outline-danger" href="<?= upload_url('/upload-admin/logout') ?>">Sair</a>
+    <a class="btn btn-outline-danger" href="<?= base_path('/logout') ?>">Sair</a>
 </div>
 <?php if (!empty($setupError)): ?>
     <div class="alert alert-danger">Biblioteca não inicializada. Execute a migração 009_library_series.sql.</div>
@@ -15,7 +14,7 @@ ob_start();
 <div class="alert alert-info small">
     Este formulário é dedicado ao host/subdomínio com bypass de proxy. O upload real é processado pela rota padrão do sistema.
 </div>
-<form method="post" action="<?= upload_url('/upload') ?>" enctype="multipart/form-data" class="section-card p-3">
+<form method="post" action="<?= base_path('/upload') ?>" enctype="multipart/form-data" class="section-card p-3">
     <input type="hidden" name="_csrf" value="<?= \App\Core\View::e($csrf ?? '') ?>">
     <div class="row g-3">
         <div class="col-md-6">
