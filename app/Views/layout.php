@@ -172,15 +172,23 @@ if (function_exists('sys_getloadavg')) {
                             <?php endif; ?>
                         </nav>
                     <?php endif; ?>
-                    <?php if ($isLoggedIn): ?>
-                        <form class="topbar-search" method="get" action="<?= base_path('/lib/search') ?>" role="search" aria-label="Buscar nas bibliotecas">
-                            <i class="bi bi-search" aria-hidden="true"></i>
-                            <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar nas bibliotecas" aria-label="Campo de busca">
+                    <?php if ($isLoggedIn && !$isRestricted): ?>
+                        <form class="topbar-search" method="get" action="<?= base_path('/search') ?>" role="search" aria-label="Buscar nas bibliotecas">
+                            <button type="button" class="topbar-search-close" data-mobile-search-close aria-label="Fechar busca">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            <i class="bi bi-search topbar-search-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control form-control-sm" name="q" placeholder="Buscar" autocomplete="off" aria-label="Campo de busca">
                         </form>
                     <?php endif; ?>
                 </div>
                 <div class="topbar-right" role="toolbar" aria-label="Ações do usuário">
                     <?php if ($isLoggedIn): ?>
+                        <?php if (!$isRestricted): ?>
+                            <button class="btn btn-icon topbar-search-btn" type="button" data-mobile-search-toggle aria-label="Abrir busca">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        <?php endif; ?>
                         <button class="btn btn-icon theme-toggle-btn" type="button" data-theme-toggle aria-label="Alternar tema claro/escuro">
                             <i class="fa-solid fa-moon" aria-hidden="true"></i>
                         </button>

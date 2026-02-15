@@ -143,6 +143,7 @@ $router->post('/loja/proof', [new App\Controllers\PaymentController(), 'uploadPr
 
 
 $router->get('/lib', [new App\Controllers\LibraryController(), 'index'], [App\Core\Middleware::requireActiveAccess()]);
+$router->get('/search', [new App\Controllers\LibraryController(), 'search'], [App\Core\Middleware::requireActiveAccess()]);
 $router->get('/lib/search', [new App\Controllers\LibraryController(), 'search'], [App\Core\Middleware::requireActiveAccess()]);
 $router->get('/lib/{category}', [new App\Controllers\LibraryController(), 'category'], [App\Core\Middleware::requireActiveAccess()]);
 $router->get('/lib/{category}/{series}', [new App\Controllers\LibraryController(), 'series'], [App\Core\Middleware::requireActiveAccess()]);

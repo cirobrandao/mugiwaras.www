@@ -60,7 +60,7 @@ final class Series
 
     public static function searchByNameWithCounts(string $query, int $limit = 60, int $minChapters = 0): array
     {
-        $sql = 'SELECT s.*, c.name AS category_name, COUNT(ci.id) AS chapter_count
+        $sql = 'SELECT s.*, c.name AS category_name, c.slug AS category_slug, COUNT(ci.id) AS chapter_count
                 FROM series s
                 INNER JOIN categories c ON c.id = s.category_id
                 LEFT JOIN content_items ci ON ci.series_id = s.id
@@ -123,7 +123,7 @@ final class Series
 
     public static function favoritesForUser(int $userId, int $limit = 12): array
     {
-        $sql = 'SELECT s.*, c.name AS category_name, COUNT(ci.id) AS chapter_count
+        $sql = 'SELECT s.*, c.name AS category_name, c.slug AS category_slug, COUNT(ci.id) AS chapter_count
                 FROM user_series_favorites usf
                 INNER JOIN series s ON s.id = usf.series_id
                 INNER JOIN categories c ON c.id = s.category_id
@@ -141,7 +141,7 @@ final class Series
 
     public static function mostRead(int $limit = 5): array
     {
-                $sql = "SELECT s.id, s.name, s.category_id, c.name AS category_name, c.tag_color AS category_tag_color, COUNT(DISTINCT ce.user_id) AS read_count,
+                $sql = "SELECT s.id, s.name, s.category_id, c.name AS category_name, c.slug AS category_slug, c.tag_color AS category_tag_color, COUNT(DISTINCT ce.user_id) AS read_count,
                                      MAX(CASE WHEN LOWER(ci_all.cbz_path) LIKE '%.pdf' THEN 1 ELSE 0 END) AS has_pdf
                         FROM content_events ce
                         INNER JOIN content_items ci ON ci.id = ce.content_id
