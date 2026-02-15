@@ -1007,6 +1007,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (expandBtn || expandBtnMobile) {
     const expandButtons = [expandBtn, expandBtnMobile].filter(Boolean);
+    const setExpandedState = (active) => {
+      document.body.classList.toggle('reader-expanded', active);
+      document.documentElement.classList.toggle('reader-expanded', active);
+      if (wrap) wrap.classList.toggle('is-expanded', active);
+    };
     const syncExpandButtonState = (active) => {
       expandButtons.forEach((button) => {
         if (!button) return;
@@ -1027,14 +1032,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleExpand = () => {
       const container = readerEl || wrap || document.documentElement;
       const enterFallbackExpanded = () => {
-        document.body.classList.add('reader-expanded');
-        if (wrap) wrap.classList.add('is-expanded');
+        setExpandedState(true);
         syncExpandButtonState(true);
         syncPageGuide();
       };
       const exitFallbackExpanded = () => {
-        document.body.classList.remove('reader-expanded');
-        if (wrap) wrap.classList.remove('is-expanded');
+        setExpandedState(false);
         syncExpandButtonState(false);
         syncPageGuide();
       };
@@ -1086,8 +1089,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('fullscreenchange', () => {
       const active = Boolean(document.fullscreenElement);
-      document.body.classList.toggle('reader-expanded', active);
-      if (wrap) wrap.classList.toggle('is-expanded', active);
+      setExpandedState(active);
       syncExpandButtonState(active);
       syncPageGuide();
       setTimeout(() => {

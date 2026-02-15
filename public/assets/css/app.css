@@ -866,8 +866,13 @@ body.reader-expanded {
 	overflow: hidden;
 }
 
-body.reader-expanded .navbar.app-navbar {
+body.reader-expanded .navbar.app-navbar,
+html.reader-expanded .navbar.app-navbar,
+body.reader-expanded .app-navbar,
+html.reader-expanded .app-navbar {
 	display: none !important;
+	visibility: hidden !important;
+	pointer-events: none !important;
 }
 
 body.reader-expanded .app-main {
