@@ -112,27 +112,27 @@ foreach ($uploadsSeries as $row) {
 $maxUploads = max(15000, (!empty($uploadsValues) ? max($uploadsValues) : 0));
 $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 ?>
-<div class="admin-dashboard-header mb-4">
+<div class="admin-dashboard-header admin-dashboard-compact mb-3">
     <div class="d-flex align-items-center justify-content-between gap-3">
         <div class="d-flex align-items-center gap-3">
             <div class="admin-dashboard-icon">
                 <i class="bi bi-speedometer2"></i>
             </div>
             <div>
-                <h1 class="h3 mb-1 fw-bold">Painel Admin</h1>
+                <h1 class="h4 mb-1 fw-bold">Painel Admin</h1>
                 <p class="text-muted small mb-0">Visão geral do sistema</p>
             </div>
         </div>
-        <div class="badge bg-danger-subtle text-danger px-3 py-2 fw-semibold">
+        <div class="badge bg-danger-subtle text-danger px-2 py-1 fw-semibold">
             <i class="bi bi-shield-fill-check me-1"></i>
             Administrador
         </div>
     </div>
 </div>
 <?php if ($isAdmin): ?>
-    <div class="row g-3 align-items-start admin-dashboard-layout">
+    <div class="row g-2 align-items-start admin-dashboard-layout admin-dashboard-compact">
         <div class="col-lg-8 admin-dashboard-main">
-            <div class="row g-3 mb-4">
+            <div class="row g-2 mb-3">
                 <div class="col-6 col-lg-3">
                     <div class="admin-stat-card stat-primary">
                         <div class="stat-icon">
@@ -189,48 +189,8 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                 </div>
             </div>
 
-                    <div class="row g-3 mb-4">
-                        <div class="col-lg-5">
-                            <div class="admin-info-card">
-                                <div class="admin-card-header">
-                                    <i class="bi bi-hdd-rack me-2"></i>
-                                    <h2 class="admin-card-title">Sistema</h2>
-                                </div>
-                                <div class="admin-card-body">
-                                    <div class="d-flex flex-column gap-2 small">
-                                        <div class="d-flex justify-content-between"><span class="text-muted">Servidor</span><span><?= View::e((string)($server['server_software'] ?? '')) ?></span></div>
-                                        <div class="d-flex justify-content-between"><span class="text-muted">SO</span><span><?= View::e((string)($server['os'] ?? '')) ?></span></div>
-                                        <div class="d-flex justify-content-between"><span class="text-muted">PHP</span><span><?= View::e((string)($server['php_version'] ?? '')) ?></span></div>
-                                        <div class="d-flex justify-content-between"><span class="text-muted">Horario</span><span><?= View::e((string)($server['time'] ?? '')) ?></span></div>
-                                    </div>
-                                    <hr class="my-3">
-                                    <div class="d-flex flex-column gap-2 small">
-                                        <div class="d-flex justify-content-between"><span class="text-muted">Banco</span><span><?= View::e((string)($dbInfo['name'] ?? '')) ?></span></div>
-                                        <div class="d-flex justify-content-between"><span class="text-muted">Versao</span><span><?= View::e((string)($dbInfo['version'] ?? '')) ?></span></div>
-                                        <div class="d-flex justify-content-between"><span class="text-muted">Conexoes</span><span><?= $formatNumber((int)($dbInfo['connections'] ?? 0)) ?></span></div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Memoria PHP</span><span><?= $formatBytes($memUsage) ?> / <?= View::e((string)($server['memory_limit'] ?? '')) ?></span></div>
-                                        <div class="progress" role="progressbar" aria-label="Memoria" aria-valuenow="<?= $memPercent ?>" aria-valuemin="0" aria-valuemax="100">
-                                            <div class="progress-bar" data-progress="<?= $memPercent ?>" style="width: 0%;"></div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Memoria servidor</span><span><?= $systemMemTotal > 0 ? ($formatBytes($systemMemUsed) . ' / ' . $formatBytes($systemMemTotal)) : 'N/A' ?></span></div>
-                                        <div class="progress" role="progressbar" aria-label="Memoria servidor" aria-valuenow="<?= $systemMemPercent ?>" aria-valuemin="0" aria-valuemax="100">
-                                            <div class="progress-bar bg-info" data-progress="<?= $systemMemPercent ?>" style="width: 0%;"></div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Disco</span><span><?= $formatBytes($diskUsed) ?> / <?= $formatBytes($diskTotal) ?></span></div>
-                                        <div class="progress" role="progressbar" aria-label="Disco" aria-valuenow="<?= $diskPercent ?>" aria-valuemin="0" aria-valuemax="100">
-                                            <div class="progress-bar bg-success" data-progress="<?= $diskPercent ?>" style="width: 0%;"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-7">
+                    <div class="row g-2 mb-3">
+                        <div class="col-12">
                             <div class="admin-info-card">
                                 <div class="admin-card-header">
                                     <i class="bi bi-grid-3x3-gap me-2"></i>
@@ -309,7 +269,7 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                         </div>
                     </div>
 
-                    <div class="row g-3 mb-4">
+                    <div class="row g-2 mb-3">
                         <div class="col-lg-6">
                             <div class="admin-info-card">
                                 <div class="admin-card-header">
@@ -381,8 +341,8 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                     </div>
                 </div>
                 <div class="col-lg-4 admin-dashboard-sidebar">
-                    <div class="d-flex flex-column gap-3">
-                        <div class="admin-info-card">
+                    <div class="d-flex flex-column gap-2">
+                        <div class="admin-info-card admin-list-card-compact">
                             <div class="admin-card-header">
                                 <i class="bi bi-clock-history me-2"></i>
                                 <h2 class="admin-card-title">Últimos conectados</h2>
@@ -391,9 +351,9 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                 <?php if (empty($recentUsers)): ?>
                                     <div class="text-muted">Sem registros recentes.</div>
                                 <?php else: ?>
-                                    <div class="admin-recent-users">
+                                    <div class="admin-recent-users admin-recent-users-compact">
                                         <?php foreach ($recentUsers as $ru): ?>
-                                            <div class="admin-user-item">
+                                            <div class="admin-user-item admin-user-item-compact">
                                                 <div class="user-info">
                                                     <i class="bi bi-person-circle"></i>
                                                     <span class="user-name"><?= View::e((string)($ru['username'] ?? '')) ?></span>
@@ -406,7 +366,7 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <div class="admin-info-card">
+                        <div class="admin-info-card admin-list-card-compact">
                             <div class="admin-card-header">
                                 <i class="bi bi-shield-exclamation me-2"></i>
                                 <h2 class="admin-card-title">Tentativas de falhas</h2>
@@ -415,7 +375,7 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                 <?php if (empty($loginFailAttempts)): ?>
                                     <div class="text-muted">Sem tentativas recentes.</div>
                                 <?php else: ?>
-                                    <div class="admin-recent-users">
+                                    <div class="admin-recent-users admin-recent-users-compact">
                                         <?php foreach ($loginFailAttempts as $fail): ?>
                                             <?php
                                             $label = (string)($fail['username'] ?? '');
@@ -430,7 +390,7 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                                 }
                                                 $displayLabel = mb_strimwidth($fullLabel, 0, 36, '...');
                                             ?>
-                                            <div class="admin-user-item admin-fail-item" title="<?= View::e($fullLabel) ?>">
+                                            <div class="admin-user-item admin-user-item-compact admin-fail-item" title="<?= View::e($fullLabel) ?>">
                                                 <div class="user-info">
                                                     <i class="bi bi-x-circle"></i>
                                                     <span class="user-name"><?= View::e($displayLabel) ?></span>
@@ -442,30 +402,68 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                 <?php endif; ?>
                             </div>
                         </div>
+                        <div class="admin-info-card">
+                            <div class="admin-card-header">
+                                <i class="bi bi-hdd-rack me-2"></i>
+                                <h2 class="admin-card-title">Sistema</h2>
+                            </div>
+                            <div class="admin-card-body">
+                                <div class="d-flex flex-column gap-2 small">
+                                    <div class="d-flex justify-content-between"><span class="text-muted">Servidor</span><span><?= View::e((string)($server['server_software'] ?? '')) ?></span></div>
+                                    <div class="d-flex justify-content-between"><span class="text-muted">SO</span><span><?= View::e((string)($server['os'] ?? '')) ?></span></div>
+                                    <div class="d-flex justify-content-between"><span class="text-muted">PHP</span><span><?= View::e((string)($server['php_version'] ?? '')) ?></span></div>
+                                    <div class="d-flex justify-content-between"><span class="text-muted">Horario</span><span><?= View::e((string)($server['time'] ?? '')) ?></span></div>
+                                </div>
+                                <hr class="my-3">
+                                <div class="d-flex flex-column gap-2 small">
+                                    <div class="d-flex justify-content-between"><span class="text-muted">Banco</span><span><?= View::e((string)($dbInfo['name'] ?? '')) ?></span></div>
+                                    <div class="d-flex justify-content-between"><span class="text-muted">Versao</span><span><?= View::e((string)($dbInfo['version'] ?? '')) ?></span></div>
+                                    <div class="d-flex justify-content-between"><span class="text-muted">Conexoes</span><span><?= $formatNumber((int)($dbInfo['connections'] ?? 0)) ?></span></div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Memoria PHP</span><span><?= $formatBytes($memUsage) ?> / <?= View::e((string)($server['memory_limit'] ?? '')) ?></span></div>
+                                    <div class="progress" role="progressbar" aria-label="Memoria" aria-valuenow="<?= $memPercent ?>" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar" data-progress="<?= $memPercent ?>" style="width: 0%;"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Memoria servidor</span><span><?= $systemMemTotal > 0 ? ($formatBytes($systemMemUsed) . ' / ' . $formatBytes($systemMemTotal)) : 'N/A' ?></span></div>
+                                    <div class="progress" role="progressbar" aria-label="Memoria servidor" aria-valuenow="<?= $systemMemPercent ?>" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar bg-info" data-progress="<?= $systemMemPercent ?>" style="width: 0%;"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between small mb-1"><span class="text-muted">Disco</span><span><?= $formatBytes($diskUsed) ?> / <?= $formatBytes($diskTotal) ?></span></div>
+                                    <div class="progress" role="progressbar" aria-label="Disco" aria-valuenow="<?= $diskPercent ?>" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar bg-success" data-progress="<?= $diskPercent ?>" style="width: 0%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         <?php endif; ?>
 
 <?php if ($isModerator): ?>
-    <div class="admin-dashboard-header mb-4">
+    <div class="admin-dashboard-header admin-dashboard-compact mb-3">
         <div class="d-flex align-items-center justify-content-between gap-3">
             <div class="d-flex align-items-center gap-3">
                 <div class="admin-dashboard-icon">
                     <i class="bi bi-shield-check"></i>
                 </div>
                 <div>
-                    <h1 class="h3 mb-1 fw-bold">Painel Moderador</h1>
+                    <h1 class="h4 mb-1 fw-bold">Painel Moderador</h1>
                     <p class="text-muted small mb-0">Gestão de conteúdo</p>
                 </div>
             </div>
-            <div class="badge bg-info-subtle text-info px-3 py-2 fw-semibold">
+            <div class="badge bg-info-subtle text-info px-2 py-1 fw-semibold">
                 <i class="bi bi-shield-check me-1"></i>
                 Moderador
             </div>
         </div>
     </div>
-    <div class="row g-3">
+    <div class="row g-2 admin-dashboard-compact">
         <div class="col-md-4">
             <div class="admin-info-card">
                 <div class="admin-card-header">

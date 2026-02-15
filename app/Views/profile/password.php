@@ -2,16 +2,16 @@
 use App\Core\View;
 ob_start();
 ?>
-<h1 class="h4 mb-3">Editar senha</h1>
+<h1 class="h5 mb-2 fw-semibold">Editar senha</h1>
 <?php if (!empty($error)): ?>
 	<div class="alert alert-danger"><?= View::e((string)$error) ?></div>
 <?php endif; ?>
 <?php if (!empty($success)): ?>
 	<div class="alert alert-success"><?= View::e((string)$success) ?></div>
 <?php endif; ?>
-<div class="card">
-	<div class="card-body">
-		<form method="post" action="<?= base_path('/perfil/senha') ?>">
+<div class="profile-card">
+	<div class="profile-card-body">
+		<form class="profile-password-form" method="post" action="<?= base_path('/perfil/senha') ?>">
 			<input type="hidden" name="_csrf" value="<?= View::e((string)($csrf ?? '')) ?>">
 			<div class="mb-3">
 				<label class="form-label">Senha atual</label>

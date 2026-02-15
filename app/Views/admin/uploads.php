@@ -206,7 +206,7 @@ $shortFileName = static function (string $name): string {
                     ?>
                     <div class="d-inline-flex align-items-center gap-1" style="max-width: 190px;">
                         <span class="uploads-pill" style="display:inline-block;max-width:160px;padding:2px 8px;border:1px solid #dee2e6;border-radius:6px;background:#f8f9fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= View::e($seriesLabel) ?>">
-                            <?= View::e($midEllipsis($seriesLabel, 28, 6)) ?>
+                            <?= View::e(mid_ellipsis($seriesLabel, 28, 6)) ?>
                         </span>
                         <?php if ($seriesUrl !== ''): ?>
                             <a class="btn btn-sm btn-outline-secondary uploads-action-btn" href="<?= View::e($seriesUrl) ?>" target="_blank" rel="noopener" title="Abrir série em nova aba">

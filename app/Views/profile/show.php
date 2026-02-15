@@ -23,8 +23,8 @@ $tierIcon = $tierIconMap[$tier] ?? 'bi-person-fill';
 $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
 ?>
 <h1 class="h5 mb-2 fw-semibold"><?= View::e($profileTitle) ?></h1>
-<div class="card profile-card profile-card">
-    <div class="card-body profile-card-body">
+<div class="profile-card">
+    <div class="profile-card-body">
         <div class="row g-2 align-items-start">
             <div class="col-auto">
                 <div class="border rounded d-flex align-items-center justify-content-center profile-avatar-box">
@@ -70,8 +70,8 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
 
 <div class="row g-2 mt-1">
     <div class="col-lg-6">
-        <div class="card profile-card profile-card h-100">
-            <div class="card-body profile-card-body">
+        <div class="profile-card h-100">
+            <div class="profile-card-body">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <h2 class="mb-0 fw-semibold" style="font-size: 0.95rem;">Historico de compras e vouchers</h2>
                     <?php if (!empty($commerceHistoryMore)): ?>
@@ -149,8 +149,8 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
         </div>
     </div>
     <div class="col-lg-6">
-        <div class="card profile-card h-100">
-            <div class="card-body profile-card-body">
+        <div class="profile-card h-100">
+            <div class="profile-card-body">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <h2 class="mb-0 fw-semibold" style="font-size: 0.95rem;">Historico de acesso</h2>
                     <?php if (!empty($loginHistoryMore)): ?>
@@ -161,7 +161,7 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
                     <div class="text-muted">Sem registros.</div>
                 <?php else: ?>
                     <div class="table-responsive">
-                        <table class="table table-sm align-middle mb-0 small">
+                        <table class="table table-sm align-middle mb-0" style="font-size: 0.8rem;">
                             <thead class="table-light">
                             <tr>
                                 <th scope="col" style="width: 140px;">Data</th>
@@ -223,11 +223,11 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
         </div>
     </div>
     <div class="col-12">
-        <div class="card profile-card">
-            <div class="card-body profile-card-body">
+        <div class="profile-card">
+            <div class="profile-card-body">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <h2 class="mb-0 fw-semibold" style="font-size: 0.95rem;">Historico de leitura</h2>
-                    <span class="badge bg-light text-muted border" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Pag. <?= (int)($readPage ?? 1) ?>/<?= (int)($readPages ?? 1) ?></span>
+                    <span class="badge bg-light text-muted border" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Página <?= (int)($readPage ?? 1) ?> de <?= (int)($readPages ?? 1) ?></span>
                 </div>
                 <?php if (empty($readingHistory)): ?>
                     <div class="text-muted" style="font-size: 0.85rem;">Sem registros.</div>
@@ -266,6 +266,8 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
                         $readPages = (int)($readPages ?? 1);
                         $hasPrev = $readPage > 1;
                         $hasNext = $readPage < $readPages;
+                        $startPage = max(1, $readPage - 1);
+                        $endPage = min($readPages, $readPage + 1);
                     ?>
                     <?php if ($readPages > 1): ?>
                         <nav class="mt-2" aria-label="Paginacao de leitura">
@@ -275,11 +277,30 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
-                                <?php for ($p = 1; $p <= $readPages; $p++): ?>
+                                <?php if ($startPage > 1): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="<?= base_path($profileBase . '?reads_page=1') ?>">1</a>
+                                    </li>
+                                    <?php if ($startPage > 2): ?>
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+
+                                <?php for ($p = $startPage; $p <= $endPage; $p++): ?>
                                     <li class="page-item <?= $p === $readPage ? 'active' : '' ?>">
                                         <a class="page-link" href="<?= base_path($profileBase . '?reads_page=' . $p) ?>"><?= $p ?></a>
                                     </li>
                                 <?php endfor; ?>
+
+                                <?php if ($endPage < $readPages): ?>
+                                    <?php if ($endPage < ($readPages - 1)): ?>
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    <?php endif; ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="<?= base_path($profileBase . '?reads_page=' . $readPages) ?>"><?= $readPages ?></a>
+                                    </li>
+                                <?php endif; ?>
+
                                 <li class="page-item <?= $hasNext ? '' : 'disabled' ?>">
                                     <a class="page-link" href="<?= base_path($profileBase . '?reads_page=' . min($readPages, $readPage + 1)) ?>" aria-label="Proxima">
                                         <span aria-hidden="true">&raquo;</span>
@@ -304,7 +325,7 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
             </div>
             <div class="modal-body">
                 <div class="table-responsive overflow-auto" style="max-height: 420px;">
-                    <table class="table table-sm align-middle mb-0 small">
+                    <table class="table table-sm align-middle mb-0" style="font-size: 0.8rem;">
                         <thead class="table-light">
                         <tr>
                             <th scope="col" style="width: 140px;">Data</th>
@@ -382,7 +403,7 @@ $tierLabel = $tierLabelMap[$tier] ?? ucfirst($tier);
             </div>
             <div class="modal-body">
                 <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-0 small">
+                    <table class="table table-sm align-middle mb-0" style="font-size: 0.8rem;">
                         <thead class="table-light">
                         <tr>
                             <th scope="col" style="width: 140px;">Data</th>

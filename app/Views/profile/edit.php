@@ -14,20 +14,20 @@ if ($birthDate === '0000-00-00') {
 	$birthDate = '';
 }
 ?>
-<h1 class="h4 mb-3">Editar meu perfil</h1>
+<h1 class="h5 mb-2 fw-semibold">Editar meu perfil</h1>
 <?php if (!empty($error)): ?>
 	<div class="alert alert-danger"><?= View::e((string)$error) ?></div>
 <?php endif; ?>
 <?php if (!empty($success)): ?>
 	<div class="alert alert-success"><?= View::e((string)$success) ?></div>
 <?php endif; ?>
-<div class="card">
-	<div class="card-body">
-		<form method="post" action="<?= base_path('/user/editar') ?>" enctype="multipart/form-data">
+<div class="profile-card">
+	<div class="profile-card-body">
+		<form class="profile-edit-form" method="post" action="<?= base_path('/user/editar') ?>" enctype="multipart/form-data">
 			<input type="hidden" name="_csrf" value="<?= View::e((string)($csrf ?? '')) ?>">
 			<div class="row g-3 align-items-center mb-3">
 				<div class="col-md-3">
-					<div class="border rounded d-flex align-items-center justify-content-center profile-avatar-box">
+					<div class="d-flex align-items-center justify-content-center profile-avatar-box profile-avatar-frame">
 						<?php if ($currentAvatarPath !== ''): ?>
 							<img src="<?= base_path('/' . ltrim($currentAvatarPath, '/')) ?>" alt="Avatar" class="profile-avatar-img">
 						<?php else: ?>
@@ -86,7 +86,7 @@ if ($birthDate === '0000-00-00') {
 								$isSelected = $avId > 0 && $avId === $selectedAvatarId;
 							?>
 							<div class="col-6 col-md-3 col-lg-2">
-								<label class="w-100 border rounded p-2 d-flex flex-column align-items-center gap-2" style="cursor: pointer;">
+								<label class="w-100 border rounded p-2 d-flex flex-column align-items-center gap-2 profile-avatar-option" style="cursor: pointer;">
 									<img src="<?= base_path('/' . ltrim($avPath, '/')) ?>" alt="Avatar" class="avatar-gallery-thumb">
 									<div class="form-check">
 										<input class="form-check-input" type="radio" name="avatar_gallery_id" value="<?= $avId ?>" <?= $isSelected ? 'checked' : '' ?>>
