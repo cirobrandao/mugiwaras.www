@@ -9,6 +9,7 @@ $currentPath = $_SERVER['REQUEST_URI'] ?? '';
 $basePath = base_path('');
 $isLibraries = str_contains($currentPath, '/lib');
 $isLoja = str_contains($currentPath, '/loja');
+$isSuporte = str_contains($currentPath, '/support');
 ?>
 <nav class="navbar navbar-expand-lg fixed-top app-navbar" role="banner">
     <div class="container-fluid navbar-container">
@@ -23,6 +24,10 @@ $isLoja = str_contains($currentPath, '/loja');
                         <a class="nav-link <?= $isLoja ? 'active' : '' ?>" href="<?= base_path('/loja') ?>">
                             <i class="bi bi-bag"></i>
                             <span>Loja</span>
+                        </a>
+                        <a class="nav-link <?= $isSuporte ? 'active' : '' ?>" href="<?= base_path('/support') ?>">
+                            <i class="bi bi-headset"></i>
+                            <span>Suporte</span>
                         </a>
                         <div class="navbar-mobile-user d-lg-none">
                             <hr class="navbar-mobile-divider">

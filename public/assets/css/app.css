@@ -2721,6 +2721,11 @@ body.theme-dark .progress {
 	background-color: #1f2937;
 }
 
+body.theme-dark .upload-card .progress {
+	background-color: #334155;
+	border: 1px solid #475569;
+}
+
 .progress-bar {
 	background-color: #fb923c;
 	transition: width 0.3s ease;
@@ -2794,6 +2799,182 @@ body.theme-dark .form-select:focus {
 	background: #0f172a;
 	border-color: #3b82f6;
 	color: #f1f5f9;
+}
+
+/* Admin Uploads Compact Styles */
+.uploads-header {
+	margin-top: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.uploads-header h1 {
+	font-size: 1.4rem;
+	margin-bottom: 0;
+}
+
+.uploads-header .text-muted {
+	font-size: 0.8rem;
+}
+
+.uploads-stats {
+	display: flex;
+	gap: 1rem;
+}
+
+.uploads-stats .stat-item {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem 0.85rem;
+	background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+}
+
+.uploads-stats .stat-item i {
+	font-size: 1.4rem;
+}
+
+.uploads-stats .stat-value {
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: #1e293b;
+	line-height: 1;
+}
+
+.uploads-stats .stat-label {
+	font-size: 0.7rem;
+	color: #64748b;
+	line-height: 1;
+}
+
+.uploads-filter-form .form-label {
+	font-size: 0.8rem;
+	margin-bottom: 0.25rem;
+	font-weight: 500;
+}
+
+.uploads-filter-form .form-control,
+.uploads-filter-form .form-select {
+	padding: 0.4rem 0.65rem;
+	font-size: 0.85rem;
+}
+
+.uploads-table-compact {
+	font-size: 0.82rem;
+}
+
+.uploads-table-compact thead th {
+	padding: 0.5rem 0.6rem;
+	font-size: 0.78rem;
+	font-weight: 600;
+	background: #f8fafc;
+}
+
+.uploads-table-compact tbody td {
+	padding: 0.45rem 0.6rem;
+	vertical-align: middle;
+}
+
+.uploads-table-compact .form-check-input {
+	width: 1rem;
+	height: 1rem;
+}
+
+.uploads-pill {
+	display: inline-block;
+	padding: 2px 8px;
+	border: 1px solid #e2e8f0;
+	border-radius: 6px;
+	background: #f8f9fa;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 0.8rem;
+}
+
+.uploads-pill-file {
+	max-width: 180px;
+}
+
+.uploads-pill-series {
+	max-width: 160px;
+}
+
+.uploads-series-wrap {
+	max-width: 190px;
+}
+
+.uploads-truncate {
+	display: inline-block;
+	max-width: 140px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: middle;
+}
+
+.uploads-action-btn {
+	padding: 0.25rem 0.45rem;
+	font-size: 0.8rem;
+	line-height: 1;
+}
+
+.uploads-action-btn i {
+	font-size: 0.9rem;
+}
+
+.uploads-bulk-actions {
+	gap: 0.5rem;
+	margin-bottom: 0.75rem;
+}
+
+.uploads-bulk-actions .btn {
+	padding: 0.35rem 0.7rem;
+	font-size: 0.8rem;
+}
+
+.uploads-bulk-actions .btn i {
+	font-size: 0.85rem;
+}
+
+body.theme-dark .uploads-stats .stat-item {
+	background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+	border-color: #475569;
+}
+
+body.theme-dark .uploads-stats .stat-value {
+	color: #f1f5f9;
+}
+
+body.theme-dark .uploads-stats .stat-label {
+	color: #94a3b8;
+}
+
+body.theme-dark .uploads-table-compact thead th {
+	background: #1e293b;
+	color: #f1f5f9;
+	border-color: #334155;
+}
+
+body.theme-dark .uploads-table-compact tbody td {
+	border-color: #1f2937;
+}
+
+body.theme-dark .uploads-pill {
+	background: #1e293b;
+	border-color: #334155;
+	color: #e2e8f0;
+}
+
+body.theme-dark .uploads-truncate {
+	color: #e2e8f0;
+}
+
+body.theme-dark .uploads-table-compact .table-warning > * {
+	background: rgba(245, 158, 11, 0.18) !important;
+	color: #fef3c7;
+	border-color: #92400e;
 }
 
 /* Admin Tables Dark Mode */

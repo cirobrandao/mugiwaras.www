@@ -166,6 +166,10 @@ if (function_exists('sys_getloadavg')) {
                                         <i class="bi bi-bag"></i>
                                         <span>Loja</span>
                                     </a>
+                                    <a class="nav-link <?= $activePage === 'support' ? 'active' : '' ?>" href="<?= base_path('/support') ?>">
+                                        <i class="bi bi-headset"></i>
+                                        <span>Suporte</span>
+                                    </a>
                                 <?php endif; ?>
                                 <div class="navbar-mobile-user d-lg-none">
                                     <hr class="navbar-mobile-divider">

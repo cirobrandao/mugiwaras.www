@@ -26,11 +26,11 @@ $shortFileName = static function (string $name): string {
     return $trimmedBase . $extPart;
 };
 ?>
-<div class="uploads-header mb-4">
+<div class="uploads-header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
-            <h1 class="h3 mb-1 fw-bold">Gerenciador de Arquivos</h1>
-            <p class="text-muted small mb-0">Controle de uploads e aprovações</p>
+            <h1 class="mb-0 fw-bold">Gerenciador de Arquivos</h1>
+            <p class="text-muted mb-0">Controle de uploads e aprovações</p>
         </div>
         <?php if (!empty($total)): ?>
             <div class="uploads-stats">
@@ -52,7 +52,7 @@ $shortFileName = static function (string $name): string {
         <?php endif; ?>
     </div>
 </div>
-<form method="get" action="<?= base_path('/admin/uploads') ?>" class="row g-3 align-items-end mb-3">
+<form method="get" action="<?= base_path('/admin/uploads') ?>" class="row g-2 align-items-end mb-2 uploads-filter-form">
     <div class="col-sm-4 col-md-3">
         <label class="form-label">Usuário (ID ou nome)</label>
         <input class="form-control" type="text" name="user" value="<?= View::e((string)($filterUser ?? '')) ?>" placeholder="ex: 42 ou joao">
@@ -97,12 +97,11 @@ $shortFileName = static function (string $name): string {
     </div>
     <div class="col-sm-12 col-md-2 d-flex gap-2">
         <input type="hidden" name="perPage" value="<?= (int)($perPage ?? 50) ?>">
-        <button class="btn btn-primary" type="submit">Filtrar</button>
-        <a class="btn btn-outline-secondary" href="<?= base_path('/admin/uploads') ?>">Limpar</a>
+        <button class="btn btn-sm btn-primary" type="submit">Filtrar</button>
+        <a class="btn btn-sm btn-outline-secondary" href="<?= base_path('/admin/uploads') ?>">Limpar</a>
     </div>
-    <div class="col-sm-12 col-md-3 d-flex gap-2 justify-content-md-end"></div>
 </form>
-<div class="d-flex flex-wrap justify-content-end gap-2 mb-2">
+<div class="d-flex flex-wrap justify-content-end uploads-bulk-actions">
     <form id="bulkApproveForm" method="post" action="<?= base_path('/admin/uploads/approve-multiple') ?>" class="m-0">
     <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
     <input type="hidden" name="page" value="<?= (int)($page ?? 1) ?>">
@@ -131,7 +130,7 @@ $shortFileName = static function (string $name): string {
     </form>
 </div>
 <div class="table-responsive">
-    <table class="table table-hover align-middle" style="table-layout: fixed;">
+    <table class="table table-hover align-middle uploads-table-compact" style="table-layout: fixed;">
         <thead class="table-light">
         <tr>
             <th scope="col" style="width: 32px;">
@@ -181,7 +180,7 @@ $shortFileName = static function (string $name): string {
                     <i class="bi <?= $icon ?> <?= $cls ?>" title="<?= View::e($isStaleQueue ? ($st . ' (3+ dias)') : $st) ?>"></i>
                 </td>
                 <td>
-                    <span class="uploads-pill" style="display:inline-block;max-width:180px;padding:2px 8px;border:1px solid #dee2e6;border-radius:6px;background:#f8f9fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= View::e($fileName) ?>">
+                    <span class="uploads-pill uploads-pill-file" title="<?= View::e($fileName) ?>">
                         <?= View::e($fileLabel) ?>
                     </span>
                 </td>
@@ -204,8 +203,8 @@ $shortFileName = static function (string $name): string {
                         ? base_path('/lib/' . rawurlencode($categorySlugForSeries) . '/' . $seriesId)
                         : '';
                     ?>
-                    <div class="d-inline-flex align-items-center gap-1" style="max-width: 190px;">
-                        <span class="uploads-pill" style="display:inline-block;max-width:160px;padding:2px 8px;border:1px solid #dee2e6;border-radius:6px;background:#f8f9fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= View::e($seriesLabel) ?>">
+                    <div class="d-inline-flex align-items-center gap-1 uploads-series-wrap">
+                        <span class="uploads-pill uploads-pill-series" title="<?= View::e($seriesLabel) ?>">
                             <?= View::e(mid_ellipsis($seriesLabel, 28, 6)) ?>
                         </span>
                         <?php if ($seriesUrl !== ''): ?>

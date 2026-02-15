@@ -88,9 +88,14 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
                 <div class="list-item">
                     <div class="rank-badge"><?= $position++ ?></div>
                     <div class="list-content">
-                        <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($mrCategorySlug) . '/' . ($mrSeriesId > 0 ? $mrSeriesId : rawurlencode($mrName))) ?>">
-                            <?= View::e($mrName) ?>
-                        </a>
+                        <div class="list-header">
+                            <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($mrCategorySlug) . '/' . ($mrSeriesId > 0 ? $mrSeriesId : rawurlencode($mrName))) ?>">
+                                <?= View::e($mrName) ?>
+                            </a>
+                            <span class="list-stat">
+                                <i class="bi bi-eye-fill"></i><?= (int)($mr['read_count'] ?? 0) ?>
+                            </span>
+                        </div>
                         <div class="list-meta">
                             <?php
                             $badgeClass = $mrCatId > 0 ? 'cat-badge-' . $mrCatId : 'bg-secondary';
@@ -101,9 +106,6 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
                             ?>
                             <span class="badge list-badge <?= $badgeClass ?>"<?= $badgeStyle ?>>
                                 <?= View::e($mrCategory) ?>
-                            </span>
-                            <span class="list-stat">
-                                <i class="bi bi-eye-fill"></i><?= (int)($mr['read_count'] ?? 0) ?>
                             </span>
                         </div>
                     </div>
@@ -141,13 +143,20 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
                         <i class="bi bi-stars"></i>
                     </div>
                     <div class="list-content">
-                        <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
-                            <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($rcCategorySlug) . '/' . ($rcSeriesId > 0 ? $rcSeriesId : rawurlencode($rcSeries))) ?>">
-                                <?= View::e($rcSeriesLabel) ?>
-                            </a>
-                        <?php else: ?>
-                            <span class="list-title"><?= View::e($rcTitleLabel) ?></span>
-                        <?php endif; ?>
+                        <div class="list-header">
+                            <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
+                                <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($rcCategorySlug) . '/' . ($rcSeriesId > 0 ? $rcSeriesId : rawurlencode($rcSeries))) ?>">
+                                    <?= View::e($rcSeriesLabel) ?>
+                                </a>
+                            <?php else: ?>
+                                <span class="list-title"><?= View::e($rcTitleLabel) ?></span>
+                            <?php endif; ?>
+                            <?php if (!empty($rc['created_at'])): ?>
+                                <span class="list-stat">
+                                    <i class="bi bi-clock"></i><?= View::e(time_ago((string)$rc['created_at'])) ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
                         <div class="list-meta">
                             <?php if ($rcCategory !== ''): ?>
                                 <?php
@@ -158,11 +167,6 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
                                 }
                                 ?>
                                 <span class="badge list-badge <?= $rcBadgeClass ?>"<?= $rcBadgeStyle ?>><?= View::e($rcCategory) ?></span>
-                            <?php endif; ?>
-                            <?php if (!empty($rc['created_at'])): ?>
-                                <span class="list-stat">
-                                    <i class="bi bi-clock"></i><?= View::e(time_ago((string)$rc['created_at'])) ?>
-                                </span>
                             <?php endif; ?>
                         </div>
                     </div>
