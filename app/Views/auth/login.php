@@ -24,8 +24,8 @@ $authHeroFeatures = [
 ob_start();
 ?>
 <div class="auth-header">
-    <h1>Entrar</h1>
-    <p>Acesse sua conta</p>
+    <h1 class="fw-bold">Entrar</h1>
+    <p class="text-muted">Acesse sua conta e continue sua jornada</p>
 </div>
 
 <?php if (!empty($_GET['registered'])): ?>
@@ -56,10 +56,11 @@ ob_start();
     <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
     
     <div class="mb-3">
-        <label class="form-label" for="login-username">
+        <label class="form-label fw-semibold" for="login-username">
+            <i class="bi bi-person me-1"></i>
             Usuário ou e-mail
         </label>
-        <div class="input-group">
+        <div class="input-group input-group-lg">
             <span class="input-group-text">
                 <i class="bi bi-person"></i>
             </span>
@@ -78,13 +79,17 @@ ob_start();
     </div>
     
     <div class="mb-3">
-        <label class="form-label d-flex justify-content-between align-items-center" for="login-password">
-            <span>Senha</span>
+        <label class="form-label fw-semibold d-flex justify-content-between align-items-center" for="login-password">
+            <span>
+                <i class="bi bi-lock me-1"></i>
+                Senha
+            </span>
             <a href="<?= base_path('/recover') ?>" class="text-decoration-none small">
+                <i class="bi bi-question-circle me-1"></i>
                 Esqueceu a senha?
             </a>
         </label>
-        <div class="input-group">
+        <div class="input-group input-group-lg">
             <span class="input-group-text">
                 <i class="bi bi-lock"></i>
             </span>
@@ -118,17 +123,22 @@ ob_start();
         </div>
     </div>
     
-    <button class="btn btn-primary w-100 mb-3" type="submit">
+    <button class="btn btn-primary btn-lg w-100 mb-3" type="submit">
         <i class="bi bi-box-arrow-in-right me-2"></i>
         Entrar
     </button>
 </form>
 
 <div class="auth-footer">
-    <span>Ainda não tem uma conta?</span>
-    <a href="<?= base_path('/register') ?>">Cadastre-se gratuitamente</a>
-    <div class="mt-2">
-        <a href="<?= base_path('/support') ?>" class="text-muted">
+    <div class="mb-2">
+        <span class="text-muted">Ainda não tem uma conta?</span>
+        <a href="<?= base_path('/register') ?>" class="fw-semibold">
+            <i class="bi bi-person-plus me-1"></i>
+            Cadastre-se gratuitamente
+        </a>
+    </div>
+    <div>
+        <a href="<?= base_path('/support') ?>" class="text-muted text-decoration-none">
             <i class="bi bi-headset me-1"></i>
             Precisa de ajuda?
         </a>

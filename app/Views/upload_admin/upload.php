@@ -7,7 +7,18 @@ ob_start();
         <h1 class="h3 mb-1">🚀 Painel de Upload (Bypass)</h1>
         <div class="text-muted upload-admin-help">Área dedicada para envio de arquivos grandes sem limitações de proxy.</div>
     </div>
-    <div class="d-flex gap-2 align-items-center">
+    <div class="d-flex gap-3 align-items-center">
+        <?php if (!empty($currentUser)): ?>
+            <div class="upload-user-info">
+                <i class="bi bi-person-circle"></i>
+                <span class="small">
+                    <strong><?= \App\Core\View::e($currentUser['username'] ?? 'Usuário') ?></strong>
+                    <?php if (!empty($currentUser['role'])): ?>
+                        <span class="badge bg-secondary ms-1"><?= \App\Core\View::e($currentUser['role']) ?></span>
+                    <?php endif; ?>
+                </span>
+            </div>
+        <?php endif; ?>
         <button type="button" class="btn btn-icon theme-toggle-btn" data-theme-toggle aria-label="Alternar tema">
             <i class="fa-solid fa-moon"></i>
         </button>
@@ -28,18 +39,18 @@ ob_start();
 <?php endif; ?>
 <div id="uploadResult"></div>
 <section class="section-card mb-3 upload-card p-3">
-    <div class="mb-3">
-        <div class="progress" style="height: 6px;">
-            <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>
-        </div>
-        <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="5368709120" data-max-files="100">0 B / 5 GB · 0 / 100 arquivos</div>
-    </div>
     <div class="row">
-        <div class="col-lg-7">
+        <div class="col-lg-6">
+            <div class="mb-3">
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="5368709120" data-max-files="100">0 B / 5 GB · 0 / 100 arquivos</div>
+            </div>
             <form method="post" action="<?= base_path('/upload') ?>" enctype="multipart/form-data">
                 <input type="hidden" name="_csrf" value="<?= \App\Core\View::e($csrf ?? '') ?>">
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Categoria</label>
                         <select name="category" class="form-select" required <?= !empty($noCategories) ? 'disabled' : '' ?>>
                             <option value="" selected disabled>Selecione uma categoria</option>
@@ -48,7 +59,7 @@ ob_start();
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-8">
                         <label class="form-label">Série</label>
                         <input type="text" name="series" class="form-control" placeholder="Ex: One Piece" required>
                     </div>
@@ -68,7 +79,7 @@ ob_start();
                 <button class="btn btn-primary" type="submit" id="uploadSubmit" <?= !empty($noCategories) ? 'disabled' : '' ?>>Enviar</button>
             </form>
         </div>
-        <div class="col-lg-5">
+        <div class="col-lg-6">
             <div class="upload-log-box" id="uploadLogBox">
                 <div class="d-flex align-items-center gap-2 mb-2">
                     <i class="bi bi-terminal"></i>

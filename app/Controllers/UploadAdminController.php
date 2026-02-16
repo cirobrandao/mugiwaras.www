@@ -112,6 +112,8 @@ final class UploadAdminController extends Controller
             Response::redirect(base_path('/login'));
         }
 
+        $currentUser = Auth::user();
+
         if (!Category::isReady()) {
             echo $this->view('upload_admin/upload', [
                 'csrf' => Csrf::token(),
@@ -119,6 +121,7 @@ final class UploadAdminController extends Controller
                 'setupError' => true,
                 'hideHeader' => true,
                 'title' => 'Upload Admin',
+                'currentUser' => $currentUser,
             ]);
             return;
         }
@@ -131,6 +134,7 @@ final class UploadAdminController extends Controller
             'noCategories' => empty($categories),
             'hideHeader' => true,
             'title' => 'Upload Admin',
+            'currentUser' => $currentUser,
         ]);
     }
 

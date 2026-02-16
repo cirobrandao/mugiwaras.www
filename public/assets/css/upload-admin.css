@@ -1,6 +1,6 @@
 .upload-admin-shell {
-  max-width: 100%;
-  margin: 0;
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 1.5rem 2rem;
   min-height: 100vh;
 }
@@ -16,6 +16,21 @@
   opacity: 0.85;
 }
 
+.upload-admin-shell .upload-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.upload-admin-shell .upload-user-info i {
+  font-size: 1.25rem;
+  opacity: 0.7;
+}
+
 .upload-admin-shell .upload-log-box {
   min-height: 320px;
   background: rgba(0, 0, 0, 0.02);
@@ -25,7 +40,6 @@
 }
 
 .upload-admin-shell .upload-log-box #uploadLog {
-  max-height: 480px;
   overflow-y: auto;
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.8125rem;
@@ -98,6 +112,11 @@ body.theme-dark .upload-admin-shell .section-card {
 body.theme-dark .upload-admin-shell .upload-log-box {
   background: rgba(0, 0, 0, 0.3);
   border-color: rgba(255, 255, 255, 0.12);
+}
+
+body.theme-dark .upload-admin-shell .upload-user-info {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 body.theme-dark .upload-admin-shell .upload-log-box #uploadLog .entry.success {
