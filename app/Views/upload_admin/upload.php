@@ -2,12 +2,17 @@
 ob_start();
 ?>
 <div class="upload-admin-shell">
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
     <div>
-        <h1 class="h4 mb-1">Painel de Upload (Bypass)</h1>
-        <div class="text-muted upload-admin-help">Área dedicada para envio de arquivos grandes fora da plataforma principal.</div>
+        <h1 class="h3 mb-1">🚀 Painel de Upload (Bypass)</h1>
+        <div class="text-muted upload-admin-help">Área dedicada para envio de arquivos grandes sem limitações de proxy.</div>
     </div>
-    <a class="btn btn-outline-danger" href="<?= base_path('/logout') ?>">Sair</a>
+    <div class="d-flex gap-2 align-items-center">
+        <button type="button" class="btn btn-icon theme-toggle-btn" data-theme-toggle aria-label="Alternar tema">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+        <a class="btn btn-outline-danger" href="<?= base_path('/logout') ?>">Sair</a>
+    </div>
 </div>
 <?php if (!empty($setupError)): ?>
     <div class="alert alert-danger">Biblioteca não inicializada. Execute a migração 009_library_series.sql.</div>
@@ -65,8 +70,11 @@ ob_start();
         </div>
         <div class="col-lg-5">
             <div class="upload-log-box" id="uploadLogBox">
-                <div class="fw-semibold mb-2">Log de envios</div>
-                <div id="uploadLog" class="small text-muted"></div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <i class="bi bi-terminal"></i>
+                    <div class="fw-semibold">Log de envios</div>
+                </div>
+                <div id="uploadLog" class="text-muted"></div>
             </div>
         </div>
     </div>

@@ -32,8 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // update upload log with current selection summary only when files selected
     const log = document.getElementById('uploadLog');
     if (log && files.length > 0) {
-      const summary = `Selecionados: ${files.length} arquivos · ${formatBytes(total)}`;
-      const el = document.createElement('div'); el.className = 'entry'; el.textContent = summary; log.prepend(el);
+      const summary = `📎 Selecionados: ${files.length} arquivos · ${formatBytes(total)}`;
+      const el = document.createElement('div'); el.className = 'entry info'; el.textContent = summary; log.prepend(el);
     }
   };
 
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const xhrf = new XMLHttpRequest();
       xhrf.upload.addEventListener('loadstart', () => {
         if (uploadBar) { uploadBar.style.width = '0%'; uploadBar.textContent = '0%'; }
-        if (logEl) { const e = document.createElement('div'); e.className = 'entry'; e.textContent = `Enviando (${index + 1}/${files.length}): ${file.name}`; logEl.prepend(e); }
+        if (logEl) { const e = document.createElement('div'); e.className = 'entry info'; e.textContent = `📤 Enviando (${index + 1}/${files.length}): ${file.name}`; logEl.prepend(e); }
       });
       xhrf.upload.addEventListener('progress', (evt) => {
         if (!evt.lengthComputable) return;
@@ -112,13 +112,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       xhrf.addEventListener('load', () => {
         let msg = '';
+        let className = 'entry';
         if (xhrf.status >= 200 && xhrf.status < 400) {
-          msg = 'Concluído';
+          msg = '✓ Concluído';
+          className = 'entry success';
         } else {
-          msg = `Falha (${xhrf.status})`;
+          msg = `✗ Falha (${xhrf.status})`;
+          className = 'entry error';
         }
         uploadedBytes += file.size || 0;
-        if (logEl) { const e = document.createElement('div'); e.className = 'entry'; e.textContent = `${file.name} - ${msg}`; logEl.prepend(e); }
+        if (logEl) { const e = document.createElement('div'); e.className = className; e.textContent = `${file.name} - ${msg}`; logEl.prepend(e); }
         // proceed to next file or finish
         if (index + 1 < files.length) {
           sendFile(index + 1);
@@ -130,11 +133,11 @@ document.addEventListener('DOMContentLoaded', () => {
             updateLimit();
             if (submitBtn) submitBtn.disabled = false;
           refreshHistory();
-          if (logEl) { const e = document.createElement('div'); e.className = 'entry'; e.textContent = 'Envio concluído.'; logEl.prepend(e); }
+          if (logEl) { const e = document.createElement('div'); e.className = 'entry success'; e.textContent = '✓ Todos os arquivos foram enviados com sucesso!'; logEl.prepend(e); }
         }
       });
       xhrf.addEventListener('error', () => {
-        if (logEl) { const e = document.createElement('div'); e.className = 'entry'; e.textContent = `Erro de rede ao enviar ${file.name}`; logEl.prepend(e); }
+        if (logEl) { const e = document.createElement('div'); e.className = 'entry error'; e.textContent = `✗ Erro de rede ao enviar ${file.name}`; logEl.prepend(e); }
         // continue with next file
         uploadedBytes += file.size || 0;
         if (index + 1 < files.length) sendFile(index + 1);
