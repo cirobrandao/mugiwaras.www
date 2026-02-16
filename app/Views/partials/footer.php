@@ -3,8 +3,15 @@ use App\Core\View;
 
 // Online users count
 $onlineCount = 0;
+$totalUsers = 0;
+$debugInfo = '';
 try {
     $db = \App\Core\Database::connection();
+    
+    // Total users with login record
+    $stmt = $db->query("SELECT COUNT(*) as count FROM users WHERE data_ultimo_login IS NOT NULL");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $totalUsers = (int)($result['count'] ?? 0);
     
     // Online users (active in last 15 minutes)
     $stmt = $db->prepare("SELECT COUNT(*) as count FROM users WHERE data_ultimo_login IS NOT NULL AND data_ultimo_login >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
@@ -12,8 +19,19 @@ try {
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     $onlineCount = (int)($result['count'] ?? 0);
     
+    // Debug info (visible only for admins)
+    if (isset($_SESSION['user_id'])) {
+        $userStmt = $db->prepare("SELECT role FROM users WHERE id = :id");
+        $userStmt->execute(['id' => $_SESSION['user_id']]);
+        $currentUser = $userStmt->fetch(PDO::FETCH_ASSOC);
+        if ($currentUser && in_array($currentUser['role'], ['admin', 'superadmin'])) {
+            $debugInfo = " (Total com login: $totalUsers)";
+        }
+    }
+    
 } catch (Exception $e) {
-    // Silently fail if database query fails
+    // Log error but don't crash the page
+    error_log("Footer online count error: " . $e->getMessage());
 }
 
 // Server load calculation
@@ -47,7 +65,7 @@ if (function_exists('sys_getloadavg')) {
                         <span class="fw-semibold"><?= (int)$loadPercent ?>%</span>
                     <?php endif; ?>
                     ·
-                    <i class="bi bi-people-fill me-1"></i><span class="fw-semibold"><?= $onlineCount ?></span> usuário<?= $onlineCount !== 1 ? 's' : '' ?> online
+                    <i class="bi bi-people-fill me-1"></i><span class="fw-semibold"><?= $onlineCount ?></span> usuário<?= $onlineCount !== 1 ? 's' : '' ?> online<?= $debugInfo ?>
                     · Última atualização <span data-last-sync>agora</span>
                 </div>
             </footer>
