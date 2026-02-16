@@ -350,6 +350,13 @@ final class User
         $stmt->execute(['id' => $id, 'ip' => $ip, 'ua' => $ua]);
     }
 
+    public static function updateActivity(int $id): void
+    {
+        $sql = 'UPDATE users SET data_ultimo_login = NOW() WHERE id = :id';
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute(['id' => $id]);
+    }
+
     public static function countSuperadmins(): int
     {
         $stmt = Database::connection()->query("SELECT COUNT(*) AS c FROM users WHERE role = 'superadmin'");

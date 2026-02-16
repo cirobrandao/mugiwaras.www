@@ -20,23 +20,12 @@ try {
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     $onlineCount = (int)($result['count'] ?? 0);
     
-    // Debug info (visible only for admins)
-    if (isset($_SESSION['user_id'])) {
-        $userStmt = $db->prepare("SELECT role FROM users WHERE id = :id");
-        $userStmt->execute(['id' => $_SESSION['user_id']]);
-        $currentUser = $userStmt->fetch(PDO::FETCH_ASSOC);
-        if ($currentUser && in_array($currentUser['role'], ['admin', 'superadmin'], true)) {
-            $debugInfo = " <small class=\"text-muted\">(Total com login: $totalUsers)</small>";
-        }
-    }
-    
 } catch (Exception $e) {
     // Log error but don't crash the page
     error_log("Footer online count error: " . $e->getMessage());
     $dbError = true;
     // Set fallback values
     $onlineCount = 0;
-    $totalUsers = 0;
 }
 
 // Server load calculation
@@ -73,7 +62,6 @@ if (function_exists('sys_getloadavg')) {
                     <i class="bi bi-people-fill me-1"></i>
                     <span class="fw-semibold"><?= $onlineCount ?></span> 
                     usuário<?= $onlineCount !== 1 ? 's' : '' ?> online
-                    <?php if (!empty($debugInfo)): ?><?= $debugInfo ?><?php endif; ?>
                     <?php if ($dbError): ?><span class="text-danger ms-1" title="Erro ao consultar banco de dados">⚠</span><?php endif; ?>
                     · Última atualização <span data-last-sync>agora</span>
                 </div>

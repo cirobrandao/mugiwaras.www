@@ -21,6 +21,19 @@ final class Middleware
             if (!$user) {
                 Response::redirect(base_path('/'));
             }
+            
+            // Update activity timestamp every 5 minutes for online user tracking
+            $lastActivity = $_SESSION['last_activity_update'] ?? 0;
+            $now = time();
+            if (($now - $lastActivity) >= 300) { // 5 minutes
+                try {
+                    \App\Models\User::updateActivity((int)$user['id']);
+                    $_SESSION['last_activity_update'] = $now;
+                } catch (\Exception $e) {
+                    error_log("Activity tracking error: " . $e->getMessage());
+                }
+            }
+            
             if (Auth::needsProfileUpdate($user)) {
                 $path = parse_url($request->uri, PHP_URL_PATH) ?: '/';
                 $allow = ['/user/editar', '/logout'];
