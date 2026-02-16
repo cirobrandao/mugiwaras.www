@@ -22,7 +22,7 @@ use App\Core\SimpleCache;
     <?php if (!empty($systemFavicon)): ?>
         <link rel="icon" href="<?= base_path('/' . ltrim((string)$systemFavicon, '/')) ?>">
     <?php endif; ?>
-    <link rel="stylesheet" href="<?= base_path('/assets/bootstrap.min.css') ?>">
+    <link rel="stylesheet" href="<?= base_path('/assets/bootstrap.min.css') ?>?v=5.3">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@ use App\Core\SimpleCache;
 </head>
 <body class="app-body">
 <?= $content ?? '' ?>
-<script src="<?= base_path('/assets/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= base_path('/assets/bootstrap.bundle.min.js') ?>?v=5.3"></script>
 <script src="<?= base_path('/assets/js/app.js') ?>"></script>
 <script src="<?= base_path('/assets/js/theme.js') ?>"></script>
 </body>

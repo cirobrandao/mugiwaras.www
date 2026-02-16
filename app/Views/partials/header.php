@@ -25,7 +25,7 @@ $systemFavicon = SimpleCache::remember('system_favicon', 3600, function() {
     <?php if (!empty($systemFavicon)): ?>
         <link rel="icon" href="<?= base_path('/' . ltrim((string)$systemFavicon, '/')) ?>">
     <?php endif; ?>
-    <link rel="stylesheet" href="<?= asset('/assets/bootstrap.min.css') ?>">
+    <link rel="stylesheet" href="<?= asset('/assets/bootstrap.min.css') ?>?v=5.3">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
