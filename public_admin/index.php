@@ -49,6 +49,16 @@ $router->get('/assets/bootstrap.min.css', function (): void {
     readfile($path);
 });
 
+$router->get('/assets/bootstrap.min.css.map', function (): void {
+    $path = dirname(__DIR__) . '/vendor/twbs/bootstrap/dist/css/bootstrap.min.css.map';
+    if (!is_file($path)) {
+        http_response_code(404);
+        return;
+    }
+    header('Content-Type: application/json; charset=utf-8');
+    readfile($path);
+});
+
 $router->get('/assets/bootstrap.bundle.min.js', function (): void {
     $path = dirname(__DIR__) . '/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js';
     if (!is_file($path)) {
@@ -56,6 +66,16 @@ $router->get('/assets/bootstrap.bundle.min.js', function (): void {
         return;
     }
     header('Content-Type: application/javascript; charset=utf-8');
+    readfile($path);
+});
+
+$router->get('/assets/bootstrap.bundle.min.js.map', function (): void {
+    $path = dirname(__DIR__) . '/vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js.map';
+    if (!is_file($path)) {
+        http_response_code(404);
+        return;
+    }
+    header('Content-Type: application/json; charset=utf-8');
     readfile($path);
 });
 

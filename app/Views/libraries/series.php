@@ -73,7 +73,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                 </a>
             </div>
         </div>
-        <div class="modal fade" id="<?= $bulkModalId ?>" tabindex="-1" aria-hidden="true">
+        <div class="modal fade" id="<?= $bulkModalId ?>" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -187,7 +187,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
             <?php foreach ($items as $item): ?>
                 <?php $editModalId = 'edit-content-' . (int)$item['id']; ?>
                 <?php $deleteModalId = 'delete-content-' . (int)$item['id']; ?>
-                <div class="modal fade" id="<?= $editModalId ?>" tabindex="-1" aria-hidden="true">
+                <div class="modal fade" id="<?= $editModalId ?>" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -209,7 +209,7 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
                         </div>
                     </div>
                 </div>
-                <div class="modal fade" id="<?= $deleteModalId ?>" tabindex="-1" aria-hidden="true">
+                <div class="modal fade" id="<?= $deleteModalId ?>" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -264,6 +264,32 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
         ?>
     <?php endif; ?>
 <?php endif; ?>
+
+<script>
+// Garantir inicialização correta dos modals do Bootstrap
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar todos os modals explicitamente
+    var modalElements = document.querySelectorAll('.modal');
+    modalElements.forEach(function(modalEl) {
+        if (!modalEl.id.startsWith('pdfViewerModal')) {
+            // Criar instância do modal apenas se ainda não existir
+            try {
+                var modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if (!modalInstance) {
+                    new bootstrap.Modal(modalEl, {
+                        backdrop: true,
+                        keyboard: true,
+                        focus: true
+                    });
+                }
+            } catch (e) {
+                console.warn('Erro ao inicializar modal:', modalEl.id, e);
+            }
+        }
+    });
+});
+</script>
+
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../layout.php';
