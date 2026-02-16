@@ -18,7 +18,7 @@ final class CrossDomainAuth
             return false;
         }
 
-        if (!Auth::isAdmin($user)) {
+        if (!Auth::isEquipe($user)) {
             return false;
         }
 

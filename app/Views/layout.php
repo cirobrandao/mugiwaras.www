@@ -81,9 +81,6 @@ $initial = $displayName !== '' ? mb_strtoupper(mb_substr($displayName, 0, 1)) : 
 $userAvatar = (string)($currentUser['avatar_path'] ?? '');
 $activePage = $activePage ?? '';
 $uploadEntryUrl = upload_url('/upload');
-if ($currentUser && \App\Core\Auth::isAdmin($currentUser)) {
-    $uploadEntryUrl = base_path('/upload');
-}
 
 $loadLabel = 'indisponivel';
 $loadPercent = null;
