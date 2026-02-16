@@ -81,6 +81,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let uploadedBytes = 0;
 
     const logEl = document.getElementById('uploadLog');
+    const speedEl = document.getElementById('uploadSpeed');
+
+    let lastTime = Date.now();
+    let lastLoaded = 0;
+
+    const formatSpeed = (bytesPerSec) => {
+      if (bytesPerSec >= 1024 ** 2) return `${(bytesPerSec / (1024 ** 2)).toFixed(2)} MB/s`;
+      if (bytesPerSec >= 1024) return `${(bytesPerSec / 1024).toFixed(2)} KB/s`;
+      return `${bytesPerSec.toFixed(0)} B/s`;
+    };
 
     const sendFile = (index) => {
       const file = files[index];
@@ -100,7 +110,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const xhrf = new XMLHttpRequest();
       xhrf.upload.addEventListener('loadstart', () => {
+        lastTime = Date.now();
+        lastLoaded = 0;
         if (uploadBar) { uploadBar.style.width = '0%'; uploadBar.textContent = '0%'; }
+        if (speedEl) { speedEl.innerHTML = '<i class="bi bi-speedometer2 me-1"></i>Calculando...'; speedEl.classList.remove('d-none'); }
         if (logEl) { const e = document.createElement('div'); e.className = 'entry info'; e.textContent = `📤 Enviando (${index + 1}/${files.length}): ${file.name}`; logEl.prepend(e); }
       });
       xhrf.upload.addEventListener('progress', (evt) => {
@@ -109,6 +122,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const percent = Math.round(((uploadedBytes + currentPercent) / Math.max(1, totalBytes)) * 100);
         if (uploadBar) { uploadBar.style.width = `${percent}%`; uploadBar.textContent = `${percent}%`; }
         if (uploadWait) uploadWait.classList.toggle('d-none', percent < 100);
+        
+        // Calculate upload speed
+        const now = Date.now();
+        const timeDiff = (now - lastTime) / 1000; // seconds
+        if (timeDiff >= 0.5) { // Update speed every 500ms
+          const bytesDiff = currentPercent - lastLoaded;
+          const speed = bytesDiff / timeDiff;
+          if (speedEl && speed > 0) {
+            speedEl.innerHTML = `<i class="bi bi-speedometer2 me-1"></i>${formatSpeed(speed)}`;
+          }
+          lastTime = now;
+          lastLoaded = currentPercent;
+        }
       });
       xhrf.addEventListener('load', () => {
         let msg = '';
@@ -129,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // finished all
             if (uploadBar) { uploadBar.style.width = '100%'; uploadBar.textContent = '100%'; }
             if (uploadWait) uploadWait.classList.add('d-none');
+            if (speedEl) speedEl.classList.add('d-none');
             if (fileInput) { fileInput.value = ''; fileInput.disabled = false; }
             updateLimit();
             if (submitBtn) submitBtn.disabled = false;
@@ -137,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       xhrf.addEventListener('error', () => {
+        if (speedEl) speedEl.classList.add('d-none');
         if (logEl) { const e = document.createElement('div'); e.className = 'entry error'; e.textContent = `✗ Erro de rede ao enviar ${file.name}`; logEl.prepend(e); }
         // continue with next file
         uploadedBytes += file.size || 0;

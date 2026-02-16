@@ -136,9 +136,6 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
                 <?php $isNewContent = !empty($rc['is_new']); ?>
                 <?php $rcCategorySlug = !empty($rc['category_slug']) ? (string)$rc['category_slug'] : ($rcCategory !== '' ? \App\Models\Category::generateSlug($rcCategory) : ''); ?>
                 <div class="list-item <?= $isNewContent ? 'has-new-content' : '' ?>">
-                    <?php if ($isNewContent): ?>
-                        <div class="new-indicator"></div>
-                    <?php endif; ?>
                     <div class="recent-icon">
                         <i class="bi bi-stars"></i>
                     </div>
@@ -146,10 +143,12 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
                         <div class="list-header">
                             <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
                                 <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($rcCategorySlug) . '/' . ($rcSeriesId > 0 ? $rcSeriesId : rawurlencode($rcSeries))) ?>">
-                                    <?= View::e($rcSeriesLabel) ?>
+                                    <?= View::e($rcSeriesLabel) ?><?php if ($isNewContent): ?><span class="new-indicator"></span><?php endif; ?>
                                 </a>
                             <?php else: ?>
-                                <span class="list-title"><?= View::e($rcTitleLabel) ?></span>
+                                <span class="list-title">
+                                    <?= View::e($rcTitleLabel) ?><?php if ($isNewContent): ?><span class="new-indicator"></span><?php endif; ?>
+                                </span>
                             <?php endif; ?>
                             <?php if (!empty($rc['created_at'])): ?>
                                 <span class="list-stat">

@@ -35,28 +35,25 @@ ob_start();
 $uploadBase = rtrim((string)config('app.upload_url', ''), '/');
 $uploadBypassUrl = $uploadBase !== '' ? $uploadBase . '/login' : upload_url('/upload-admin/login');
 ?>
-<div id="uploadResult"></div>
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-    <div>
-        <h1 class="h4 mb-1">Enviar arquivos</h1>
-    </div>
+<div class="upload-admin-shell">
+<div class="mb-4">
+    <h1 class="h3 mb-1">📎 Enviar arquivos</h1>
+    <div class="text-muted upload-admin-help">Para arquivos acima de 200 MB, use o <a href="<?= \App\Core\View::e($uploadBypassUrl) ?>">painel de bypass</a>.</div>
 </div>
-<section class="section-card mb-3 upload-card">
-    <div class="mb-3">
-        <div class="progress" style="height: 6px;">
-            <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>
-        </div>
-        <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="209715200" data-max-files="100">0 B / 200 MB · 0 / 100 arquivos</div>
-        <div class="small mt-2">
-            Para arquivos acima de 200 MB, use o painel de bypass: <a href="<?= \App\Core\View::e($uploadBypassUrl) ?>">Upload Admin</a>
-        </div>
-    </div>
+<div id="uploadResult"></div>
+<section class="section-card mb-3 upload-card p-3">
     <div class="row">
-        <div class="col-lg-7">
+        <div class="col-lg-6">
+            <div class="mb-3">
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar" id="limitBar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="small text-muted mt-1" id="limitInfo" data-max-bytes="209715200" data-max-files="100">0 B / 200 MB · 0 / 100 arquivos</div>
+            </div>
             <form method="post" action="<?= upload_url('/upload') ?>" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="<?= \App\Core\View::e($csrf ?? '') ?>">
         <div class="row g-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label">Categoria</label>
                 <select name="category" class="form-select" required <?= !empty($noCategories) ? 'disabled' : '' ?>>
                     <option value="" selected disabled>Selecione uma categoria</option>
@@ -65,12 +62,12 @@ $uploadBypassUrl = $uploadBase !== '' ? $uploadBase . '/login' : upload_url('/up
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <label class="form-label">Série</label>
                 <input type="text" name="series" class="form-control" placeholder="Ex: One Piece" required>
             </div>
         </div>
-        <div class="mb-3">
+        <div class="mt-3 mb-3">
             <label class="form-label">Arquivos</label>
             <input type="file" name="file[]" class="form-control" multiple required data-max-bytes="209715200" data-max-files="100">
             <div class="form-text">Formatos aceitos: *.epub, *.cbr, *.cbz, *.zip (imagens).</div>
@@ -86,14 +83,21 @@ $uploadBypassUrl = $uploadBase !== '' ? $uploadBase . '/login' : upload_url('/up
             <button class="btn btn-primary" type="submit" id="uploadSubmit" <?= !empty($noCategories) ? 'disabled' : '' ?>>Enviar</button>
             </form>
         </div>
-        <div class="col-lg-5">
+        <div class="col-lg-6">
             <div class="upload-log-box" id="uploadLogBox">
-                <div class="fw-semibold mb-2">Log de envios</div>
-                <div id="uploadLog" class="small text-muted"></div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-terminal"></i>
+                        <div class="fw-semibold">Log de envios</div>
+                    </div>
+                    <div id="uploadSpeed" class="small text-muted d-none"></div>
+                </div>
+                <div id="uploadLog" class="text-muted"></div>
             </div>
         </div>
     </div>
 </section>
+</div>
 <hr class="my-4">
 
 <?php

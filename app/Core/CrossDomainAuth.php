@@ -18,7 +18,8 @@ final class CrossDomainAuth
             return false;
         }
 
-        if (!Auth::isEquipe($user)) {
+        // Equipe e administradores usam o sistema local de upload
+        if (!Auth::isEquipe($user) && !Auth::isAdmin($user)) {
             return false;
         }
 

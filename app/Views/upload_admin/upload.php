@@ -7,22 +7,30 @@ ob_start();
         <h1 class="h3 mb-1">🚀 Painel de Upload (Bypass)</h1>
         <div class="text-muted upload-admin-help">Área dedicada para envio de arquivos grandes sem limitações de proxy.</div>
     </div>
-    <div class="d-flex gap-3 align-items-center">
-        <?php if (!empty($currentUser)): ?>
-            <div class="upload-user-info">
-                <i class="bi bi-person-circle"></i>
-                <span class="small">
-                    <strong><?= \App\Core\View::e($currentUser['username'] ?? 'Usuário') ?></strong>
-                    <?php if (!empty($currentUser['role'])): ?>
-                        <span class="badge bg-secondary ms-1"><?= \App\Core\View::e($currentUser['role']) ?></span>
-                    <?php endif; ?>
-                </span>
-            </div>
-        <?php endif; ?>
-        <button type="button" class="btn btn-icon theme-toggle-btn" data-theme-toggle aria-label="Alternar tema">
+    <div class="d-flex gap-2 align-items-center">
+        <button type="button" class="btn btn-outline-secondary" data-theme-toggle aria-label="Alternar tema" title="Alternar tema">
             <i class="fa-solid fa-moon"></i>
         </button>
-        <a class="btn btn-outline-danger" href="<?= base_path('/logout') ?>">Sair</a>
+        <?php if (!empty($currentUser)): ?>
+            <div class="upload-user-info d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-person-circle"></i>
+                    <span class="small">
+                        <strong><?= \App\Core\View::e($currentUser['username'] ?? 'Usuário') ?></strong>
+                        <?php if (!empty($currentUser['role'])): ?>
+                            <span class="badge bg-secondary ms-1"><?= \App\Core\View::e($currentUser['role']) ?></span>
+                        <?php endif; ?>
+                    </span>
+                </div>
+                <div class="vr" style="height: 24px; opacity: 0.3;"></div>
+                <a class="btn btn-sm btn-outline-danger" href="<?= base_path('/logout') ?>">
+                    <i class="bi bi-box-arrow-right me-1"></i>
+                    Sair
+                </a>
+            </div>
+        <?php else: ?>
+            <a class="btn btn-outline-danger" href="<?= base_path('/logout') ?>">Sair</a>
+        <?php endif; ?>
     </div>
 </div>
 <?php if (!empty($setupError)): ?>
@@ -81,9 +89,12 @@ ob_start();
         </div>
         <div class="col-lg-6">
             <div class="upload-log-box" id="uploadLogBox">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <i class="bi bi-terminal"></i>
-                    <div class="fw-semibold">Log de envios</div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-terminal"></i>
+                        <div class="fw-semibold">Log de envios</div>
+                    </div>
+                    <div id="uploadSpeed" class="small text-muted d-none"></div>
                 </div>
                 <div id="uploadLog" class="text-muted"></div>
             </div>

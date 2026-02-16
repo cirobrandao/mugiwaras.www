@@ -37,6 +37,7 @@ use App\Core\SimpleCache;
         <link rel="stylesheet" href="<?= asset('/assets/css/sidebar.css') ?>">
     <?php endif; ?>
     <link rel="stylesheet" href="<?= asset('/assets/css/app.css') ?>">
+    <link rel="stylesheet" href="<?= asset('/assets/css/upload-admin.css') ?>">
     <link rel="stylesheet" href="<?= asset('/assets/category-tags.css') ?>">
 </head>
 <body class="app-body">
