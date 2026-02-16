@@ -68,53 +68,6 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
     <a href="#" class="small text-decoration-none js-restore-notifications">Recuperar notificações fechadas</a>
 </div>
 
-<section class="section" role="region" aria-labelledby="top10-title">
-    <div class="section-header">
-        <h2 class="section-title" id="top10-title">
-            <i class="bi bi-trophy-fill me-2"></i>Top 10 Mais Lidos
-        </h2>
-    </div>
-    <?php if (empty($mostReadTop)): ?>
-        <div class="alert alert-secondary mb-0">Ainda não há leituras registradas.</div>
-    <?php else: ?>
-        <div class="list">
-            <?php $position = 1; ?>
-            <?php foreach ($mostReadTop as $mr): ?>
-                <?php $mrName = (string)($mr['name'] ?? ''); ?>
-                <?php $mrCategory = (string)($mr['category_name'] ?? ''); ?>
-                <?php $mrCatId = (int)($mr['category_id'] ?? 0); ?>
-                <?php $mrSeriesId = (int)($mr['id'] ?? 0); ?>
-                <?php $mrCategorySlug = !empty($mr['category_slug']) ? (string)$mr['category_slug'] : ($mrCategory !== '' ? \App\Models\Category::generateSlug($mrCategory) : ''); ?>
-                <div class="list-item">
-                    <div class="rank-badge"><?= $position++ ?></div>
-                    <div class="list-content">
-                        <div class="list-header">
-                            <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($mrCategorySlug) . '/' . ($mrSeriesId > 0 ? $mrSeriesId : rawurlencode($mrName))) ?>">
-                                <?= View::e($mrName) ?>
-                            </a>
-                            <span class="list-stat">
-                                <i class="bi bi-eye-fill"></i><?= (int)($mr['read_count'] ?? 0) ?>
-                            </span>
-                        </div>
-                        <div class="list-meta">
-                            <?php
-                            $badgeClass = $mrCatId > 0 ? 'cat-badge-' . $mrCatId : 'bg-secondary';
-                            $badgeStyle = '';
-                            if (!empty($mr['resolved_tag_color'])) {
-                                $badgeStyle = ' style="background-color: ' . View::e((string)$mr['resolved_tag_color']) . '; color: #fff;"';
-                            }
-                            ?>
-                            <span class="badge list-badge <?= $badgeClass ?>"<?= $badgeStyle ?>>
-                                <?= View::e($mrCategory) ?>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
-</section>
-
 <section class="section" role="region" aria-labelledby="recent-title">
     <div class="section-header">
         <h2 class="section-title" id="recent-title">
@@ -170,6 +123,53 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
                                 ?>
                                 <span class="badge list-badge <?= $rcBadgeClass ?>"<?= $rcBadgeStyle ?>><?= View::e($rcCategory) ?></span>
                             <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</section>
+
+<section class="section" role="region" aria-labelledby="top10-title">
+    <div class="section-header">
+        <h2 class="section-title" id="top10-title">
+            <i class="bi bi-trophy-fill me-2"></i>Top 10 Mais Lidos
+        </h2>
+    </div>
+    <?php if (empty($mostReadTop)): ?>
+        <div class="alert alert-secondary mb-0">Ainda não há leituras registradas.</div>
+    <?php else: ?>
+        <div class="list">
+            <?php $position = 1; ?>
+            <?php foreach ($mostReadTop as $mr): ?>
+                <?php $mrName = (string)($mr['name'] ?? ''); ?>
+                <?php $mrCategory = (string)($mr['category_name'] ?? ''); ?>
+                <?php $mrCatId = (int)($mr['category_id'] ?? 0); ?>
+                <?php $mrSeriesId = (int)($mr['id'] ?? 0); ?>
+                <?php $mrCategorySlug = !empty($mr['category_slug']) ? (string)$mr['category_slug'] : ($mrCategory !== '' ? \App\Models\Category::generateSlug($mrCategory) : ''); ?>
+                <div class="list-item">
+                    <div class="rank-badge"><?= $position++ ?></div>
+                    <div class="list-content">
+                        <div class="list-header">
+                            <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($mrCategorySlug) . '/' . ($mrSeriesId > 0 ? $mrSeriesId : rawurlencode($mrName))) ?>">
+                                <?= View::e($mrName) ?>
+                            </a>
+                            <span class="list-stat">
+                                <i class="bi bi-eye-fill"></i><?= (int)($mr['read_count'] ?? 0) ?>
+                            </span>
+                        </div>
+                        <div class="list-meta">
+                            <?php
+                            $badgeClass = $mrCatId > 0 ? 'cat-badge-' . $mrCatId : 'bg-secondary';
+                            $badgeStyle = '';
+                            if (!empty($mr['resolved_tag_color'])) {
+                                $badgeStyle = ' style="background-color: ' . View::e((string)$mr['resolved_tag_color']) . '; color: #fff;"';
+                            }
+                            ?>
+                            <span class="badge list-badge <?= $badgeClass ?>"<?= $badgeStyle ?>>
+                                <?= View::e($mrCategory) ?>
+                            </span>
                         </div>
                     </div>
                 </div>

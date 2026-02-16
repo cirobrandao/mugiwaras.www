@@ -37,7 +37,8 @@
 }
 
 .upload-admin-shell .upload-log-box {
-  min-height: calc(100vh - 280px);
+  height: calc(100vh - 280px);
+  max-height: calc(100vh - 280px);
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: var(--radius, 8px);
@@ -49,9 +50,30 @@
 .upload-admin-shell .upload-log-box #uploadLog {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.8125rem;
   line-height: 1.6;
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+.upload-admin-shell .upload-log-box #uploadLog::-webkit-scrollbar {
+  width: 8px;
+}
+
+.upload-admin-shell .upload-log-box #uploadLog::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.upload-admin-shell .upload-log-box #uploadLog::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.upload-admin-shell .upload-log-box #uploadLog::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }
 
 #uploadSpeed {
@@ -170,6 +192,39 @@ body.theme-dark #uploadSpeed {
   color: #93c5fd;
 }
 
+/* Dark theme scrollbar */
+body.theme-dark .upload-admin-shell .upload-log-box #uploadLog::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.theme-dark .upload-admin-shell .upload-log-box #uploadLog::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+body.theme-dark .upload-admin-shell .upload-log-box #uploadLog::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 body.theme-dark .upload-admin-shell .progress {
   background: rgba(255, 255, 255, 0.08);
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+  .upload-admin-shell .upload-log-box {
+    height: 400px;
+    max-height: 400px;
+    margin-top: 1.5rem;
+  }
+}
+
+@media (max-width: 575px) {
+  .upload-admin-shell {
+    padding: 1rem;
+  }
+  
+  .upload-admin-shell .upload-log-box {
+    height: 350px;
+    max-height: 350px;
+  }
 }
