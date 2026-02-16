@@ -662,13 +662,22 @@ body.theme-dark .theme-toggle-btn {
 	overflow: visible;
 }
 
+.reader-scroll-page {
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	width: 100%;
+	margin: 0 0 0.75rem;
+	overflow: visible;
+}
+
 .reader-frame-modern.scroll-mode img,
 .reader-scroll-image {
 	width: 100%;
 	max-width: 100%;
 	height: auto;
 	display: block;
-	margin: 0 auto 0.75rem;
+	margin: 0 auto;
 	border-radius: 0;
 	box-shadow: none;
 	padding: 0 0.5rem;
@@ -676,14 +685,14 @@ body.theme-dark .theme-toggle-btn {
 }
 
 /* Lazy loading effect for scroll images */
-.reader-scroll-image[loading="lazy"] {
+.reader-scroll-image.is-loading {
 	min-height: 400px;
 	background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
 	position: relative;
 }
 
 /* Loading skeleton animation for scroll images */
-.reader-scroll-image[loading="lazy"]::before {
+.reader-scroll-image.is-loading::before {
 	content: '';
 	position: absolute;
 	top: 0;

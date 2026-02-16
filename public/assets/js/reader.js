@@ -405,9 +405,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    const targets = scrollMode
-      ? Array.from((pagesHost || readerEl).querySelectorAll('img'))
-      : [img];
+    if (scrollMode) {
+      const host = pagesHost || readerEl;
+      const targets = Array.from(host.querySelectorAll('img'));
+      const hostWidth = Math.max(1, host.clientWidth || readerEl?.clientWidth || window.innerWidth || 1);
+
+      targets.forEach((target) => {
+        const naturalWidth = Number(target.naturalWidth || 0);
+        const baseWidth = naturalWidth > 0 ? Math.min(naturalWidth, hostWidth) : hostWidth;
+        const widthPx = Math.max(1, Math.round(baseWidth * (z / 100)));
+
+        target.style.transform = '';
+        target.style.transformOrigin = '';
+        target.style.minHeight = '0';
+        target.style.maxHeight = 'none';
+        target.style.height = 'auto';
+        target.style.width = `${widthPx}px`;
+        target.style.maxWidth = 'none';
+      });
+      return;
+    }
+
+    const targets = [img];
     targets.forEach((target) => {
       target.style.transform = `scale(${z / 100})`;
       target.style.transformOrigin = 'center top';
@@ -511,6 +530,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     host.innerHTML = '';
     for (let i = 0; i < total; i += 1) {
+      const pageBlock = document.createElement('div');
+      pageBlock.classList.add('reader-scroll-page');
+
       const im = document.createElement('img');
       const baseUrl = readerEl.dataset.baseUrl;
       const query = readerEl.dataset.query || '';
@@ -518,7 +540,17 @@ document.addEventListener('DOMContentLoaded', () => {
       im.alt = `Página ${i + 1}`;
       im.loading = 'lazy'; // Enable native lazy loading for better performance
       im.classList.add('reader-scroll-image');
-      host.appendChild(im);
+      im.classList.add('is-loading');
+      im.addEventListener('load', () => {
+        im.classList.remove('is-loading');
+        applyZoom();
+      });
+      im.addEventListener('error', () => {
+        im.classList.remove('is-loading');
+      });
+
+      pageBlock.appendChild(im);
+      host.appendChild(pageBlock);
     }
     setStatus('');
     applyFitMode();
