@@ -211,6 +211,10 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
                                             <i class="bi bi-collection"></i>
                                             <span>Categorias</span>
                                         </a>
+                                        <a class="admin-shortcut-btn" href="<?= base_path('/admin/connectors') ?>">
+                                            <i class="bi bi-plug"></i>
+                                            <span>Conectores</span>
+                                        </a>
                                         <a class="admin-shortcut-btn" href="<?= base_path('/admin/packages') ?>">
                                             <i class="bi bi-box"></i>
                                             <span>Pacotes</span>

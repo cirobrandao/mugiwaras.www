@@ -68,10 +68,10 @@ final class ReaderController extends Controller
             if ($cat) {
                 $content['category_name'] = $cat['name'] ?? null;
                 $content['category_slug'] = $cat['slug'] ?? null;
-                $cbzModeRaw = strtolower(trim((string)($cat['cbz_mode'] ?? 'page')));
-                $cbzMode = $cbzModeRaw === 'scroll' ? 'scroll' : 'page';
-                $cbzDirectionRaw = strtolower(trim((string)($cat['cbz_direction'] ?? 'rtl')));
-                $cbzDirection = $cbzDirectionRaw === 'ltr' ? 'ltr' : 'rtl';
+                $cbzModeRaw = strtolower(trim((string)($cat['cbz_mode'] ?? 'both')));
+                // 'both' = usuário pode escolher (mostra toggle), 'page' = força página, 'scroll' = força scroll
+                $cbzMode = in_array($cbzModeRaw, ['page', 'scroll', 'both'], true) ? $cbzModeRaw : 'both';
+                $cbzDirection = strtolower(trim((string)($cat['cbz_direction'] ?? 'rtl'))) === 'ltr' ? 'ltr' : 'rtl';
             }
         }
         if (!empty($content['series_id'])) {

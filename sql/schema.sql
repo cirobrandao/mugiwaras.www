@@ -206,7 +206,7 @@ CREATE TABLE IF NOT EXISTS categories (
     tag_color VARCHAR(20) NULL,
     display_orientation ENUM('vertical','horizontal') NOT NULL DEFAULT 'vertical',
     cbz_direction ENUM('rtl','ltr') NOT NULL DEFAULT 'rtl',
-    cbz_mode ENUM('page','scroll') NOT NULL DEFAULT 'page',
+    cbz_mode ENUM('page','scroll','both') NOT NULL DEFAULT 'both',
     epub_mode ENUM('text','comic') NOT NULL DEFAULT 'text',
     hide_from_store TINYINT(1) NOT NULL DEFAULT 0,
     content_video TINYINT(1) NOT NULL DEFAULT 0,

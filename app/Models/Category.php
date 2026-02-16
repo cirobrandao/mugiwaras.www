@@ -89,7 +89,7 @@ final class Category
         ?string $tagColor = null,
         string $displayOrientation = 'vertical',
         string $cbzDirection = 'rtl',
-        string $cbzMode = 'page',
+        string $cbzMode = 'both',
         string $epubMode = 'text',
         int $hideFromStore = 0,
         int $contentVideo = 0,

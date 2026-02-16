@@ -39,7 +39,7 @@ final class CategoriesController extends Controller
         $tagColor = trim((string)($request->post['tag_color'] ?? ''));
         $displayOrientation = (string)($request->post['display_orientation'] ?? 'vertical');
         $cbzDirection = (string)($request->post['cbz_direction'] ?? 'rtl');
-        $cbzMode = (string)($request->post['cbz_mode'] ?? 'page');
+        $cbzMode = (string)($request->post['cbz_mode'] ?? 'both');
         $epubMode = (string)($request->post['epub_mode'] ?? 'text');
             $hideFromStore = !empty($request->post['hide_from_store']) ? 1 : 0;
         $contentVideo = !empty($request->post['content_video']) ? 1 : 0;
@@ -95,7 +95,7 @@ final class CategoriesController extends Controller
         $tagColor = trim((string)($request->post['tag_color'] ?? ''));
         $displayOrientation = (string)($request->post['display_orientation'] ?? 'vertical');
         $cbzDirection = (string)($request->post['cbz_direction'] ?? 'rtl');
-        $cbzMode = (string)($request->post['cbz_mode'] ?? 'page');
+        $cbzMode = (string)($request->post['cbz_mode'] ?? 'both');
         $epubMode = (string)($request->post['epub_mode'] ?? 'text');
             $hideFromStore = !empty($request->post['hide_from_store']) ? 1 : 0;
         $contentVideo = !empty($request->post['content_video']) ? 1 : 0;

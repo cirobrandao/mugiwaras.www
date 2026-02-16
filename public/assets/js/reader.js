@@ -57,9 +57,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const prevChapterUrl = readerEl ? (readerEl.dataset.previousChapterUrl || '') : '';
   const nextChapterUrl = readerEl ? (readerEl.dataset.nextChapterUrl || '') : '';
   const isRtl = readerEl ? (readerEl.dataset.direction || 'rtl') === 'rtl' : false;
+  
+  // Check if mode is forced by category settings
+  const forceModeEl = document.getElementById('readerForceMode');
+  const forceMode = forceModeEl ? forceModeEl.value : 'both'; // 'both', 'page', or 'scroll'
+  const canToggleMode = forceMode === 'both';
+  
   let scrollMode = modeSelectMobile
     ? modeSelectMobile.value === 'scroll'
     : (modeToggleBtn ? modeToggleBtn.dataset.mode === 'scroll' : false);
+  
+  // If mode is forced, override scrollMode
+  if (!canToggleMode) {
+    scrollMode = forceMode === 'scroll';
+  }
+  
   let wheelPaging = wheelToggle ? wheelToggle.checked : true;
   const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
 
@@ -118,17 +130,25 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const fit = getCookie('reader_fit_mode');
       if (fit && fitMode) fitMode.value = fit;
-      const mode = getCookie('reader_mode');
-      if (mode && modeSelectMobile) modeSelectMobile.value = mode;
-      if (mode && modeToggleBtn) modeToggleBtn.dataset.mode = mode === 'scroll' ? 'scroll' : 'page';
+      
+      // Only load saved mode if category allows toggling
+      if (canToggleMode) {
+        const mode = getCookie('reader_mode');
+        if (mode && modeSelectMobile) modeSelectMobile.value = mode;
+        if (mode && modeToggleBtn) modeToggleBtn.dataset.mode = mode === 'scroll' ? 'scroll' : 'page';
+        scrollMode = modeSelectMobile
+          ? modeSelectMobile.value === 'scroll'
+          : (modeToggleBtn ? modeToggleBtn.dataset.mode === 'scroll' : scrollMode);
+      } else {
+        // Force mode based on category setting
+        scrollMode = forceMode === 'scroll';
+      }
+      
       const zoom = getCookie('reader_zoom');
       if (zoom && zoomInput) zoomInput.value = String(Math.min(160, Math.max(60, parseInt(zoom, 10) || 100)));
       const wheel = getCookie('reader_wheel');
       if (wheel !== null && wheelToggle) wheelToggle.checked = (wheel === '1' || wheel === 'true');
-      // update derived state
-      scrollMode = modeSelectMobile
-        ? modeSelectMobile.value === 'scroll'
-        : (modeToggleBtn ? modeToggleBtn.dataset.mode === 'scroll' : scrollMode);
+      
       wheelPaging = wheelToggle ? wheelToggle.checked : wheelPaging;
       syncModeToggleUi();
     } catch (e) {}
@@ -878,7 +898,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const applyReaderModeChange = () => {
-    setCookie('reader_mode', scrollMode ? 'scroll' : 'page');
+    // Only save preference if category allows toggling
+    if (canToggleMode) {
+      setCookie('reader_mode', scrollMode ? 'scroll' : 'page');
+    }
     if (modeSelectMobile) modeSelectMobile.value = scrollMode ? 'scroll' : 'page';
     syncModeToggleUi();
     syncWheelToggle();
@@ -887,12 +910,21 @@ document.addEventListener('DOMContentLoaded', () => {
     applyScrollDefaults();
     if (scrollTopBtn) { if (scrollMode) setTimeout(() => { try { updateScrollTopVisibility(); } catch(e){} }, 80); else scrollTopBtn.classList.add('d-none'); }
     renderScrollMode();
-    showToast(scrollMode ? 'Modo Scroll ativado' : 'Modo Página ativado', 2000);
+    if (canToggleMode) {
+      showToast(scrollMode ? 'Modo Scroll ativado' : 'Modo Página ativado', 2000);
+    }
     renderChapterControls();
   };
 
   if (modeSelectMobile) {
+    // Disable mode select if category forces a specific mode
+    if (!canToggleMode) {
+      modeSelectMobile.disabled = true;
+    }
+    
     modeSelectMobile.addEventListener('change', () => {
+      if (!canToggleMode) return; // Prevent change if mode is forced
+      
       scrollMode = modeSelectMobile.value === 'scroll';
       applyReaderModeChange();
     });
@@ -900,6 +932,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (modeToggleBtn) {
     modeToggleBtn.addEventListener('click', () => {
+      // Only allow toggle if category permits it
+      if (!canToggleMode) return;
+      
       scrollMode = !scrollMode;
       applyReaderModeChange();
     });

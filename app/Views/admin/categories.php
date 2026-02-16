@@ -82,8 +82,9 @@ ob_start();
                         <div class="col-md-4">
                             <label class="form-label">CBZ: modo</label>
                             <select class="form-select" name="cbz_mode">
-                                <option value="page" selected>Página</option>
-                                <option value="scroll">Scroll</option>
+                                <option value="both" selected>Ambas (usuário escolhe)</option>
+                                <option value="page">Somente Página</option>
+                                <option value="scroll">Somente Scroll</option>
                             </select>
                         </div>
                     </div>
@@ -193,7 +194,7 @@ ob_start();
                         <div class="text-muted mt-1" style="font-size: 0.7rem;">
                             <?= (($c['display_orientation'] ?? 'vertical') === 'horizontal') ? 'Grade' : 'Lista' ?> · 
                             <?= View::e((string)($c['cbz_direction'] ?? 'rtl')) ?> · 
-                            <?= View::e((string)($c['cbz_mode'] ?? 'page')) ?>
+                            <?= View::e((string)($c['cbz_mode'] ?? 'both')) ?>
                         </div>
                     </div>
                 </td>
@@ -271,8 +272,9 @@ ob_start();
                                     <div class="col-md-4">
                                         <label class="form-label">CBZ: modo</label>
                                         <select class="form-select" name="cbz_mode">
-                                            <option value="page" <?= (($c['cbz_mode'] ?? 'page') === 'page') ? 'selected' : '' ?>>Página</option>
-                                            <option value="scroll" <?= (($c['cbz_mode'] ?? '') === 'scroll') ? 'selected' : '' ?>>Scroll</option>
+                                            <option value="both" <?= (($c['cbz_mode'] ?? 'both') === 'both') ? 'selected' : '' ?>>Ambas (usuário escolhe)</option>
+                                            <option value="page" <?= (($c['cbz_mode'] ?? '') === 'page') ? 'selected' : '' ?>>Somente Página</option>
+                                            <option value="scroll" <?= (($c['cbz_mode'] ?? '') === 'scroll') ? 'selected' : '' ?>>Somente Scroll</option>
                                         </select>
                                     </div>
                                 </div>

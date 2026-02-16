@@ -35,9 +35,17 @@ $categorySlug = !empty($content['category_slug'])
 				<button type="button" class="btn btn-sm reader-mobile-fullscreen" id="readerExpandMobile" title="Tela cheia" aria-label="Tela cheia">
 					<i class="bi bi-arrows-fullscreen"></i>
 				</button>
-				<button type="button" class="btn btn-sm reader-mode-toggle" id="readerModeToggle" data-mode="<?= (($cbzMode ?? 'page') === 'scroll') ? 'scroll' : 'page' ?>">
-					<?= (($cbzMode ?? 'page') === 'scroll') ? 'Modo: Scroll' : 'Modo: Página' ?>
-				</button>
+				<?php 
+					$cbzModeValue = $cbzMode ?? 'both';
+					$canToggleMode = $cbzModeValue === 'both';
+					$defaultMode = $canToggleMode ? 'page' : $cbzModeValue; // Se 'both', inicia com 'page'; senão usa o modo forçado
+				?>
+				<?php if ($canToggleMode): ?>
+					<button type="button" class="btn btn-sm reader-mode-toggle" id="readerModeToggle" data-mode="<?= $defaultMode ?>">
+						<?= $defaultMode === 'scroll' ? 'Modo: Scroll' : 'Modo: Página' ?>
+					</button>
+				<?php endif; ?>
+				<input type="hidden" id="readerForceMode" value="<?= View::e($cbzModeValue) ?>">
 			</div>
 		</div>
 	</div>

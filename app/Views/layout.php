@@ -233,6 +233,7 @@ if (function_exists('sys_getloadavg')) {
                                     <?php if ($isAdmin || $isUploader || $isModerator): ?>
                                         <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="<?= base_path('/admin/uploads') ?>"><span><i class="bi bi-upload me-2"></i>Upload manager</span><?php if (!empty($pendingUploads)): ?><span class="badge bg-danger"><?= (int)$pendingUploads ?></span><?php endif; ?></a></li>
                                         <li><a class="dropdown-item" href="<?= $uploadEntryUrl ?>"><i class="bi bi-cloud-arrow-up me-2"></i>Enviar arquivo</a></li>
+                                        <li><a class="dropdown-item" href="<?= base_path('/admin/connectors') ?>"><i class="bi bi-plug me-2"></i>Conectores</a></li>
                                     <?php endif; ?>
                                     <?php if ($isAdmin): ?>
                                         <li><a class="dropdown-item" href="<?= base_path('/admin/news') ?>"><i class="bi bi-megaphone me-2"></i>Notícias</a></li>

@@ -30,6 +30,7 @@
 /public/assets/css/*.backup.css
 /public/assets/css/*.old
 *.old
+/docs/
 
 # Environment overrides
 .env.local

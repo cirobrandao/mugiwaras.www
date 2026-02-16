@@ -266,6 +266,13 @@ $router->get('/admin/categories', [new App\Controllers\Admin\CategoriesControlle
 $router->post('/admin/categories/create', [new App\Controllers\Admin\CategoriesController(), 'create'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/categories/update', [new App\Controllers\Admin\CategoriesController(), 'update'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/categories/delete', [new App\Controllers\Admin\CategoriesController(), 'delete'], [App\Core\Auth::requireAdmin()]);
+$router->get('/admin/connectors', [new App\Controllers\Admin\ConnectorsController(), 'index'], [App\Core\Auth::requireUploadAccess()]);
+$router->post('/admin/connectors/detect', [new App\Controllers\Admin\ConnectorsController(), 'detect'], [App\Core\Auth::requireUploadAccess()]);
+$router->post('/admin/connectors/create', [new App\Controllers\Admin\ConnectorsController(), 'create'], [App\Core\Auth::requireUploadAccess()]);
+$router->post('/admin/connectors/update', [new App\Controllers\Admin\ConnectorsController(), 'update'], [App\Core\Auth::requireUploadAccess()]);
+$router->post('/admin/connectors/delete', [new App\Controllers\Admin\ConnectorsController(), 'delete'], [App\Core\Auth::requireUploadAccess()]);
+$router->get('/admin/connectors/download', [new App\Controllers\Admin\ConnectorsController(), 'download'], [App\Core\Auth::requireUploadAccess()]);
+$router->get('/admin/connectors/download-all', [new App\Controllers\Admin\ConnectorsController(), 'downloadAll'], [App\Core\Auth::requireUploadAccess()]);
 $router->get('/admin/log', [new App\Controllers\Admin\LogController(), 'index'], [App\Core\Auth::requireAdmin()]);
 
 $router->get('/reset', [new App\Controllers\AuthController(), 'resetForm']);
