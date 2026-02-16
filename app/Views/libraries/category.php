@@ -127,12 +127,115 @@ $seriesCount = is_array($series ?? null) ? count($series) : 0;
                     </div>
                 </div>
             </div>
+            
+            <?php if ($canManage): ?>
+                <!-- Edit Series Modal -->
+                <div class="modal fade" id="<?= $editModalId ?>" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Editar série</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+                            <form method="post" action="<?= base_path('/lib/series/update') ?>">
+                                <div class="modal-body">
+                                    <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                                    <input type="hidden" name="id" value="<?= $seriesId ?>">
+                                    <label class="form-label" for="name-<?= $seriesId ?>">Nome da Série</label>
+                                    <input class="form-control" id="name-<?= $seriesId ?>" type="text" name="name" value="<?= View::e((string)$s['name']) ?>" required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button class="btn btn-primary" type="submit">Salvar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Delete Series Modal -->
+                <div class="modal fade" id="<?= $deleteModalId ?>" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Excluir série</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+                            <div class="modal-body">
+                                Tem certeza que deseja excluir a série <strong><?= View::e((string)$s['name']) ?></strong>? Todos os conteúdos serão removidos permanentemente.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <form method="post" action="<?= base_path('/lib/series/delete') ?>" class="m-0">
+                                    <input type="hidden" name="_csrf" value="<?= View::e($csrf ?? '') ?>">
+                                    <input type="hidden" name="id" value="<?= $seriesId ?>">
+                                    <button class="btn btn-danger" type="submit">Confirmar exclusão</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+            
             <?php endforeach; ?>
         <?php endforeach; ?>
         </div>
     </section>
 </div>
 <?php endif; ?>
+
+<?php if (!empty($user) && (\App\Core\Auth::isAdmin($user) || \App\Core\Auth::isModerator($user))): ?>
+<script>
+// Prevenir inicialização prematura dos modals
+(function() {
+    'use strict';
+    
+    // Aguardar o Bootstrap estar totalmente carregado
+    if (typeof bootstrap === 'undefined' || typeof bootstrap.Modal === 'undefined') {
+        console.warn('Bootstrap não carregado ainda');
+        return;
+    }
+    
+    // Aguardar o DOM estar pronto
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initModals);
+    } else {
+        initModals();
+    }
+    
+    function initModals() {
+        // Garantir que os modais funcionem corretamente
+        const triggerButtons = document.querySelectorAll('[data-bs-toggle="modal"]');
+        
+        triggerButtons.forEach(function(btn) {
+            const targetId = btn.getAttribute('data-bs-target');
+            if (!targetId) return;
+            
+            const modalEl = document.querySelector(targetId);
+            if (!modalEl) return;
+            
+            // Adicionar listener para abrir o modal
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                try {
+                    const modal = new bootstrap.Modal(modalEl, {
+                        backdrop: true,
+                        keyboard: true,
+                        focus: true
+                    });
+                    modal.show();
+                } catch (error) {
+                    console.error('Erro ao abrir modal:', error);
+                }
+            }, false);
+        });
+    }
+})();
+</script>
+<?php endif; ?>
+
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../layout.php';
