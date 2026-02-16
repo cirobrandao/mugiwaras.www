@@ -1948,6 +1948,21 @@ body.theme-dark .status-indisponivel {
   gap: 0.25rem;
 }
 
+.online-users {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.online-users i {
+  color: var(--primary);
+  font-size: 0.875rem;
+}
+
+.online-users .fw-semibold {
+  color: var(--ink);
+}
+
 .last-update i {
   color: var(--primary);
 }
@@ -2227,7 +2242,7 @@ body.theme-dark .category-action {
 }
 
 /* ==============================================
-   LIBRARY CATALOG - Página /lib
+   LIBRARY CATALOG - Pï¿½gina /lib
    ============================================== */
 .library-catalog {
   padding: 0;
@@ -3571,7 +3586,7 @@ body.theme-dark .modal-body .form-control:focus {
 
 /* ==============================================
    CSS VARIABLES ESTENDIDAS (theme.css original)
-   Variáveis adicionais para componentes específicos
+   Variï¿½veis adicionais para componentes especï¿½ficos
    ============================================== */
 
 /**
@@ -9598,7 +9613,7 @@ body.theme-dark .admin-news-categories-list tbody td {
 }
 
 .admin-news-form .preview-body:empty::before {
-    content: 'Digite o conteúdo para pré-visualizar.';
+    content: 'Digite o conteï¿½do para prï¿½-visualizar.';
     color: #9ca3af;
     font-style: italic;
 }

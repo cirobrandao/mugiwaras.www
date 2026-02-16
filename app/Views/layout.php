@@ -104,6 +104,38 @@ if (function_exists('sys_getloadavg')) {
         }
     }
 }
+
+// Online users count
+$onlineCount = 0;
+$totalUsers = 0;
+$debugInfoFooter = '';
+$dbError = false;
+try {
+    $db = \App\Core\Database::connection();
+    
+    // Total users with login record
+    $stmt = $db->query("SELECT COUNT(*) as count FROM users WHERE data_ultimo_login IS NOT NULL");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $totalUsers = (int)($result['count'] ?? 0);
+    
+    // Online users (active in last 15 minutes)
+    $stmt = $db->prepare("SELECT COUNT(*) as count FROM users WHERE data_ultimo_login IS NOT NULL AND data_ultimo_login >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $onlineCount = (int)($result['count'] ?? 0);
+    
+    // Debug info (visible only for admins)
+    if ($isAdmin) {
+        $debugInfoFooter = " <small class=\"text-muted\">(Total com login: $totalUsers)</small>";
+    }
+    
+} catch (Exception $e) {
+    // Log error but don't crash the page
+    error_log("Footer online count error: " . $e->getMessage());
+    $dbError = true;
+    $onlineCount = 0;
+    $totalUsers = 0;
+}
 ?>
 
 <?php if (!empty($hideHeader)): ?>
@@ -282,6 +314,14 @@ if (function_exists('sys_getloadavg')) {
                             <?php if ($loadPercent !== null): ?>
                                 <span class="fw-semibold"><?= (int)$loadPercent ?>%</span>
                             <?php endif; ?>
+                        </span>
+                        <span class="separator" aria-hidden="true">·</span>
+                        <span class="online-users" aria-label="Usuários online">
+                            <i class="bi bi-people-fill" aria-hidden="true"></i>
+                            <span class="fw-semibold"><?= $onlineCount ?></span> 
+                            usuário<?= $onlineCount !== 1 ? 's' : '' ?> online
+                            <?php if (!empty($debugInfoFooter)): ?><?= $debugInfoFooter ?><?php endif; ?>
+                            <?php if ($dbError): ?><span class="text-danger ms-1" title="Erro ao consultar banco de dados">⚠</span><?php endif; ?>
                         </span>
                         <span class="separator" aria-hidden="true">·</span>
                         <span class="last-update">
