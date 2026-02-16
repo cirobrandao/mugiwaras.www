@@ -37,6 +37,7 @@ ob_start();
                     $categoryUrl = base_path('/lib/' . rawurlencode($categorySlug) . (!empty($iosTest) ? '?ios_test=1' : ''));
                     $hasRequirements = !empty($cat['requires_subscription']);
                     $tagColor = !empty($cat['tag_color']) ? (string)$cat['tag_color'] : '';
+                    $seriesCount = (int)($cat['series_count'] ?? 0);
                 ?>
                 <a href="<?= $categoryUrl ?>" class="library-card">
                     <?php if ($hasRequirements): ?>
@@ -58,6 +59,13 @@ ob_start();
                     
                     <div class="library-card-content">
                         <h3 class="library-card-title"><?= $categoryName ?></h3>
+                        <?php if ($seriesCount > 0): ?>
+                            <div class="library-card-count">
+                                <i class="bi bi-book-half"></i>
+                                <span class="library-card-count-number"><?= $seriesCount ?></span>
+                                <span class="library-card-count-label"><?= $seriesCount === 1 ? 'série' : 'séries' ?></span>
+                            </div>
+                        <?php endif; ?>
                         <div class="library-card-action">
                             <span>Explorar</span>
                             <i class="bi bi-arrow-right"></i>

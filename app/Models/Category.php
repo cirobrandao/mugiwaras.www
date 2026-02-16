@@ -24,6 +24,18 @@ final class Category
         return $stmt->fetchAll();
     }
 
+    public static function allWithSeriesCount(): array
+    {
+        $stmt = Database::connection()->query('
+            SELECT c.*, COUNT(DISTINCT s.id) as series_count
+            FROM categories c
+            LEFT JOIN series s ON s.category_id = c.id
+            GROUP BY c.id
+            ORDER BY c.sort_order ASC, c.name ASC
+        ');
+        return $stmt->fetchAll();
+    }
+
     public static function findById(int $id): ?array
     {
         $stmt = Database::connection()->prepare('SELECT * FROM categories WHERE id = :id');

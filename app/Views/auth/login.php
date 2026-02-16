@@ -24,6 +24,9 @@ $authHeroFeatures = [
 ob_start();
 ?>
 <div class="auth-header">
+    <?php if (!empty($systemLogo)): ?>
+        <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="Logo" class="auth-logo-mobile">
+    <?php endif; ?>
     <h1 class="fw-bold">Entrar</h1>
     <p class="text-muted">Acesse sua conta e continue sua jornada</p>
 </div>

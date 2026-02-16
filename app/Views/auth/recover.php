@@ -31,6 +31,9 @@ $birthYear = (string)($form['birth_year'] ?? '');
 ob_start();
 ?>
 <div class="auth-header">
+    <?php if (!empty($systemLogo)): ?>
+        <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="Logo" class="auth-logo-mobile">
+    <?php endif; ?>
     <h1>Recuperar conta</h1>
     <p>Confirme seus dados para redefinir senha</p>
 </div>

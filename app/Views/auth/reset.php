@@ -3,7 +3,14 @@ use App\Core\View;
 $hideHeader = true;
 ob_start();
 ?>
-<h1 class="h4 mb-3">Redefinir senha</h1>
+<div class="auth-header">
+    <?php if (!empty($systemLogo)): ?>
+        <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="Logo" class="auth-logo-mobile">
+    <?php endif; ?>
+    <h1>Redefinir senha</h1>
+    <p>Digite sua nova senha</p>
+</div>
+
 <?php if (!empty($error)): ?>
     <div class="alert alert-danger"><?= View::e($error) ?></div>
 <?php endif; ?>

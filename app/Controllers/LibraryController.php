@@ -33,7 +33,7 @@ final class LibraryController extends Controller
             echo $this->view('libraries/index', ['error' => 'Biblioteca ainda não inicializada. Execute a migração 009_library_series.sql.']);
             return;
         }
-        $categories = Category::all();
+        $categories = Category::allWithSeriesCount();
         $isVitalicio = ($user['access_tier'] ?? '') === 'vitalicio';
         $restrictedIds = [4, 5, 6];
         $allowedIds = $isVitalicio ? [] : $this->allowedCategoryIds($user);

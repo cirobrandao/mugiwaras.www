@@ -143,12 +143,15 @@ $recentTop = array_slice((array)($recentContent ?? []), 0, 5);
                         <div class="list-header">
                             <?php if ($rcCategory !== '' && $rcSeries !== ''): ?>
                                 <a class="list-title" href="<?= base_path('/lib/' . rawurlencode($rcCategorySlug) . '/' . ($rcSeriesId > 0 ? $rcSeriesId : rawurlencode($rcSeries))) ?>">
-                                    <?= View::e($rcSeriesLabel) ?><?php if ($isNewContent): ?><span class="new-indicator"></span><?php endif; ?>
+                                    <?= View::e($rcSeriesLabel) ?>
                                 </a>
                             <?php else: ?>
                                 <span class="list-title">
-                                    <?= View::e($rcTitleLabel) ?><?php if ($isNewContent): ?><span class="new-indicator"></span><?php endif; ?>
+                                    <?= View::e($rcTitleLabel) ?>
                                 </span>
+                            <?php endif; ?>
+                            <?php if ($isNewContent): ?>
+                                <span class="new-indicator"></span>
                             <?php endif; ?>
                             <?php if (!empty($rc['created_at'])): ?>
                                 <span class="list-stat">

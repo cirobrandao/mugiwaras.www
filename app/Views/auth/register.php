@@ -50,6 +50,9 @@ ob_start();
 
 <?php if ($isTermsStage): ?>
     <div class="auth-header">
+        <?php if (!empty($systemLogo)): ?>
+            <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="Logo" class="auth-logo-mobile">
+        <?php endif; ?>
         <h1>Termos de uso</h1>
         <p>Leia nossos termos para continuar</p>
     </div>
@@ -114,6 +117,9 @@ ob_start();
 
 <?php else: ?>
     <div class="auth-header">
+        <?php if (!empty($systemLogo)): ?>
+            <img src="<?= base_path('/' . ltrim((string)$systemLogo, '/')) ?>" alt="Logo" class="auth-logo-mobile">
+        <?php endif; ?>
         <h1>Criar conta</h1>
         <p>Preencha os dados para se cadastrar</p>
     </div>
