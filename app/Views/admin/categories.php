@@ -29,42 +29,28 @@ ob_start();
 <?php endif; ?>
 
 <div class="modal fade" id="categoryCreateModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog admin-category-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Adicionar categoria</h5>
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Adicionar categoria</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
                 <form method="post" action="<?= base_path('/admin/categories/create') ?>" enctype="multipart/form-data">
                     <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
-                    <div class="mb-2">
-                        <label class="form-label">Nome</label>
-                        <input class="form-control" type="text" name="name" required>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Nome</label>
+                            <input class="form-control" type="text" name="name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Ordem</label>
+                            <input class="form-control" type="number" name="sort_order" value="0" min="0">
+                        </div>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label">Ordem</label>
-                        <input class="form-control" type="number" name="sort_order" value="0" min="0">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-check">
-                            <input class="form-check-input" type="checkbox" name="requires_subscription" value="1">
-                            <span class="form-check-label">Ocultar para não assinantes</span>
-                        </label>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-check">
-                            <input class="form-check-input" type="checkbox" name="adult_only" value="1">
-                            <span class="form-check-label">Categoria 18+</span>
-                        </label>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-check">
-                            <input class="form-check-input" type="checkbox" name="hide_from_store" value="1">
-                            <span class="form-check-label">Nao listar nos pacotes da loja</span>
-                        </label>
-                    </div>
-                    <div class="row g-2 mb-2">
+
+                    <div class="row g-3 mb-3">
                         <div class="col-md-4">
                             <label class="form-label">Exibição na biblioteca</label>
                             <select class="form-select" name="display_orientation">
@@ -72,14 +58,14 @@ ob_start();
                                 <option value="horizontal">Grade</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-4 cbz-config-field">
                             <label class="form-label">CBZ: direção</label>
                             <select class="form-select" name="cbz_direction">
                                 <option value="rtl" selected>Trás pra frente (mangá)</option>
                                 <option value="ltr">Frente pra trás</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-4 cbz-config-field">
                             <label class="form-label">CBZ: modo</label>
                             <select class="form-select" name="cbz_mode">
                                 <option value="both" selected>Ambas (usuário escolhe)</option>
@@ -88,14 +74,22 @@ ob_start();
                             </select>
                         </div>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label">ePub: tipo</label>
-                        <select class="form-select" name="epub_mode">
-                            <option value="text" selected>Texto</option>
-                            <option value="comic">Quadrinhos</option>
-                        </select>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6 epub-config-field">
+                            <label class="form-label">ePub: tipo</label>
+                            <select class="form-select" name="epub_mode">
+                                <option value="text" selected>Texto</option>
+                                <option value="comic">Quadrinhos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cor da TAG</label>
+                            <input class="form-control form-control-color" type="color" name="tag_color" value="#6c757d" title="Escolher cor">
+                        </div>
                     </div>
-                    <div class="mb-2">
+
+                    <div class="mb-3">
                         <label class="form-label">Tipos de conteúdo</label>
                         <div class="d-flex flex-wrap gap-3">
                             <label class="form-check">
@@ -120,15 +114,34 @@ ob_start();
                             </label>
                         </div>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label">Cor da TAG</label>
-                        <input class="form-control form-control-color" type="color" name="tag_color" value="#6c757d" title="Escolher cor">
+
+                    <div class="mb-3">
+                        <label class="form-label">Opções de visibilidade</label>
+                        <div class="d-flex flex-column gap-2">
+                            <label class="form-check">
+                                <input class="form-check-input" type="checkbox" name="requires_subscription" value="1">
+                                <span class="form-check-label">Ocultar para não assinantes</span>
+                            </label>
+                            <label class="form-check">
+                                <input class="form-check-input" type="checkbox" name="adult_only" value="1">
+                                <span class="form-check-label">Categoria 18+</span>
+                            </label>
+                            <label class="form-check">
+                                <input class="form-check-input" type="checkbox" name="hide_from_store" value="1">
+                                <span class="form-check-label">Não listar nos pacotes da loja</span>
+                            </label>
+                        </div>
                     </div>
-                    <div class="mb-2">
+
+                    <div class="mb-3">
                         <label class="form-label">Banner</label>
                         <input class="form-control" type="file" name="banner" accept="image/*">
                     </div>
-                    <button class="btn btn-primary" type="submit">Criar</button>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" type="submit"><i class="bi bi-check-lg me-1"></i>Criar</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -213,48 +226,39 @@ ob_start();
             ob_start();
             ?>
             <div class="modal fade" id="editCategory<?= (int)$c['id'] ?>" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-dialog admin-category-modal">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Editar categoria</h5>
+                            <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Editar categoria</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
                         <form method="post" action="<?= base_path('/admin/categories/update') ?>" enctype="multipart/form-data">
                             <div class="modal-body">
                                 <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
                                 <input type="hidden" name="id" value="<?= (int)$c['id'] ?>">
-                                <div class="mb-2">
-                                    <label class="form-label">Nome</label>
-                                    <input class="form-control" type="text" name="name" value="<?= View::e((string)$c['name']) ?>" required>
+                                
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Nome</label>
+                                        <input class="form-control" type="text" name="name" value="<?= View::e((string)$c['name']) ?>" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Ordem</label>
+                                        <input class="form-control" type="number" name="sort_order" value="<?= (int)($c['sort_order'] ?? 0) ?>" min="0">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Cor da TAG</label>
+                                        <input class="form-control form-control-color" type="color" name="tag_color" value="<?= View::e((string)($c['tag_color'] ?? '#6c757d')) ?>" title="Escolher cor">
+                                    </div>
                                 </div>
-                                <div class="mb-2">
+
+                                <div class="mb-3">
                                     <label class="form-label">Slug</label>
                                     <input class="form-control" type="text" name="slug" value="<?= View::e((string)($c['slug'] ?? '')) ?>" placeholder="ex: manga-shonen">
                                     <div class="form-text">Se vazio, será gerado automaticamente com base no nome.</div>
                                 </div>
-                                <div class="mb-2">
-                                    <label class="form-label">Ordem</label>
-                                    <input class="form-control" type="number" name="sort_order" value="<?= (int)($c['sort_order'] ?? 0) ?>" min="0">
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="requires_subscription" value="1" <?= !empty($c['requires_subscription']) ? 'checked' : '' ?>>
-                                        <span class="form-check-label">Ocultar para não assinantes</span>
-                                    </label>
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="adult_only" value="1" <?= !empty($c['adult_only']) ? 'checked' : '' ?>>
-                                        <span class="form-check-label">Categoria 18+</span>
-                                    </label>
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="hide_from_store" value="1" <?= !empty($c['hide_from_store']) ? 'checked' : '' ?>>
-                                        <span class="form-check-label">Nao listar nos pacotes da loja</span>
-                                    </label>
-                                </div>
-                                <div class="row g-2 mb-2">
+
+                                <div class="row g-3 mb-3">
                                     <div class="col-md-4">
                                         <label class="form-label">Exibição na biblioteca</label>
                                         <select class="form-select" name="display_orientation">
@@ -262,14 +266,14 @@ ob_start();
                                             <option value="horizontal" <?= (($c['display_orientation'] ?? '') === 'horizontal') ? 'selected' : '' ?>>Grade</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 cbz-config-field">
                                         <label class="form-label">CBZ: direção</label>
                                         <select class="form-select" name="cbz_direction">
                                             <option value="rtl" <?= (($c['cbz_direction'] ?? 'rtl') === 'rtl') ? 'selected' : '' ?>>Trás pra frente (mangá)</option>
                                             <option value="ltr" <?= (($c['cbz_direction'] ?? '') === 'ltr') ? 'selected' : '' ?>>Frente pra trás</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 cbz-config-field">
                                         <label class="form-label">CBZ: modo</label>
                                         <select class="form-select" name="cbz_mode">
                                             <option value="both" <?= (($c['cbz_mode'] ?? 'both') === 'both') ? 'selected' : '' ?>>Ambas (usuário escolhe)</option>
@@ -278,14 +282,18 @@ ob_start();
                                         </select>
                                     </div>
                                 </div>
-                                <div class="mb-2">
-                                    <label class="form-label">ePub: tipo</label>
-                                    <select class="form-select" name="epub_mode">
-                                        <option value="text" <?= (($c['epub_mode'] ?? 'text') === 'text') ? 'selected' : '' ?>>Texto</option>
-                                        <option value="comic" <?= (($c['epub_mode'] ?? '') === 'comic') ? 'selected' : '' ?>>Quadrinhos</option>
-                                    </select>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-12 epub-config-field">
+                                        <label class="form-label">ePub: tipo</label>
+                                        <select class="form-select" name="epub_mode">
+                                            <option value="text" <?= (($c['epub_mode'] ?? 'text') === 'text') ? 'selected' : '' ?>>Texto</option>
+                                            <option value="comic" <?= (($c['epub_mode'] ?? '') === 'comic') ? 'selected' : '' ?>>Quadrinhos</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="mb-2">
+
+                                <div class="mb-3">
                                     <label class="form-label">Tipos de conteúdo</label>
                                     <div class="d-flex flex-wrap gap-3">
                                         <label class="form-check">
@@ -310,18 +318,34 @@ ob_start();
                                         </label>
                                     </div>
                                 </div>
-                                <div class="mb-2">
-                                    <label class="form-label">Cor da TAG</label>
-                                    <input class="form-control form-control-color" type="color" name="tag_color" value="<?= View::e((string)($c['tag_color'] ?? '#6c757d')) ?>" title="Escolher cor">
+
+                                <div class="mb-3">
+                                    <label class="form-label">Opções de visibilidade</label>
+                                    <div class="d-flex flex-column gap-2">
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="requires_subscription" value="1" <?= !empty($c['requires_subscription']) ? 'checked' : '' ?>>
+                                            <span class="form-check-label">Ocultar para não assinantes</span>
+                                        </label>
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="adult_only" value="1" <?= !empty($c['adult_only']) ? 'checked' : '' ?>>
+                                            <span class="form-check-label">Categoria 18+</span>
+                                        </label>
+                                        <label class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="hide_from_store" value="1" <?= !empty($c['hide_from_store']) ? 'checked' : '' ?>>
+                                            <span class="form-check-label">Não listar nos pacotes da loja</span>
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="mb-2">
+
+                                <div class="mb-3">
                                     <label class="form-label">Banner</label>
                                     <input class="form-control" type="file" name="banner" accept="image/*">
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <button class="btn btn-primary" type="submit">Salvar</button>
+
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary" type="submit"><i class="bi bi-check-lg me-1"></i>Salvar</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -360,6 +384,58 @@ ob_start();
         <?= $m ?>
     <?php endforeach; ?>
 <?php endif; ?>
+
+<script>
+// Função para alternar visibilidade dos campos de configuração específicos
+function toggleContentTypeFields(modalElement) {
+    const cbzCheckbox = modalElement.querySelector('input[name="content_cbz"]');
+    const epubCheckbox = modalElement.querySelector('input[name="content_epub"]');
+    const cbzFields = modalElement.querySelectorAll('.cbz-config-field');
+    const epubFields = modalElement.querySelectorAll('.epub-config-field');
+    
+    // Atualizar visibilidade dos campos CBZ
+    function updateCbzFields() {
+        cbzFields.forEach(field => {
+            field.style.display = cbzCheckbox.checked ? '' : 'none';
+        });
+    }
+    
+    // Atualizar visibilidade dos campos ePub
+    function updateEpubFields() {
+        epubFields.forEach(field => {
+            field.style.display = epubCheckbox.checked ? '' : 'none';
+        });
+    }
+    
+    // Adicionar listeners
+    if (cbzCheckbox) {
+        cbzCheckbox.addEventListener('change', updateCbzFields);
+        updateCbzFields(); // Estado inicial
+    }
+    
+    if (epubCheckbox) {
+        epubCheckbox.addEventListener('change', updateEpubFields);
+        updateEpubFields(); // Estado inicial
+    }
+}
+
+// Inicializar para o modal de criação
+document.addEventListener('DOMContentLoaded', function() {
+    const createModal = document.getElementById('categoryCreateModal');
+    if (createModal) {
+        toggleContentTypeFields(createModal);
+    }
+    
+    // Inicializar para todos os modais de edição quando forem abertos
+    const editModals = document.querySelectorAll('[id^="editCategory"]');
+    editModals.forEach(modal => {
+        modal.addEventListener('shown.bs.modal', function() {
+            toggleContentTypeFields(modal);
+        });
+    });
+});
+</script>
+
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../layout.php';

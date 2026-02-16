@@ -69,7 +69,6 @@ foreach (($users ?? []) as $u) {
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
 	<h1 class="h4 mb-0">Gerenciamento de Usuarios</h1>
 	<div class="d-flex flex-wrap gap-2">
-		<a class="btn btn-outline-secondary" href="<?= base_path('/admin/users/import') ?>">Importar JSON</a>
 		<a class="btn btn-outline-primary" href="<?= base_path('/admin/team') ?>">Gerenciar Equipes</a>
 	</div>
 </div>
@@ -149,7 +148,7 @@ $page = min($page, $pages);
 <?php endif; ?>
 
 <div class="table-responsive">
-	<table class="table table-sm table-hover align-middle admin-users-table small">
+	<table class="table table-sm table-hover align-middle admin-users-table">
 		<thead class="table-light">
 		<tr>
 			<th scope="col" style="width: 24px;"></th>
@@ -181,7 +180,7 @@ $page = min($page, $pages);
 					<span class="tier-dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color: <?= View::e($tierColor) ?>; border:1px solid <?= View::e($tierColor) ?>;" title="<?= View::e($tierLabels[$tier] ?? $tier) ?>"></span>
 				</td>
 				<td>
-					<button class="btn btn-link p-0 text-decoration-none fw-semibold" type="button" data-bs-toggle="modal" data-bs-target="#paymentHistoryModal<?= (int)$u['id'] ?>">
+					<button class="btn btn-link p-0 text-decoration-none fw-semibold user-info-trigger" type="button" data-bs-toggle="modal" data-bs-target="#userInfoModal<?= (int)$u['id'] ?>" title="Ver informações do usuário">
 						<?= View::e((string)($u['username'] ?? '')) ?>
 					</button>
 					<a class="ms-2 small text-muted" href="<?= base_path('/perfil/' . rawurlencode((string)($u['username'] ?? ''))) ?>" title="Abrir perfil">
@@ -203,7 +202,11 @@ $page = min($page, $pages);
 				</td>
 				<td><?= View::e((string)($u['observations'] ?? '-')) ?></td>
 				<td><?= View::e($formatAgo($u['data_ultimo_login'] ?? null)) ?></td>
-				<td><?= View::e($formatSub($u['subscription_expires_at'] ?? null)) ?></td>
+				<td>
+					<button class="btn btn-link p-0 text-decoration-none subscription-link" type="button" data-bs-toggle="modal" data-bs-target="#paymentHistoryModal<?= (int)$u['id'] ?>" title="Ver histórico de compras">
+						<?= View::e($formatSub($u['subscription_expires_at'] ?? null)) ?>
+					</button>
+				</td>
 				<td>
 					<?php
 					$payment = $latestPayments[(int)$u['id']] ?? null;
@@ -282,6 +285,94 @@ $page = min($page, $pages);
 				</td>
 			</tr>
 			<?php
+			ob_start();
+			$tier = (string)($u['access_tier'] ?? 'user');
+			$tierLabel = $tierLabels[$tier] ?? ucfirst($tier);
+			$tierColor = $tierColors[$tier] ?? '#6c757d';
+			?>
+			<!-- Modal de Informações do Usuário -->
+			<div class="modal fade" id="userInfoModal<?= (int)$u['id'] ?>" tabindex="-1" aria-hidden="true">
+				<div class="modal-dialog modal-lg modal-dialog-centered">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">
+								<i class="bi bi-person-circle me-2"></i>Informações do Usuário
+							</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+						</div>
+						<div class="modal-body">
+							<div class="user-info-card">
+								<div class="row g-3">
+									<div class="col-12">
+										<div class="d-flex align-items-center mb-3">
+											<div class="tier-dot-large me-3" style="display:inline-block;width:48px;height:48px;border-radius:50%;background-color: <?= View::e($tierColor) ?>; border:2px solid <?= View::e($tierColor) ?>; display:flex; align-items:center; justify-content:center;">
+												<i class="bi bi-person-fill text-white" style="font-size: 1.5rem;"></i>
+											</div>
+											<div>
+												<h5 class="mb-0"><?= View::e((string)($u['username'] ?? '')) ?></h5>
+												<small class="text-muted">ID: <?= (int)$u['id'] ?> · <?= View::e($tierLabel) ?></small>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<label class="form-label small text-muted mb-1">Email</label>
+										<p class="mb-0 fw-medium"><?= View::e((string)($u['email'] ?? '-')) ?></p>
+									</div>
+									<div class="col-md-6">
+										<label class="form-label small text-muted mb-1">Telefone</label>
+										<p class="mb-0 fw-medium">
+											<?php
+											$phone = (string)($u['phone'] ?? '');
+											$country = (string)($u['phone_country'] ?? '');
+											$digits = preg_replace('/\D+/', '', $country . $phone) ?? '';
+											?>
+											<?= View::e($phone !== '' ? phone_mask($phone) : '-') ?>
+											<?php if (!empty($u['phone_has_whatsapp']) && $digits !== ''): ?>
+												<a class="ms-2 text-success" href="https://wa.me/<?= View::e($digits) ?>" target="_blank" rel="noopener" title="WhatsApp">
+													<i class="bi bi-whatsapp"></i>
+												</a>
+											<?php endif; ?>
+										</p>
+									</div>
+									<div class="col-md-6">
+										<label class="form-label small text-muted mb-1">Data de Nascimento</label>
+										<p class="mb-0 fw-medium"><?= View::e((string)($u['birth_date'] ?? '-')) ?></p>
+									</div>
+									<div class="col-md-6">
+										<label class="form-label small text-muted mb-1">País</label>
+										<p class="mb-0 fw-medium"><?= View::e((string)($u['phone_country'] ?? '-')) ?></p>
+									</div>
+									<div class="col-md-6">
+										<label class="form-label small text-muted mb-1">Último Login</label>
+										<p class="mb-0 fw-medium"><?= View::e($formatAgo($u['data_ultimo_login'] ?? null)) ?></p>
+									</div>
+									<div class="col-md-6">
+										<label class="form-label small text-muted mb-1">Assinatura Expira</label>
+										<p class="mb-0 fw-medium"><?= View::e($formatSub($u['subscription_expires_at'] ?? null)) ?></p>
+									</div>
+									<?php if (!empty($u['observations'])): ?>
+									<div class="col-12">
+										<label class="form-label small text-muted mb-1">Observações</label>
+										<p class="mb-0 fw-medium"><?= View::e((string)($u['observations'] ?? '')) ?></p>
+									</div>
+									<?php endif; ?>
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+							<button type="button" class="btn btn-info" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#paymentHistoryModal<?= (int)$u['id'] ?>">
+								<i class="bi bi-receipt me-1"></i>Ver Histórico de Compras
+							</button>
+							<a href="<?= base_path('/perfil/' . rawurlencode((string)($u['username'] ?? ''))) ?>" class="btn btn-primary" target="_blank">
+								<i class="bi bi-box-arrow-up-right me-1"></i>Abrir Perfil Completo
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<?php
+			$modals[] = ob_get_clean();
 			ob_start();
 			?>
 			<div class="modal fade" id="editUserModal<?= (int)$u['id'] ?>" tabindex="-1" aria-hidden="true">

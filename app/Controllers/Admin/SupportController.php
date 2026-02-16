@@ -26,6 +26,7 @@ final class SupportController extends Controller
             Response::redirect(base_path('/admin/support'));
         }
         $replies = SupportReply::bySupportId((int)$ticket['id']);
+        
         echo $this->view('admin/support_show', [
             'ticket' => $ticket,
             'replies' => $replies,

@@ -23,8 +23,8 @@ $canManageModerators = $isAdmin;
 <hr class="text-success" />
 
 <div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
+    <table class="table table-hover align-middle admin-team-table">
+        <thead>
         <tr>
             <th scope="col">Usuário</th>
             <th scope="col">Email</th>
@@ -42,10 +42,10 @@ $canManageModerators = $isAdmin;
                 <td><?= View::e($u['username']) ?></td>
                 <td><?= View::e($u['email']) ?></td>
                 <td>
-                    <form method="post" action="<?= base_path('/admin/team/update') ?>" class="d-flex gap-2">
+                    <form method="post" action="<?= base_path('/admin/team/update') ?>" class="d-flex gap-2 align-items-center team-update-form">
                         <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
                         <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
-                        <select name="role" class="form-select" <?= $canManageAdmins ? '' : 'disabled' ?> <?= $isRowSuper ? 'disabled' : '' ?>>
+                        <select name="role" class="form-select form-select-sm" <?= $canManageAdmins ? '' : 'disabled' ?> <?= $isRowSuper ? 'disabled' : '' ?>>
                             <option value="user" <?= ($u['role'] ?? '') === 'user' ? 'selected' : '' ?>>usuário</option>
                             <option value="equipe" <?= ($u['role'] ?? '') === 'equipe' ? 'selected' : '' ?>>equipe</option>
                             <?php if ($canManageAdmins): ?>

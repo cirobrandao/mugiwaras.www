@@ -68,6 +68,7 @@ body.app-body {
               radial-gradient(circle at 80% 80%, #fce7f3 0%, transparent 50%),
               linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
   min-height: 100vh;
+  padding-top: 17px;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -7235,13 +7236,20 @@ body.theme-dark .form-select {
   background: #0f172a;
   border-color: #334155;
   color: #e2e8f0;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
 }
 
-body.theme-dark .form-control:focus,
+body.theme-dark .form-control:focus {
+  background: #1e293b;
+  border-color: #3b82f6;
+  color: #f1f5f9;
+}
+
 body.theme-dark .form-select:focus {
   background: #1e293b;
   border-color: #3b82f6;
   color: #f1f5f9;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
 }
 
 body.theme-dark .form-control::placeholder {
@@ -7413,6 +7421,645 @@ body.theme-dark .btn-close {
   filter: invert(1) grayscale(100%) brightness(200%);
 }
 
+/* ============================================
+   SUPPORT SYSTEM - DARK THEME
+   ============================================ */
+
+/* Support table */
+body.theme-dark .admin-support-table {
+  color: #cbd5e1;
+}
+
+body.theme-dark .admin-support-table thead {
+  background: #0f172a;
+}
+
+body.theme-dark .admin-support-table thead th {
+  color: #cbd5e1;
+  border-color: #334155;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+body.theme-dark .admin-support-table tbody td {
+  border-color: #334155;
+  vertical-align: middle;
+  padding: 0.4rem 0.5rem;
+}
+
+body.theme-dark .admin-support-table tbody tr:hover {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+/* Compact table styling */
+.admin-support-table.small {
+  font-size: 0.875rem;
+}
+
+.admin-support-table.small td {
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.admin-support-table.small thead th {
+  padding: 0.4rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.admin-support-table .btn-link {
+  color: inherit;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+body.theme-dark .admin-support-table .btn-link {
+  color: #60a5fa;
+}
+
+body.theme-dark .admin-support-table .btn-link:hover {
+  color: #93c5fd;
+}
+
+/* Subject button styling */
+.admin-support-table .subject-btn {
+  font-size: 0.8rem !important;
+  line-height: 1.4;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+/* User info button */
+.admin-support-table .user-info-btn {
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.admin-support-table .user-info-btn:hover {
+  text-decoration: underline !important;
+  transform: translateX(2px);
+}
+
+body.theme-dark .admin-support-table .user-info-btn {
+  color: #60a5fa;
+}
+
+body.theme-dark .admin-support-table .user-info-btn:hover {
+  color: #93c5fd;
+}
+
+.admin-support-table .badge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Action buttons enhancement */
+.admin-support-table .action-buttons {
+  gap: 2px;
+}
+
+.admin-support-table .action-buttons .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease-in-out;
+  border-width: 1.5px;
+}
+
+.admin-support-table .action-buttons .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+body.theme-dark .admin-support-table .action-buttons .btn:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.admin-support-table .action-buttons .btn i {
+  font-size: 0.9rem;
+}
+
+.admin-support-table .btn-group-sm .btn {
+  padding: 0.2rem 0.4rem;
+  font-size: 0.75rem;
+}
+
+/* Table row colors for different statuses */
+body.theme-dark .admin-support-table .table-warning {
+  background: rgba(251, 146, 60, 0.1);
+  color: #fdba74;
+}
+
+body.theme-dark .admin-support-table .table-warning:hover {
+  background: rgba(251, 146, 60, 0.15);
+}
+
+body.theme-dark .admin-support-table .table-secondary {
+  background: rgba(148, 163, 184, 0.1);
+  color: #cbd5e1;
+}
+
+body.theme-dark .admin-support-table .table-secondary:hover {
+  background: rgba(148, 163, 184, 0.15);
+}
+
+body.theme-dark .admin-support-table .table-light {
+  background: rgba(15, 23, 42, 0.3);
+  color: #94a3b8;
+}
+
+body.theme-dark .admin-support-table .table-light:hover {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+/* Support ticket cards */
+body.theme-dark .ticket-card,
+body.theme-dark .card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+body.theme-dark .card-body {
+  color: #cbd5e1;
+}
+
+body.theme-dark .card-header {
+  background: #0f172a;
+  border-bottom-color: #334155;
+  color: #f1f5f9;
+}
+
+/* Ticket with success border (last reply) */
+body.theme-dark .card.border-success {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2);
+}
+
+/* Timeline entries */
+body.theme-dark .timeline-time {
+  color: #64748b;
+}
+
+/* Forms in support */
+body.theme-dark .form-control {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+body.theme-dark .form-select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+body.theme-dark .form-control:focus {
+  background: #1e293b;
+  border-color: #3b82f6;
+  color: #f1f5f9;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+body.theme-dark .form-select:focus {
+  background: #1e293b;
+  border-color: #3b82f6;
+  color: #f1f5f9;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+body.theme-dark .form-control::placeholder {
+  color: #64748b;
+}
+
+body.theme-dark textarea.form-control {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+body.theme-dark textarea.form-control:focus {
+  background: #1e293b;
+  border-color: #3b82f6;
+  color: #f1f5f9;
+}
+
+body.theme-dark .form-label {
+  color: #cbd5e1;
+}
+
+/* Badges in support */
+body.theme-dark .badge.bg-secondary {
+  background: #475569 !important;
+  color: #f1f5f9;
+}
+
+body.theme-dark .badge.bg-warning {
+  background: #f59e0b !important;
+  color: #1e293b;
+}
+
+body.theme-dark .badge.bg-success {
+  background: #059669 !important;
+  color: #d1fae5;
+}
+
+body.theme-dark .badge.bg-danger {
+  background: #dc2626 !important;
+  color: #fecaca;
+}
+
+/* Text utilities for badges */
+body.theme-dark .badge.text-dark,
+body.theme-dark .text-dark {
+  color: #0f172a !important;
+}
+
+/* Buttons outline variants */
+body.theme-dark .btn-outline-primary {
+  color: #60a5fa;
+  border-color: #3b82f6;
+}
+
+body.theme-dark .btn-outline-primary:hover {
+  background: #3b82f6;
+  color: #fff;
+}
+
+body.theme-dark .btn-outline-secondary {
+  color: #94a3b8;
+  border-color: #475569;
+}
+
+body.theme-dark .btn-outline-secondary:hover {
+  background: #475569;
+  color: #f1f5f9;
+}
+
+body.theme-dark .btn-outline-success {
+  color: #86efac;
+  border-color: #22c55e;
+}
+
+body.theme-dark .btn-outline-success:hover {
+  background: #22c55e;
+  color: #fff;
+}
+
+/* Alert messages */
+body.theme-dark .alert-warning {
+  background: rgba(251, 146, 60, 0.1);
+  border-color: #f59e0b;
+  color: #fdba74;
+}
+
+body.theme-dark .alert-danger {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #dc2626;
+  color: #fca5a5;
+}
+
+body.theme-dark .alert-secondary {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+body.theme-dark .alert-info {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  color: #93c5fd;
+}
+
+body.theme-dark .alert-success {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: #22c55e;
+  color: #86efac;
+}
+
+/* Input groups */
+body.theme-dark .input-group-text {
+  background: #0f172a;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+body.theme-dark .input-group .form-control[readonly] {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+body.theme-dark .input-group .btn-outline-secondary {
+  background: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+body.theme-dark .input-group .btn-outline-secondary:hover {
+  background: #334155;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+/* Links in support */
+body.theme-dark a {
+  color: #60a5fa;
+}
+
+body.theme-dark a:hover {
+  color: #93c5fd;
+}
+
+body.theme-dark .text-danger {
+  color: #fca5a5 !important;
+}
+
+/* Text utilities */
+body.theme-dark .text-muted {
+  color: #64748b !important;
+}
+
+body.theme-dark strong {
+  color: #f1f5f9;
+}
+
+/* Support specific elements */
+body.theme-dark hr.text-success {
+  opacity: 0.3;
+  border-color: #22c55e;
+}
+
+body.theme-dark h1, 
+body.theme-dark h2, 
+body.theme-dark h3, 
+body.theme-dark h4, 
+body.theme-dark h5, 
+body.theme-dark h6 {
+  color: #f1f5f9;
+}
+
+body.theme-dark h1.h4,
+body.theme-dark h2.h6 {
+  color: #f1f5f9;
+}
+
+/* Select dropdowns */
+body.theme-dark select.form-select,
+body.theme-dark select.form-select-sm {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* Support modal enhancements */
+body.theme-dark .modal-content {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+body.theme-dark .modal-header {
+  background: #0f172a;
+  border-bottom-color: #334155;
+  padding: 1rem 1.5rem;
+}
+
+body.theme-dark .modal-title {
+  color: #f1f5f9;
+  font-size: 1.1rem;
+}
+
+body.theme-dark .modal-body {
+  color: #cbd5e1;
+}
+
+body.theme-dark .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Support modal spacing and z-index overrides */
+/* Modal needs higher z-index than navbar (5000) */
+#ticketModal {
+  z-index: 6000;
+}
+
+#ticketModal .modal-backdrop {
+  z-index: 5999;
+}
+
+#ticketModal.show .modal-backdrop {
+  z-index: 5999;
+}
+
+/* Fullscreen starting below navbar */
+#ticketModal .modal-dialog {
+  position: fixed;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  margin: 0;
+  max-width: 1200px;
+  width: 100%;
+  height: calc(100vh - 68px);
+  display: flex;
+  flex-direction: column;
+}
+
+#ticketModal .modal-content {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#ticketModal .modal-header {
+  flex-shrink: 0;
+}
+
+#ticketModal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+#ticketModal .modal-header {
+  padding: 1rem 1.5rem;
+}
+
+#ticketModal .modal-body {
+  padding: 1.5rem;
+}
+
+#ticketModal .modal-body > *:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+#ticketModal h1, 
+#ticketModal .h4 {
+  margin-top: 0;
+  padding-top: 0;
+  margin-bottom: 1rem;
+}
+
+#ticketModal hr {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Remove extra spacing at top of modal content */
+#ticketModal .modal-body > br:first-child,
+#ticketModal .modal-body > p:first-child:empty {
+  display: none;
+}
+
+/* Card header enhancements */
+body.theme-dark .card-header.bg-transparent {
+  background: transparent !important;
+  border-bottom-color: #334155;
+}
+
+/* Icon colors */
+body.theme-dark .bi-sticky-fill.text-warning {
+  color: #fbbf24 !important;
+}
+
+/* Support replies container */
+.replies-container .card {
+  transition: box-shadow 0.2s;
+}
+
+.replies-container .card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+body.theme-dark .replies-container .card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Badge subtle variants */
+.badge.bg-success-subtle {
+  background: rgba(34, 197, 94, 0.15) !important;
+}
+
+body.theme-dark .badge.bg-success-subtle {
+  background: rgba(34, 197, 94, 0.2) !important;
+}
+
+/* Small alerts */
+.alert-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* Better spacing for form elements */
+body.theme-dark .card-header.bg-transparent h2.h6 {
+  color: #60a5fa;
+}
+
+/* Icon enhancements */
+.bi-headset, .bi-person, .bi-envelope, .bi-chat-dots, .bi-reply {
+  vertical-align: text-top;
+}
+
+/* Improve button groups */
+.btn-group-sm .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Hover effects for table rows */
+.admin-support-table tbody tr {
+  transition: background-color 0.15s ease-in-out;
+}
+
+/* Card borders */
+body.theme-dark .card.border-primary {
+  border-color: #3b82f6 !important;
+}
+
+body.theme-dark .card.border-success {
+  border-color: #22c55e !important;
+}
+
+/* Status badge in ticket info */
+body.theme-dark .badge.bg-primary {
+  background: #3b82f6 !important;
+}
+
+/* User info modal */
+#userInfoModal {
+  z-index: 6000;
+}
+
+#userInfoModal .modal-backdrop {
+  z-index: 5999;
+}
+
+#userInfoModal.show .modal-backdrop {
+  z-index: 5999;
+}
+
+#userInfoModal .modal-dialog {
+  margin-top: calc(68px + 1rem);
+}
+
+#userInfoModal .user-info-card {
+  padding: 1rem;
+}
+
+#userInfoModal .user-info-card .form-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.7rem;
+}
+
+#userInfoModal .user-info-card p {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+body.theme-dark #userInfoModal .user-info-card .form-label {
+  color: #94a3b8;
+}
+
+body.theme-dark #userInfoModal .user-info-card p {
+  color: #e2e8f0;
+}
+
+#userInfoModal .bi-person-circle {
+  font-size: 3rem;
+}
+
+/* Icon colors for user types */
+.bi-person-circle {
+  color: #3b82f6;
+}
+
+body.theme-dark .bi-person-circle {
+  color: #60a5fa;
+}
+
+.bi-envelope {
+  color: #64748b;
+}
+
+body.theme-dark .bi-envelope {
+  color: #94a3b8;
+}
+
+body.theme-dark select.form-select:focus,
+body.theme-dark select.form-select-sm:focus {
+  background: #1e293b;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
 @media print {
   .app-sidebar,
   .app-topbar,
@@ -7428,3 +8075,1354 @@ body.theme-dark .btn-close {
   }
 }
 
+/* Admin Users Page Enhancements */
+.admin-users-table {
+  font-size: 0.875rem;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-users-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+}
+
+.admin-users-table thead th {
+  border: none;
+  padding: 0.75rem 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.admin-users-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-users-table tbody tr:hover {
+  background-color: rgba(102, 126, 234, 0.05);
+  transform: translateY(-1px);
+}
+
+.admin-users-table tbody td {
+  padding: 0.75rem 0.5rem;
+  vertical-align: middle;
+  border: none;
+}
+
+.admin-users-table .tier-dot {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.admin-users-table tr:hover .tier-dot {
+  transform: scale(1.2);
+}
+
+.admin-users-table .admin-actions {
+  gap: 0.25rem;
+}
+
+.admin-users-table .admin-actions .btn {
+  transition: all 0.2s ease;
+  border-width: 1.5px;
+}
+
+.admin-users-table .admin-actions .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark theme */
+body.theme-dark .admin-users-table {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-users-table thead {
+  background: linear-gradient(135deg, #4c51bf 0%, #6b46c1 100%);
+}
+
+body.theme-dark .admin-users-table tbody tr {
+  border-bottom-color: #334155;
+}
+
+body.theme-dark .admin-users-table tbody tr:hover {
+  background-color: rgba(102, 126, 234, 0.1);
+}
+
+body.theme-dark .admin-users-table tbody td {
+  color: #cbd5e1;
+}
+
+body.theme-dark .admin-users-table .table-danger {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+
+body.theme-dark .admin-users-table .table-warning {
+  background-color: rgba(251, 191, 36, 0.15) !important;
+}
+
+body.theme-dark .admin-users-table .btn-link {
+  color: #93c5fd;
+}
+
+body.theme-dark .admin-users-table .btn-link:hover {
+  color: #60a5fa;
+}
+
+body.theme-dark .admin-users-table .text-muted {
+  color: #94a3b8 !important;
+}
+
+body.theme-dark .admin-users-table .badge {
+  font-weight: 600;
+}
+
+body.theme-dark .admin-users-table .badge.bg-success {
+  background-color: #10b981 !important;
+}
+
+body.theme-dark .admin-users-table .badge.bg-secondary {
+  background-color: #475569 !important;
+}
+
+.admin-users-table .subscription-link {
+  color: #667eea;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.admin-users-table .subscription-link:hover {
+  color: #764ba2;
+  text-decoration: underline !important;
+  transform: translateX(2px);
+}
+
+body.theme-dark .admin-users-table .subscription-link {
+  color: #93c5fd;
+}
+
+body.theme-dark .admin-users-table .subscription-link:hover {
+  color: #60a5fa;
+}
+
+.admin-users-table .user-info-trigger {
+  color: #667eea;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.admin-users-table .user-info-trigger:hover {
+  color: #764ba2;
+  text-decoration: underline !important;
+  transform: translateX(2px);
+}
+
+body.theme-dark .admin-users-table .user-info-trigger {
+  color: #93c5fd;
+}
+
+body.theme-dark .admin-users-table .user-info-trigger:hover {
+  color: #60a5fa;
+}
+
+.admin-users-table .tier-dot-large {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Admin Team Page Enhancements */
+.admin-team-table {
+  font-size: 0.875rem;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-team-table thead {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+}
+
+.admin-team-table thead th {
+  border: none;
+  padding: 0.75rem 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.admin-team-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-team-table tbody tr:hover {
+  background-color: rgba(16, 185, 129, 0.05);
+  transform: translateY(-1px);
+}
+
+.admin-team-table tbody td {
+  padding: 0.75rem 0.5rem;
+  vertical-align: middle;
+  border: none;
+}
+
+.admin-team-table .team-update-form {
+  margin: 0;
+}
+
+.admin-team-table .form-select-sm {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-width: 1.5px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-team-table .form-select-sm:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+}
+
+.admin-team-table .form-check-input {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-width: 1.5px;
+}
+
+.admin-team-table .form-check-input:checked {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.admin-team-table .form-check-input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+}
+
+.admin-team-table .btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-width: 1.5px;
+  transition: all 0.2s ease;
+}
+
+.admin-team-table .btn-sm:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark theme */
+body.theme-dark .admin-team-table {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-team-table thead {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+body.theme-dark .admin-team-table tbody tr {
+  border-bottom-color: #334155;
+}
+
+body.theme-dark .admin-team-table tbody tr:hover {
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+body.theme-dark .admin-team-table tbody td {
+  color: #cbd5e1;
+}
+
+body.theme-dark .admin-team-table .form-select-sm {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+body.theme-dark .admin-team-table .form-select-sm:focus {
+  background-color: #0f172a;
+  border-color: #10b981;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+body.theme-dark .admin-team-table .form-check-input {
+  background-color: #0f172a;
+  border-color: #334155;
+}
+
+body.theme-dark .admin-team-table .form-check-input:checked {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+/* Admin Categories Modal Enhancements */
+.admin-category-modal {
+  position: fixed;
+  top: 68px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0 auto;
+  max-width: 1200px;
+  width: calc(100% - 2rem);
+  height: calc(100vh - 68px);
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-category-modal .modal-content {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+.admin-category-modal .modal-header {
+  flex-shrink: 0;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border-bottom: none;
+}
+
+.admin-category-modal .modal-title {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.admin-category-modal .btn-close {
+  filter: invert(1) brightness(2);
+}
+
+.admin-category-modal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem 1.5rem;
+}
+
+.admin-category-modal .form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.admin-category-modal .form-control,
+.admin-category-modal .form-select {
+  border-width: 1.5px;
+  transition: all 0.2s ease;
+}
+
+.admin-category-modal .form-control:focus,
+.admin-category-modal .form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.admin-category-modal .form-check-input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.1rem;
+  border-width: 1.5px;
+}
+
+.admin-category-modal .form-check-input:checked {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+
+.admin-category-modal .form-check-label {
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+}
+
+/* Dark theme for categories modal */
+body.theme-dark .admin-category-modal .modal-content {
+  background: #1e293b;
+}
+
+body.theme-dark .admin-category-modal .modal-header {
+  background: linear-gradient(135deg, #4c51bf 0%, #6b46c1 100%);
+}
+
+body.theme-dark .admin-category-modal .modal-body {
+  background: #1e293b;
+}
+
+body.theme-dark .admin-category-modal .form-label {
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-category-modal .form-control {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-category-modal .form-select {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+body.theme-dark .admin-category-modal .form-control:focus {
+  background-color: #0f172a;
+  border-color: #667eea;
+}
+
+body.theme-dark .admin-category-modal .form-select:focus {
+  background-color: #0f172a;
+  border-color: #667eea;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+body.theme-dark .admin-category-modal .form-check-input {
+  background-color: #0f172a;
+  border-color: #334155;
+}
+
+body.theme-dark .admin-category-modal .form-check-input:checked {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+
+body.theme-dark .admin-category-modal .form-check-label {
+  color: #cbd5e1;
+}
+
+body.theme-dark .admin-category-modal .form-text {
+  color: #94a3b8;
+}
+/* Admin Packages Page Enhancements */
+.admin-packages-table {
+  font-size: 0.875rem;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.admin-packages-table .table {
+  margin-bottom: 0;
+}
+
+.admin-packages-table thead {
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  color: #ffffff;
+}
+
+.admin-packages-table thead th {
+  border: none;
+  padding: 0.75rem 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.admin-packages-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-packages-table tbody tr:hover {
+  background-color: rgba(14, 165, 233, 0.05);
+  transform: translateY(-1px);
+}
+
+.admin-packages-table tbody td {
+  padding: 0.75rem;
+  vertical-align: middle;
+  border: none;
+}
+
+.admin-packages-table .package-title {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.admin-packages-table .package-description {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  margin-top: 0.25rem;
+}
+
+.admin-packages-table .package-price {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #0ea5e9;
+}
+
+.admin-packages-table .package-days {
+  font-size: 0.875rem;
+}
+
+.admin-packages-table .admin-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.admin-packages-table .admin-actions .btn {
+  transition: all 0.2s ease;
+  border-width: 1.5px;
+}
+
+.admin-packages-table .admin-actions .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark theme for packages table */
+body.theme-dark .admin-packages-table {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-packages-table thead {
+  background: linear-gradient(135deg, #0284c7 0%, #0891b2 100%);
+}
+
+body.theme-dark .admin-packages-table tbody tr {
+  border-bottom-color: #334155;
+}
+
+body.theme-dark .admin-packages-table tbody tr:hover {
+  background-color: rgba(14, 165, 233, 0.1);
+}
+
+body.theme-dark .admin-packages-table tbody td {
+  color: #cbd5e1;
+}
+
+body.theme-dark .admin-packages-table .package-price {
+  color: #38bdf8;
+}
+
+body.theme-dark .admin-packages-table .text-muted {
+  color: #94a3b8 !important;
+}
+
+body.theme-dark .admin-packages-table .badge.bg-secondary {
+  background-color: #475569 !important;
+}
+
+/* Admin Packages Modal Enhancements */
+.admin-packages-modal {
+  max-width: 700px;
+}
+
+.admin-packages-modal .modal-content {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.admin-packages-modal .modal-header {
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  color: #ffffff;
+  border-bottom: none;
+  padding: 1.25rem 1.5rem;
+}
+
+.admin-packages-modal .modal-title {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.admin-packages-modal .btn-close {
+  filter: invert(1) brightness(2);
+}
+
+.admin-packages-modal .modal-body {
+  padding: 1.5rem;
+  background: #ffffff;
+}
+
+.admin-packages-modal .form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.admin-packages-modal .form-label i {
+  color: #0ea5e9;
+}
+
+.admin-packages-modal .form-control,
+.admin-packages-modal .form-select {
+  border-width: 1.5px;
+  transition: all 0.2s ease;
+}
+
+.admin-packages-modal .form-control:focus,
+.admin-packages-modal .form-select:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25);
+}
+
+.admin-packages-modal .form-select[multiple] {
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+}
+
+.admin-packages-modal .form-select[multiple] option {
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.admin-packages-modal .form-select[multiple] option:checked {
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  color: #ffffff;
+}
+
+.admin-packages-modal .btn-primary {
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+  border: none;
+  font-weight: 600;
+}
+
+.admin-packages-modal .btn-primary:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0891b2 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+/* Dark theme for packages modal */
+body.theme-dark .admin-packages-modal .modal-content {
+  background: #1e293b;
+}
+
+body.theme-dark .admin-packages-modal .modal-header {
+  background: linear-gradient(135deg, #0284c7 0%, #0891b2 100%);
+}
+
+body.theme-dark .admin-packages-modal .modal-body {
+  background: #1e293b;
+}
+
+body.theme-dark .admin-packages-modal .form-label {
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-packages-modal .form-label i {
+  color: #38bdf8;
+}
+
+body.theme-dark .admin-packages-modal .form-control,
+body.theme-dark .admin-packages-modal .form-select {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-packages-modal .form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+body.theme-dark .admin-packages-modal .form-control:focus,
+body.theme-dark .admin-packages-modal .form-select:focus {
+  background-color: #0f172a;
+  border-color: #0ea5e9;
+}
+
+body.theme-dark .admin-packages-modal .form-select:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cbd5e1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+body.theme-dark .admin-packages-modal .form-select[multiple] option:checked {
+  background: linear-gradient(135deg, #0284c7 0%, #0891b2 100%);
+}
+
+body.theme-dark .admin-packages-modal .form-text {
+  color: #94a3b8;
+}
+/* Admin Vouchers Page Enhancements */
+.admin-vouchers-table {
+  font-size: 0.875rem;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.admin-vouchers-table .table {
+  margin-bottom: 0;
+}
+
+.admin-vouchers-table thead {
+  background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+  color: #ffffff;
+}
+
+.admin-vouchers-table thead th {
+  border: none;
+  padding: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.admin-vouchers-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-vouchers-table tbody tr:hover {
+  background-color: rgba(249, 115, 22, 0.05);
+  transform: translateY(-1px);
+}
+
+.admin-vouchers-table tbody td {
+  padding: 0.75rem;
+  vertical-align: middle;
+  border: none;
+}
+
+.admin-vouchers-table .voucher-code {
+  background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.admin-vouchers-table .voucher-user-link {
+  color: #f97316;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.admin-vouchers-table .voucher-user-link:hover {
+  color: #ec4899;
+  text-decoration: underline;
+}
+
+.admin-vouchers-table .voucher-uses {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.admin-vouchers-table .admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.admin-vouchers-table .admin-actions .btn {
+  transition: all 0.2s ease;
+  border-width: 1.5px;
+}
+
+.admin-vouchers-table .admin-actions .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark theme for vouchers table */
+body.theme-dark .admin-vouchers-table {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-vouchers-table thead {
+  background: linear-gradient(135deg, #ea580c 0%, #db2777 100%);
+}
+
+body.theme-dark .admin-vouchers-table tbody tr {
+  border-bottom-color: #334155;
+}
+
+body.theme-dark .admin-vouchers-table tbody tr:hover {
+  background-color: rgba(249, 115, 22, 0.1);
+}
+
+body.theme-dark .admin-vouchers-table tbody td {
+  color: #cbd5e1;
+}
+
+body.theme-dark .admin-vouchers-table .voucher-code {
+  background: linear-gradient(135deg, #fb923c 0%, #f472b6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.theme-dark .admin-vouchers-table .voucher-user-link {
+  color: #fb923c;
+}
+
+body.theme-dark .admin-vouchers-table .voucher-user-link:hover {
+  color: #f472b6;
+}
+
+body.theme-dark .admin-vouchers-table .text-muted {
+  color: #94a3b8 !important;
+}
+
+body.theme-dark .admin-vouchers-table .badge.bg-secondary {
+  background-color: #475569 !important;
+}
+
+body.theme-dark .admin-vouchers-table .badge.bg-info {
+  background-color: #0891b2 !important;
+  color: #ffffff !important;
+}
+
+/* Admin Vouchers Modal Enhancements */
+.admin-vouchers-modal {
+  max-width: 700px;
+}
+
+.admin-vouchers-modal .modal-content {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.admin-vouchers-modal .modal-header {
+  background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+  color: #ffffff;
+  border-bottom: none;
+  padding: 1.25rem 1.5rem;
+}
+
+.admin-vouchers-modal .modal-title {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.admin-vouchers-modal .btn-close {
+  filter: invert(1) brightness(2);
+}
+
+.admin-vouchers-modal .modal-body {
+  padding: 1.5rem;
+  background: #ffffff;
+}
+
+.admin-vouchers-modal .form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.admin-vouchers-modal .form-label i {
+  color: #f97316;
+}
+
+.admin-vouchers-modal .form-control,
+.admin-vouchers-modal .form-select {
+  border-width: 1.5px;
+  transition: all 0.2s ease;
+}
+
+.admin-vouchers-modal .form-control:focus,
+.admin-vouchers-modal .form-select:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 0.2rem rgba(249, 115, 22, 0.25);
+}
+
+.admin-vouchers-modal .form-check-input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.1rem;
+  border-width: 1.5px;
+}
+
+.admin-vouchers-modal .form-check-input:checked {
+  background-color: #f97316;
+  border-color: #f97316;
+}
+
+.admin-vouchers-modal .btn-primary {
+  background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+  border: none;
+  font-weight: 600;
+}
+
+.admin-vouchers-modal .btn-primary:hover {
+  background: linear-gradient(135deg, #ea580c 0%, #db2777 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+/* Dark theme for vouchers modal */
+body.theme-dark .admin-vouchers-modal .modal-content {
+  background: #1e293b;
+}
+
+body.theme-dark .admin-vouchers-modal .modal-header {
+  background: linear-gradient(135deg, #ea580c 0%, #db2777 100%);
+}
+
+body.theme-dark .admin-vouchers-modal .modal-body {
+  background: #1e293b;
+}
+
+body.theme-dark .admin-vouchers-modal .form-label {
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-vouchers-modal .form-label i {
+  color: #fb923c;
+}
+
+body.theme-dark .admin-vouchers-modal .form-control,
+body.theme-dark .admin-vouchers-modal .form-select {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-vouchers-modal .form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns=''http://www.w3.org/2000/svg'' viewBox=''0 0 16 16''%3e%3cpath fill=''none'' stroke=''%23cbd5e1'' stroke-linecap=''round'' stroke-linejoin=''round'' stroke-width=''2'' d=''M2 5l6 6 6-6''/%3e%3c/svg%3e");
+}
+
+body.theme-dark .admin-vouchers-modal .form-control:focus,
+body.theme-dark .admin-vouchers-modal .form-select:focus {
+  background-color: #0f172a;
+  border-color: #f97316;
+}
+
+body.theme-dark .admin-vouchers-modal .form-select:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns=''http://www.w3.org/2000/svg'' viewBox=''0 0 16 16''%3e%3cpath fill=''none'' stroke=''%23cbd5e1'' stroke-linecap=''round'' stroke-linejoin=''round'' stroke-width=''2'' d=''M2 5l6 6 6-6''/%3e%3c/svg%3e");
+}
+
+body.theme-dark .admin-vouchers-modal .form-check-input {
+  background-color: #0f172a;
+  border-color: #334155;
+}
+
+body.theme-dark .admin-vouchers-modal .form-check-input:checked {
+  background-color: #f97316;
+  border-color: #f97316;
+}
+
+body.theme-dark .admin-vouchers-modal .form-text {
+  color: #94a3b8;
+}
+
+/* Admin Vouchers History Modal */
+.admin-vouchers-history-modal .modal-content {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.admin-vouchers-history-modal .modal-header {
+  background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+  color: #ffffff;
+  border-bottom: none;
+  padding: 1.25rem 1.5rem;
+}
+
+.admin-vouchers-history-modal .modal-title {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.admin-vouchers-history-modal .btn-close {
+  filter: invert(1) brightness(2);
+}
+
+.admin-vouchers-history-modal .modal-body {
+  padding: 1.5rem;
+  background: #ffffff;
+}
+
+.admin-vouchers-history-modal .table thead {
+  background: #f8fafc;
+}
+
+.admin-vouchers-history-modal .table thead th {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Dark theme for history modal */
+body.theme-dark .admin-vouchers-history-modal .modal-content {
+  background: #1e293b;
+}
+
+body.theme-dark .admin-vouchers-history-modal .modal-header {
+  background: linear-gradient(135deg, #ea580c 0%, #db2777 100%);
+}
+
+body.theme-dark .admin-vouchers-history-modal .modal-body {
+  background: #1e293b;
+}
+
+body.theme-dark .admin-vouchers-history-modal .table {
+  color: #cbd5e1;
+}
+
+body.theme-dark .admin-vouchers-history-modal .table thead {
+  background: #0f172a;
+}
+
+body.theme-dark .admin-vouchers-history-modal .table thead th {
+  color: #94a3b8;
+  border-bottom-color: #334155;
+}
+
+body.theme-dark .admin-vouchers-history-modal .table tbody tr {
+  border-bottom-color: #334155;
+}
+
+body.theme-dark .admin-vouchers-history-modal .text-muted {
+  color: #94a3b8 !important;
+}
+
+body.theme-dark .admin-vouchers-history-modal .badge.bg-primary {
+  background-color: #3b82f6 !important;
+}
+
+body.theme-dark .admin-vouchers-history-modal .badge.bg-success {
+  background-color: #10b981 !important;
+}
+
+/* Admin News Page Enhancements */
+.admin-news-table {
+  font-size: 0.875rem;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.admin-news-table .table {
+  margin-bottom: 0;
+}
+
+.admin-news-table thead {
+  background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
+  color: #ffffff;
+}
+
+.admin-news-table thead th {
+  border: none;
+  padding: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.admin-news-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-news-table tbody tr:hover {
+  background-color: rgba(245, 158, 11, 0.05);
+  transform: translateY(-1px);
+}
+
+.admin-news-table tbody td {
+  padding: 0.75rem;
+  vertical-align: middle;
+  border: none;
+}
+
+.admin-news-table .news-title {
+  display: flex;
+  align-items: center;
+}
+
+.admin-news-table .news-link {
+  color: #0f172a;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.admin-news-table .news-link:hover {
+  color: #f59e0b;
+  text-decoration: underline;
+}
+
+.admin-news-table .admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.admin-news-table .admin-actions .btn {
+  transition: all 0.2s ease;
+  border-width: 1.5px;
+}
+
+.admin-news-table .admin-actions .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark theme for news table */
+body.theme-dark .admin-news-table {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-news-table thead {
+  background: linear-gradient(135deg, #d97706 0%, #ca8a04 100%);
+}
+
+body.theme-dark .admin-news-table tbody tr {
+  border-bottom-color: #334155;
+}
+
+body.theme-dark .admin-news-table tbody tr:hover {
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+body.theme-dark .admin-news-table tbody td {
+  color: #cbd5e1;
+}
+
+body.theme-dark .admin-news-table .news-link {
+  color: #fbbf24;
+}
+
+body.theme-dark .admin-news-table .news-link:hover {
+  color: #fcd34d;
+}
+
+body.theme-dark .admin-news-table .text-muted {
+  color: #94a3b8 !important;
+}
+
+body.theme-dark .admin-news-table .badge.bg-secondary {
+  background-color: #475569 !important;
+}
+
+body.theme-dark .admin-news-table .badge.bg-info {
+  background-color: #0891b2 !important;
+  color: #ffffff !important;
+}
+
+/* Admin News Category Modal */
+.admin-news-category-modal .modal-content {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.admin-news-category-modal .modal-header {
+  background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
+  color: #ffffff;
+  border-bottom: none;
+  padding: 1.25rem 1.5rem;
+}
+
+.admin-news-category-modal .modal-title {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.admin-news-category-modal .btn-close {
+  filter: invert(1) brightness(2);
+}
+
+.admin-news-category-modal .modal-body {
+  padding: 1.5rem;
+  background: #ffffff;
+}
+
+.admin-news-category-modal .form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.admin-news-category-modal .form-label i {
+  color: #f59e0b;
+}
+
+.admin-news-category-modal .form-control,
+.admin-news-category-modal .form-select {
+  border-width: 1.5px;
+  transition: all 0.2s ease;
+}
+
+.admin-news-category-modal .form-control:focus,
+.admin-news-category-modal .form-select:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 0.2rem rgba(245, 158, 11, 0.25);
+}
+
+.admin-news-category-modal .form-check-input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.1rem;
+  border-width: 1.5px;
+}
+
+.admin-news-category-modal .form-check-input:checked {
+  background-color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.admin-news-category-modal .btn-primary {
+  background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
+  border: none;
+  font-weight: 600;
+}
+
+.admin-news-category-modal .btn-primary:hover {
+  background: linear-gradient(135deg, #d97706 0%, #ca8a04 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.admin-news-categories-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.admin-news-categories-list .table {
+  margin-bottom: 0;
+}
+
+.admin-news-categories-list thead {
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  z-index: 10;
+}
+
+.admin-news-categories-list thead th {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  border-bottom: 2px solid #e2e8f0;
+  padding: 0.75rem;
+}
+
+.admin-news-categories-list tbody tr:hover {
+  background-color: rgba(245, 158, 11, 0.05);
+}
+
+.admin-news-categories-list .admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Dark theme for news category modal */
+body.theme-dark .admin-news-category-modal .modal-content {
+  background: #1e293b;
+}
+
+body.theme-dark .admin-news-category-modal .modal-header {
+  background: linear-gradient(135deg, #d97706 0%, #ca8a04 100%);
+}
+
+body.theme-dark .admin-news-category-modal .modal-body {
+  background: #1e293b;
+}
+
+body.theme-dark .admin-news-category-modal .form-label {
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-news-category-modal .form-label i {
+  color: #fbbf24;
+}
+
+body.theme-dark .admin-news-category-modal .form-control,
+body.theme-dark .admin-news-category-modal .form-select {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-news-category-modal .form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns=''http://www.w3.org/2000/svg'' viewBox=''0 0 16 16''%3e%3cpath fill=''none'' stroke=''%23cbd5e1'' stroke-linecap=''round'' stroke-linejoin=''round'' stroke-width=''2'' d=''M2 5l6 6 6-6''/%3e%3c/svg%3e");
+}
+
+body.theme-dark .admin-news-category-modal .form-control:focus,
+body.theme-dark .admin-news-category-modal .form-select:focus {
+  background-color: #0f172a;
+  border-color: #f59e0b;
+}
+
+body.theme-dark .admin-news-category-modal .form-select:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns=''http://www.w3.org/2000/svg'' viewBox=''0 0 16 16''%3e%3cpath fill=''none'' stroke=''%23cbd5e1'' stroke-linecap=''round'' stroke-linejoin=''round'' stroke-width=''2'' d=''M2 5l6 6 6-6''/%3e%3c/svg%3e");
+}
+
+body.theme-dark .admin-news-category-modal .form-check-input {
+  background-color: #0f172a;
+  border-color: #334155;
+}
+
+body.theme-dark .admin-news-category-modal .form-check-input:checked {
+  background-color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+body.theme-dark .admin-news-categories-list {
+  border-color: #334155;
+}
+
+body.theme-dark .admin-news-categories-list thead {
+  background: #0f172a;
+}
+
+body.theme-dark .admin-news-categories-list thead th {
+  color: #94a3b8;
+  border-bottom-color: #334155;
+}
+
+body.theme-dark .admin-news-categories-list tbody tr:hover {
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+body.theme-dark .admin-news-categories-list tbody td {
+  border-bottom-color: #334155;
+}
