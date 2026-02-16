@@ -264,32 +264,6 @@ $orderUrl = $seriesBaseUrl . (empty($orderQuery) ? '' : '?' . implode('&', $orde
         ?>
     <?php endif; ?>
 <?php endif; ?>
-
-<script>
-// Garantir inicialização correta dos modals do Bootstrap
-document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar todos os modals explicitamente
-    var modalElements = document.querySelectorAll('.modal');
-    modalElements.forEach(function(modalEl) {
-        if (!modalEl.id.startsWith('pdfViewerModal')) {
-            // Criar instância do modal apenas se ainda não existir
-            try {
-                var modalInstance = bootstrap.Modal.getInstance(modalEl);
-                if (!modalInstance) {
-                    new bootstrap.Modal(modalEl, {
-                        backdrop: true,
-                        keyboard: true,
-                        focus: true
-                    });
-                }
-            } catch (e) {
-                console.warn('Erro ao inicializar modal:', modalEl.id, e);
-            }
-        }
-    });
-});
-</script>
-
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../layout.php';
