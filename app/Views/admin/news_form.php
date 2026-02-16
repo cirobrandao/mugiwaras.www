@@ -22,154 +22,245 @@ $formAction = $isEdit ? base_path('/admin/news/update') : base_path('/admin/news
 $pageTitle = $isEdit ? 'Editar notícia' : 'Nova notícia';
 ?>
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h4 mb-0"><?= View::e($pageTitle) ?></h1>
-    <?php if ($isEdit): ?>
-        <a class="btn btn-outline-secondary" href="#" onclick="history.back(); return false;">Voltar</a>
-    <?php else: ?>
-        <a class="btn btn-outline-secondary" href="<?= base_path('/admin/news') ?>">Voltar</a>
+<div class="admin-news-form">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h4 mb-0">
+            <i class="bi bi-<?= $isEdit ? 'pencil-square' : 'file-earmark-plus' ?> me-2"></i>
+            <?= View::e($pageTitle) ?>
+        </h1>
+        <?php if ($isEdit): ?>
+            <a class="btn btn-outline-secondary" href="#" onclick="history.back(); return false;">
+                <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+        <?php else: ?>
+            <a class="btn btn-outline-secondary" href="<?= base_path('/admin/news') ?>">
+                <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+        <?php endif; ?>
+    </div>
+
+    <?php if (!empty($_GET['error']) && $_GET['error'] === 'category'): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Selecione uma categoria válida.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php elseif (!empty($_GET['error']) && $_GET['error'] === 'image'): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Imagem de destaque inválida. Use JPG, PNG ou WEBP até 4MB.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php elseif (!empty($_GET['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Preencha título e conteúdo.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     <?php endif; ?>
-</div>
-<hr class="text-success" />
 
-<?php if (!empty($_GET['error']) && $_GET['error'] === 'category'): ?>
-    <div class="alert alert-danger">Selecione uma categoria válida.</div>
-<?php elseif (!empty($_GET['error']) && $_GET['error'] === 'image'): ?>
-    <div class="alert alert-danger">Imagem de destaque inválida. Use JPG, PNG ou WEBP até 4MB.</div>
-<?php elseif (!empty($_GET['error'])): ?>
-    <div class="alert alert-danger">Preencha título e conteúdo.</div>
-<?php endif; ?>
-
-<form method="post" action="<?= $formAction ?>" enctype="multipart/form-data" class="row g-3">
+    <form method="post" action="<?= $formAction ?>" enctype="multipart/form-data" class="row g-3">
     <input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
     <?php if ($isEdit): ?>
         <input type="hidden" name="id" value="<?= (int)($item['id'] ?? 0) ?>">
     <?php endif; ?>
 
-    <div class="col-12 col-xl-8">
-        <div class="card border-0 bg-body-tertiary h-100">
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Título</label>
-                    <input class="form-control" type="text" name="title" value="<?= View::e($titleValue) ?>" required>
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-gradient text-white">
+                    <i class="bi bi-file-text me-2"></i>Conteúdo da notícia
                 </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-fonts me-1"></i>Título
+                        </label>
+                        <input class="form-control" type="text" name="title" value="<?= View::e($titleValue) ?>" placeholder="Digite o título da notícia" required>
+                    </div>
 
-                <div class="mb-2 d-flex flex-wrap gap-2" id="markdownToolbar">
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-action="h2">H2</button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-action="h3">H3</button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-action="bold">Negrito</button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-action="italic">Itálico</button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-action="strike">Riscado</button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-action="ul">Lista</button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-action="ol">Numerada</button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-action="quote">Citação</button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-action="code">Código</button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-action="link">Link</button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" data-action="image">Imagem</button>
-                    <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#bodyImageUploadModal">Upload imagem</button>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Conteúdo (Markdown)</label>
-                    <textarea class="form-control font-monospace" id="newsBody" name="body" rows="16" required><?= View::e($bodyValue) ?></textarea>
-                    <div class="form-text">Use Markdown para títulos, listas, links, imagens, citações e blocos de código.</div>
-                </div>
-
-                <div class="border rounded p-3 bg-body" style="min-height: 200px; max-height: 420px; overflow:auto;">
-                    <div class="small text-muted mb-2">Pré-visualização</div>
-                    <div id="markdownPreview" class="small"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-12 col-xl-4">
-        <div class="card border-0 bg-body-tertiary mb-3">
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Categoria</label>
-                    <select class="form-select" name="category_id" required>
-                        <option value="">Selecionar</option>
-                        <?php foreach (($categories ?? []) as $cat): ?>
-                            <option value="<?= (int)$cat['id'] ?>" <?= (int)$cat['id'] === $categoryValue ? 'selected' : '' ?>><?= View::e((string)$cat['name']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Imagem de destaque</label>
-                    <input class="form-control" type="file" name="featured_image" accept="image/jpeg,image/png,image/webp">
-                    <div class="form-text">Formatos: JPG, PNG ou WEBP. Máximo 4MB.</div>
-                    <?php if ($isEdit && !empty($item['featured_image_path'])): ?>
-                        <div class="mt-2">
-                            <img src="<?= base_path('/' . ltrim((string)$item['featured_image_path'], '/')) ?>" alt="Imagem atual" class="img-fluid rounded border" style="max-height: 140px;">
+                    <div class="mb-2">
+                        <label class="form-label">
+                            <i class="bi bi-markdown me-1"></i>Conteúdo (Markdown)
+                        </label>
+                        <div class="d-flex flex-wrap gap-2 mb-2" id="markdownToolbar">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="h2" title="Título H2">
+                                <i class="bi bi-type-h2"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="h3" title="Título H3">
+                                <i class="bi bi-type-h3"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="bold" title="Negrito">
+                                <i class="bi bi-type-bold"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="italic" title="Itálico">
+                                <i class="bi bi-type-italic"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="strike" title="Riscado">
+                                <i class="bi bi-type-strikethrough"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="ul" title="Lista">
+                                <i class="bi bi-list-ul"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="ol" title="Lista numerada">
+                                <i class="bi bi-list-ol"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="quote" title="Citação">
+                                <i class="bi bi-quote"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="code" title="Código">
+                                <i class="bi bi-code-slash"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="link" title="Link">
+                                <i class="bi bi-link-45deg"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-action="image" title="Imagem">
+                                <i class="bi bi-image"></i>
+                            </button>
+                            <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#bodyImageUploadModal" title="Upload de imagem">
+                                <i class="bi bi-cloud-upload me-1"></i>Upload
+                            </button>
                         </div>
-                        <div class="form-check mt-2">
-                            <input class="form-check-input" type="checkbox" name="remove_featured_image" id="removeFeaturedImage" value="1">
-                            <label class="form-check-label" for="removeFeaturedImage">Remover imagem atual</label>
+                        <textarea class="form-control font-monospace" id="newsBody" name="body" rows="14" placeholder="Digite o conteúdo em Markdown" required><?= View::e($bodyValue) ?></textarea>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>Use Markdown para títulos, listas, links, imagens, citações e blocos de código.
                         </div>
-                    <?php endif; ?>
-                </div>
+                    </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Publicado em (opcional)</label>
-                    <input class="form-control" type="datetime-local" name="published_at" value="<?= View::e($publishedAtInput) ?>">
-                </div>
-
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" name="is_published" id="newsPublished" value="1" <?= $isPublished ? 'checked' : '' ?>>
-                    <label class="form-check-label" for="newsPublished">Publicar</label>
-                </div>
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" name="publish_now" id="newsPublishNow" value="1">
-                    <label class="form-check-label" for="newsPublishNow">Publicar agora</label>
-                </div>
-
-                <div class="d-grid gap-2">
-                    <button class="btn btn-primary" type="submit"><?= $isEdit ? 'Salvar alterações' : 'Criar notícia' ?></button>
-                    <a class="btn btn-outline-secondary" href="<?= base_path('/admin/news') ?>">Cancelar</a>
+                    <div class="preview-container">
+                        <div class="preview-header">
+                            <i class="bi bi-eye me-1"></i>Pré-visualização
+                        </div>
+                        <div class="preview-body" id="markdownPreview"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card border-0 bg-body-tertiary">
-            <div class="card-body">
-                <h2 class="h6 mb-2">Atalhos Markdown</h2>
-                <ul class="small mb-0">
-                    <li><strong>#</strong>, <strong>##</strong>, <strong>###</strong> para títulos</li>
-                    <li><strong>**texto**</strong> para negrito</li>
-                    <li><strong>*texto*</strong> para itálico</li>
-                    <li><strong>[título](https://url)</strong> para links</li>
-                    <li><strong>![alt](https://imagem)</strong> para imagens</li>
-                    <li><strong>```</strong> para blocos de código</li>
-                </ul>
+        <div class="col-12 col-xl-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-gradient text-white">
+                    <i class="bi bi-gear me-2"></i>Configurações
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-tag me-1"></i>Categoria
+                        </label>
+                        <select class="form-select" name="category_id" required>
+                            <option value="">Selecionar categoria</option>
+                            <?php foreach (($categories ?? []) as $cat): ?>
+                                <option value="<?= (int)$cat['id'] ?>" <?= (int)$cat['id'] === $categoryValue ? 'selected' : '' ?>>
+                                    <?= View::e((string)$cat['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-image me-1"></i>Imagem de destaque
+                        </label>
+                        <input class="form-control" type="file" name="featured_image" accept="image/jpeg,image/png,image/webp">
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>Formatos: JPG, PNG ou WEBP. Máximo 4MB.
+                        </div>
+                        <?php if ($isEdit && !empty($item['featured_image_path'])): ?>
+                            <div class="mt-3">
+                                <img src="<?= base_path('/' . ltrim((string)$item['featured_image_path'], '/')) ?>" alt="Imagem atual" class="img-fluid rounded border" style="max-height: 160px;">
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" name="remove_featured_image" id="removeFeaturedImage" value="1">
+                                <label class="form-check-label" for="removeFeaturedImage">
+                                    <i class="bi bi-trash me-1"></i>Remover imagem atual
+                                </label>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-calendar-event me-1"></i>Publicado em (opcional)
+                        </label>
+                        <input class="form-control" type="datetime-local" name="published_at" value="<?= View::e($publishedAtInput) ?>">
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="is_published" id="newsPublished" value="1" <?= $isPublished ? 'checked' : '' ?>>
+                            <label class="form-check-label" for="newsPublished">
+                                <i class="bi bi-check-circle me-1"></i>Publicar
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="publish_now" id="newsPublishNow" value="1">
+                            <label class="form-check-label" for="newsPublishNow">
+                                <i class="bi bi-lightning-charge me-1"></i>Publicar agora
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-<?= $isEdit ? 'check-circle' : 'plus-circle' ?> me-1"></i>
+                            <?= $isEdit ? 'Salvar alterações' : 'Criar notícia' ?>
+                        </button>
+                        <a class="btn btn-outline-secondary" href="<?= base_path('/admin/news') ?>">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient text-white">
+                    <i class="bi bi-lightbulb me-2"></i>Atalhos Markdown
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0 markdown-help">
+                        <li><code>#</code>, <code>##</code>, <code>###</code> para títulos</li>
+                        <li><code>**texto**</code> para negrito</li>
+                        <li><code>*texto*</code> para itálico</li>
+                        <li><code>[título](https://url)</code> para links</li>
+                        <li><code>![alt](https://imagem)</code> para imagens</li>
+                        <li><code>```</code> para blocos de código</li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>
-</form>
+    </form>
+</div>
 
-<div class="modal fade" id="bodyImageUploadModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade admin-news-upload-modal" id="bodyImageUploadModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Upload de imagem para conteúdo</h5>
+                <h5 class="modal-title">
+                    <i class="bi bi-cloud-upload me-2"></i>Upload de imagem para conteúdo
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label" for="bodyImageFile">Imagem</label>
+                    <label class="form-label" for="bodyImageFile">
+                        <i class="bi bi-file-image me-1"></i>Imagem
+                    </label>
                     <input class="form-control" id="bodyImageFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-                    <div class="form-text">JPG, PNG, WEBP ou GIF até 4MB.</div>
+                    <div class="form-text">
+                        <i class="bi bi-info-circle me-1"></i>JPG, PNG, WEBP ou GIF até 4MB.
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="bodyImageAlt">Texto alternativo (opcional)</label>
+                    <label class="form-label" for="bodyImageAlt">
+                        <i class="bi bi-chat-square-text me-1"></i>Texto alternativo (opcional)
+                    </label>
                     <input class="form-control" id="bodyImageAlt" type="text" maxlength="120" placeholder="Descreva a imagem">
                 </div>
                 <div id="bodyImageUploadFeedback" class="small"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
-                <button type="button" class="btn btn-primary" id="bodyImageUploadSubmit">Enviar e inserir</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Fechar
+                </button>
+                <button type="button" class="btn btn-primary" id="bodyImageUploadSubmit">
+                    <i class="bi bi-check-circle me-1"></i>Enviar e inserir
+                </button>
             </div>
         </div>
     </div>

@@ -42,20 +42,24 @@ $isZeroDate = static function (?string $dt): bool {
 	return $clean === '0000-00-00 00:00:00' || $clean === '0000-00-00';
 };
 ?>
-<h1 class="h4 mb-3">Pagamentos</h1>
-<hr class="text-success" />
-<div class="table-responsive">
-	<table class="table table-hover align-middle">
-		<thead class="table-light">
+<div class="admin-payments">
+<div class="d-flex align-items-center mb-3">
+	<h1 class="h4 mb-0">
+		<i class="bi bi-credit-card me-2"></i>Pagamentos
+	</h1>
+</div>
+<div class="admin-payments-table">
+	<table class="table table-hover align-middle mb-0">
+		<thead>
 		<tr>
-			<th scope="col">Usuário</th>
-			<th scope="col">Pacote</th>
-			<th scope="col" style="width: 90px;">Meses</th>
-			<th scope="col" style="width: 140px;">Status</th>
-			<th scope="col" style="width: 160px;">Liberado por</th>
-			<th scope="col" style="width: 140px;">Comprovante</th>
-			<th scope="col" style="width: 170px;">Criado</th>
-			<th scope="col" class="text-end" style="width: 180px;">Ações</th>
+			<th scope="col"><i class="bi bi-person me-1"></i>Usuário</th>
+			<th scope="col"><i class="bi bi-box me-1"></i>Pacote</th>
+			<th scope="col" style="width: 90px;"><i class="bi bi-calendar-range me-1"></i>Meses</th>
+			<th scope="col" style="width: 70px;"><i class="bi bi-flag me-1"></i>Status</th>
+			<th scope="col" style="width: 160px;"><i class="bi bi-person-check me-1"></i>Liberado por</th>
+			<th scope="col" style="width: 70px;"><i class="bi bi-receipt me-1"></i>Comprovante</th>
+			<th scope="col" style="width: 130px;"><i class="bi bi-clock me-1"></i>Criado</th>
+			<th scope="col" class="text-end" style="width: 480px;"><i class="bi bi-gear me-1"></i>Ações</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -86,34 +90,94 @@ $isZeroDate = static function (?string $dt): bool {
 				</td>
 				<td><?= View::e((string)($p['package_name'] ?? ('#' . (int)$p['package_id']))) ?></td>
 				<td><?= (int)($p['months'] ?? 1) ?></td>
-				<td>
-					<span class="badge <?= View::e($stMeta['class']) ?>">
-						<?= View::e($stMeta['label']) ?>
-					</span>
+				<td class="text-center">
+					<?php
+					$statusIcons = [
+						'pending' => ['icon' => 'clock-fill', 'color' => 'text-warning'],
+						'approved' => ['icon' => 'check-circle-fill', 'color' => 'text-success'],
+						'rejected' => ['icon' => 'x-circle-fill', 'color' => 'text-danger'],
+						'revoked' => ['icon' => 'arrow-counterclockwise', 'color' => 'text-dark'],
+					];
+					$iconData = $statusIcons[$st] ?? ['icon' => 'question-circle', 'color' => 'text-muted'];
+					?>
+					<i class="bi bi-<?= $iconData['icon'] ?> <?= $iconData['color'] ?>" style="font-size: 1.2rem;" title="<?= View::e($stMeta['label']) ?>" data-bs-toggle="tooltip"></i>
 				</td>
 				<td><?= View::e($approvedLabel) ?></td>
-				<td>
+				<td class="text-center">
 					<?php if ($proofPath !== ''): ?>
-						<button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#proofModal<?= (int)$p['id'] ?>">Ver</button>
-					<?php else: ?>
-						<span class="text-muted">-</span>
+						<button class="btn btn-link p-0 border-0" type="button" data-bs-toggle="modal" data-bs-target="#proofModal<?= (int)$p['id'] ?>" title="Ver comprovante">
+						<i class="bi bi-file-earmark-text-fill text-primary" style="font-size: 1.8rem;"></i>
+					</button>
+				<?php else: ?>
+					<i class="bi bi-dash-circle text-muted" style="font-size: 1.8rem;" title="Sem comprovante"></i>
 					<?php endif; ?>
 				</td>
-				<td><?= View::e((string)$p['created_at']) ?></td>
+				<td>
+					<?php
+					$createdDate = (string)$p['created_at'];
+					if ($st === 'pending') {
+						// Show relative time for pending
+						try {
+							$created = new DateTimeImmutable($createdDate);
+							$now = new DateTimeImmutable('now');
+							$diff = $created->diff($now);
+							
+							if ($diff->y > 0) {
+								$timeAgo = $diff->y . ' ano' . ($diff->y > 1 ? 's' : '');
+							} elseif ($diff->m > 0) {
+								$timeAgo = $diff->m . ' mês' . ($diff->m > 1 ? 'es' : '');
+							} elseif ($diff->d > 0) {
+								$timeAgo = $diff->d . ' dia' . ($diff->d > 1 ? 's' : '');
+							} elseif ($diff->h > 0) {
+								$timeAgo = $diff->h . 'h';
+							} elseif ($diff->i > 0) {
+								$timeAgo = $diff->i . 'min';
+							} else {
+								$timeAgo = 'agora';
+							}
+							echo '<span class="text-warning" title="' . View::e($createdDate) . '">';
+							echo '<i class="bi bi-hourglass-split me-1"></i>' . View::e($timeAgo) . ' atrás';
+							echo '</span>';
+						} catch (Exception $e) {
+							echo View::e($createdDate);
+						}
+					} else {
+						// Show month/year for approved/rejected/revoked
+						try {
+							$created = new DateTimeImmutable($createdDate);
+							$months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+							$monthName = $months[(int)$created->format('n') - 1];
+							$year = $created->format('Y');
+							echo '<span title="' . View::e($createdDate) . '">' . $monthName . '/' . $year . '</span>';
+						} catch (Exception $e) {
+							echo View::e($createdDate);
+						}
+					}
+					?>
+				</td>
 				<td class="text-end">
-					<?php if ($p['status'] === 'pending'): ?>
+					<?php
+					$canApprove = $p['status'] === 'pending';
+					$canReject = $p['status'] === 'pending';
+					$canRevoke = $st === 'approved' && $canManage && empty($p['revoked_at']);
+					$canCancelRevoke = $st === 'revoked' && $canManage;
+					?>
+					<?php if ($canApprove): ?>
 						<form method="post" action="<?= base_path('/admin/payments/approve') ?>" class="d-inline">
 							<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
 							<input type="hidden" name="id" value="<?= (int)$p['id'] ?>">
-							<button class="btn btn-sm btn-success" type="submit">Aprovar</button>
+							<button class="btn btn-sm btn-success me-1" type="submit"><i class="bi bi-check-lg me-1"></i>Aprovar</button>
 						</form>
+					<?php endif; ?>
+					<?php if ($canReject): ?>
 						<form method="post" action="<?= base_path('/admin/payments/reject') ?>" class="d-inline">
 							<input type="hidden" name="_csrf" value="<?= View::e($csrf) ?>">
 							<input type="hidden" name="id" value="<?= (int)$p['id'] ?>">
-							<button class="btn btn-sm btn-outline-danger" type="submit">Rejeitar</button>
+							<button class="btn btn-sm btn-danger me-1" type="submit"><i class="bi bi-x-lg me-1"></i>Rejeitar</button>
 						</form>
-					<?php elseif ($st === 'approved' && $canManage && empty($p['revoked_at'])): ?>
-						<button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#revokeModal"
+					<?php endif; ?>
+					<?php if ($canRevoke): ?>
+						<button class="btn btn-sm btn-warning me-1" type="button" data-bs-toggle="modal" data-bs-target="#revokeModal"
 							data-action="open-refund"
 							data-payment-id="<?= (int)$p['id'] ?>"
 							data-revoke-id="<?= (int)$p['id'] ?>"
@@ -125,10 +189,10 @@ $isZeroDate = static function (?string $dt): bool {
 							data-revoke-tier="<?= View::e((string)($p['user_tier'] ?? '-')) ?>"
 							data-revoke-subscription="<?= View::e((string)($p['user_subscription_expires_at'] ?? '-')) ?>"
 							data-revoke-credits="<?= View::e((string)($p['user_credits'] ?? '0')) ?>"
-							data-revoke-proof="<?= $proofPath !== '' ? 'Sim' : 'Nao' ?>"
-						>Estornar compra</button>
-					<?php elseif ($st === 'revoked' && $canManage): ?>
-						<button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#revokeCancelModal"
+							data-revoke-proof="<?= $proofPath !== '' ? 'Sim' : 'Nao' ?>"><i class="bi bi-arrow-counterclockwise me-1"></i>Estornar</button>
+					<?php endif; ?>
+					<?php if ($canCancelRevoke): ?>
+						<button class="btn btn-sm btn-info" type="button" data-bs-toggle="modal" data-bs-target="#revokeCancelModal"
 							data-payment-id="<?= (int)$p['id'] ?>"
 							data-revoke-id="<?= (int)$p['id'] ?>"
 							data-revoke-user="<?= View::e((string)($p['user_name'] ?? ('#' . (int)$p['user_id']))) ?>"
@@ -139,10 +203,7 @@ $isZeroDate = static function (?string $dt): bool {
 							data-revoke-tier="<?= View::e((string)($p['user_tier'] ?? '-')) ?>"
 							data-revoke-subscription="<?= View::e((string)($p['user_subscription_expires_at'] ?? '-')) ?>"
 							data-revoke-credits="<?= View::e((string)($p['user_credits'] ?? '0')) ?>"
-							data-revoke-proof="<?= $proofPath !== '' ? 'Sim' : 'Nao' ?>"
-						>Cancelar estorno</button>
-					<?php else: ?>
-						<span class="text-muted">-</span>
+							data-revoke-proof="<?= $proofPath !== '' ? 'Sim' : 'Nao' ?>"><i class="bi bi-arrow-clockwise me-1"></i>Cancelar estorno</button>
 					<?php endif; ?>
 				</td>
 			</tr>
@@ -150,11 +211,11 @@ $isZeroDate = static function (?string $dt): bool {
 			if ($proofPath !== '') {
 				ob_start();
 				?>
-				<div class="modal fade" id="proofModal<?= (int)$p['id'] ?>" tabindex="-1" aria-hidden="true">
-					<div class="modal-dialog modal-xl modal-dialog-centered">
+				<div class="modal fade admin-payments-modal admin-payments-proof-modal" id="proofModal<?= (int)$p['id'] ?>" tabindex="-1" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
 						<div class="modal-content">
-							<div class="modal-header">
-								<h5 class="modal-title">Comprovante</h5>
+							<div class="modal-header bg-gradient text-white">
+								<h5 class="modal-title"><i class="bi bi-receipt-cutoff me-2"></i>Comprovante</h5>
 								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
 							</div>
 							<div class="modal-body">
@@ -173,7 +234,7 @@ $isZeroDate = static function (?string $dt): bool {
 								<?php endif; ?>
 							</div>
 							<div class="modal-footer">
-								<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+								<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i>Fechar</button>
 							</div>
 						</div>
 					</div>
@@ -185,6 +246,7 @@ $isZeroDate = static function (?string $dt): bool {
 		?>
 		</tbody>
 	</table>
+</div>
 </div>
 <?= implode('', $proofModals) ?>
 <?php
@@ -207,11 +269,11 @@ foreach (($payments ?? []) as $p):
 	$userAge = $formatAccountAge($userRegistered);
 	$history = $historyByUser[$uid] ?? [];
 ?>
-<div class="modal fade" id="userInfoModal<?= (int)$uid ?>" tabindex="-1" aria-hidden="true">
+<div class="modal fade admin-payments-modal" id="userInfoModal<?= (int)$uid ?>" tabindex="-1" aria-hidden="true">
 	<div class="modal-dialog modal-xl modal-dialog-centered">
 		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Dados administrativos - <?= View::e($userName) ?></h5>
+			<div class="modal-header bg-gradient text-white">
+				<h5 class="modal-title"><i class="bi bi-person-badge me-2"></i>Dados administrativos - <?= View::e($userName) ?></h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
 			</div>
 			<div class="modal-body">
@@ -233,10 +295,10 @@ foreach (($payments ?? []) as $p):
 							<div><strong>Créditos:</strong> <?= View::e($userCredits) ?></div>
 					</div>
 				</div>
-				<div class="mb-2"><strong>Historico de compras</strong></div>
-				<div class="table-responsive">
-					<table class="table table-sm align-middle">
-						<thead class="table-light">
+				<div class="mb-2"><strong><i class="bi bi-clock-history me-1"></i>Histórico de compras</strong></div>
+				<div class="admin-payments-history">
+					<table class="table table-sm align-middle mb-0">
+						<thead>
 						<tr>
 							<th scope="col">ID</th>
 							<th scope="col">Pacote</th>
@@ -273,17 +335,17 @@ foreach (($payments ?? []) as $p):
 				</div>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i>Fechar</button>
 			</div>
 		</div>
 	</div>
 </div>
 <?php endforeach; ?>
-<div class="modal fade" id="revokeModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade admin-payments-modal" id="revokeModal" tabindex="-1" aria-hidden="true">
 	<div class="modal-dialog modal-lg modal-dialog-centered">
 		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Estorno do pagamento</h5>
+			<div class="modal-header bg-gradient text-white">
+				<h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Estorno do pagamento</h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
 			</div>
 			<form method="post" action="">
@@ -311,18 +373,18 @@ foreach (($payments ?? []) as $p):
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-					<button class="btn btn-danger" type="button" id="revokeConfirmBtn">Confirmar estorno</button>
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i>Cancelar</button>
+					<button class="btn btn-danger" type="button" id="revokeConfirmBtn"><i class="bi bi-exclamation-circle me-1"></i>Confirmar estorno</button>
 				</div>
 			</form>
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="revokeCancelModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade admin-payments-modal" id="revokeCancelModal" tabindex="-1" aria-hidden="true">
 	<div class="modal-dialog modal-lg modal-dialog-centered">
 		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title">Cancelar estorno</h5>
+			<div class="modal-header bg-gradient text-white">
+				<h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Cancelar estorno</h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
 			</div>
 			<form method="post" action="<?= base_path('/admin/payments/revoke-cancel') ?>">
@@ -345,8 +407,8 @@ foreach (($payments ?? []) as $p):
 					</ul>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-					<button class="btn btn-primary" type="submit">Confirmar cancelamento do estorno</button>
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i>Cancelar</button>
+					<button class="btn btn-primary" type="submit"><i class="bi bi-check-circle me-1"></i>Confirmar cancelamento</button>
 				</div>
 			</form>
 		</div>

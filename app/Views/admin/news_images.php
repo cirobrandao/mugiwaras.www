@@ -16,60 +16,74 @@ $formatBytes = static function (int $bytes): string {
 };
 ?>
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h4 mb-0">Banco de imagens</h1>
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary" href="<?= base_path('/admin') ?>" title="Atalhos admin" aria-label="Atalhos admin">
-            <i class="bi bi-grid"></i>
-        </a>
-        <a class="btn btn-outline-primary" href="<?= base_path('/admin/news') ?>" title="Notícias" aria-label="Notícias">
-            <i class="bi bi-newspaper"></i>
-        </a>
+<div class="admin-images">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h4 mb-0">
+            <i class="bi bi-images me-2"></i>Banco de imagens
+        </h1>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" href="<?= base_path('/admin') ?>" title="Atalhos admin" aria-label="Atalhos admin">
+                <i class="bi bi-grid"></i>
+            </a>
+            <a class="btn btn-outline-primary" href="<?= base_path('/admin/news') ?>" title="Notícias" aria-label="Notícias">
+                <i class="bi bi-newspaper"></i>
+            </a>
+        </div>
     </div>
-</div>
-<hr class="text-success" />
 
-<?php if (!empty($_GET['deleted'])): ?>
-    <div class="alert alert-success">Imagem removida com sucesso.</div>
-<?php elseif (!empty($_GET['error']) && $_GET['error'] === 'csrf'): ?>
-    <div class="alert alert-danger">Sessão inválida para excluir imagem.</div>
-<?php elseif (!empty($_GET['error']) && $_GET['error'] === 'invalid'): ?>
-    <div class="alert alert-danger">Imagem inválida para exclusão.</div>
-<?php elseif (!empty($_GET['error']) && $_GET['error'] === 'notfound'): ?>
-    <div class="alert alert-danger">Arquivo não encontrado.</div>
-<?php endif; ?>
+    <?php if (!empty($_GET['deleted'])): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>Imagem removida com sucesso.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php elseif (!empty($_GET['error']) && $_GET['error'] === 'csrf'): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Sessão inválida para excluir imagem.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php elseif (!empty($_GET['error']) && $_GET['error'] === 'invalid'): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Imagem inválida para exclusão.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php elseif (!empty($_GET['error']) && $_GET['error'] === 'notfound'): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Arquivo não encontrado.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
 
-<?php if (empty($images)): ?>
-    <div class="alert alert-secondary mb-0">Ainda não há imagens enviadas.</div>
-<?php else: ?>
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th scope="col" style="width: 96px;">Preview</th>
-                    <th scope="col">Arquivo</th>
-                    <th scope="col" style="width: 110px;">Tipo</th>
-                    <th scope="col" style="width: 120px;">Tamanho</th>
-                    <th scope="col" style="width: 180px;">Atualizado</th>
-                    <th scope="col" class="text-end" style="width: 260px;">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
+    <?php if (empty($images)): ?>
+        <div class="alert alert-info mb-0">
+            <i class="bi bi-inbox me-2"></i>Ainda não há imagens enviadas.
+        </div>
+    <?php else: ?>
+        <div class="admin-images-table">
+            <table class="table table-hover align-middle mb-0">
+                    <tr>
+                        <th scope="col" style="width: 100px;"><i class="bi bi-image me-1"></i>Preview</th>
+                        <th scope="col"><i class="bi bi-file-earmark-text me-1"></i>Arquivo</th>
+                        <th scope="col" style="width: 100px;"><i class="bi bi-file-code me-1"></i>Tipo</th>
+                        <th scope="col" style="width: 110px;"><i class="bi bi-hdd me-1"></i>Tamanho</th>
+                        <th scope="col" style="width: 170px;"><i class="bi bi-clock-history me-1"></i>Atualizado</th>
+                        <th scope="col" class="text-end" style="width: 220px;"><i class="bi bi-gear me-1"></i>Ações</th>
+                    </tr>
+                <tbody>
             <?php foreach ($images as $img): ?>
                 <tr>
                     <td>
-                        <a href="<?= View::e((string)$img['url']) ?>" target="_blank" rel="noopener">
+                        <a href="<?= View::e((string)$img['url']) ?>" target="_blank" rel="noopener" class="image-preview-link">
                             <img src="<?= View::e((string)$img['url']) ?>" alt="preview" class="img-fluid rounded border" style="max-height:64px; max-width:80px; object-fit:cover;">
                         </a>
                     </td>
                     <td>
-                        <div class="fw-semibold"><?= View::e((string)$img['name']) ?></div>
-                        <div class="small text-muted"><?= View::e((string)$img['relative_path']) ?></div>
+                        <div class="fw-semibold text-truncate" style="max-width: 300px;"><?= View::e((string)$img['name']) ?></div>
+                        <div class="small text-muted text-truncate" style="max-width: 300px;"><?= View::e((string)$img['relative_path']) ?></div>
                     </td>
-                    <td><span class="badge bg-secondary"><?= View::e((string)$img['type']) ?></span></td>
-                    <td><?= View::e($formatBytes((int)($img['size'] ?? 0))) ?></td>
-                    <td><?= View::e((string)($img['modified_at'] ?? '-')) ?></td>
-                    <td class="text-end">
+                    <td><span class="badge bg-info"><?= View::e((string)$img['type']) ?></span></td>
+                    <td class="small"><?= View::e($formatBytes((int)($img['size'] ?? 0))) ?></td>
+                    <td class="small text-muted"><?= View::e((string)($img['modified_at'] ?? '-')) ?></td>
+                    <td class="text-end admin-actions">
                         <button
                             class="btn btn-sm btn-outline-primary js-copy-image-url"
                             type="button"
@@ -77,19 +91,24 @@ $formatBytes = static function (int $bytes): string {
                             title="Copiar link da imagem"
                             aria-label="Copiar link da imagem"
                         ><i class="bi bi-link-45deg"></i></button>
-                        <a class="btn btn-sm btn-outline-secondary" href="<?= View::e((string)$img['url']) ?>" target="_blank" rel="noopener" title="Abrir imagem" aria-label="Abrir imagem"><i class="bi bi-box-arrow-up-right"></i></a>
+                        <a class="btn btn-sm btn-outline-secondary" href="<?= View::e((string)$img['url']) ?>" target="_blank" rel="noopener" title="Abrir imagem" aria-label="Abrir imagem">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
                         <form method="post" action="<?= base_path('/admin/images/delete') ?>" class="d-inline" onsubmit="return confirm('Excluir esta imagem do banco?');">
                             <input type="hidden" name="_csrf" value="<?= View::e((string)$csrf) ?>">
                             <input type="hidden" name="path" value="<?= View::e((string)$img['relative_path']) ?>">
-                            <button class="btn btn-sm btn-outline-danger" type="submit" title="Excluir imagem" aria-label="Excluir imagem"><i class="bi bi-trash"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" type="submit" title="Excluir imagem" aria-label="Excluir imagem">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
-        </table>
-    </div>
-<?php endif; ?>
+            </table>
+        </div>
+    <?php endif; ?>
+</div>
 
 <script>
     (function () {
