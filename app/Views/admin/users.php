@@ -426,6 +426,19 @@ $page = min($page, $pages);
 											<?php endforeach; ?>
 										</select>
 									</div>
+
+									<?php if (\App\Core\Auth::isSuperadmin($currentUser)): ?>
+										<div class="col-12 mt-3">
+											<hr class="my-2">
+											<input type="hidden" name="_superadmin_update_expires_id" value="<?= (int)$u['id'] ?>">
+											<label class="form-label">Assinatura expira em</label>
+											<input class="form-control" type="datetime-local" id="subscription_expires_at_<?= (int)$u['id'] ?>" name="subscription_expires_at" value="<?= View::e(!empty($u['subscription_expires_at']) ? date('Y-m-d\TH:i', strtotime($u['subscription_expires_at'])) : '') ?>">
+											<div class="form-text">Formato local. Deixe vazio para remover vencimento.</div>
+											<div class="mt-2">
+												<button class="btn btn-sm btn-outline-primary" type="button" onclick="(function(btn){const form=btn.closest('form'); if(!form)return; const id=<?= (int)$u['id'] ?>; const expField=document.getElementById('subscription_expires_at_'+id); if(expField){ /* value already in named field */ } const hiddenIdInput=document.createElement('input'); hiddenIdInput.type='hidden'; hiddenIdInput.name='id'; hiddenIdInput.value=String(id); form.appendChild(hiddenIdInput); form.action='<?= base_path('/admin/users/update-expires') ?>'; form.submit();})(this)">Atualizar vencimento</button>
+											</div>
+										</div>
+									<?php endif; ?>
 								</div>
 								<?php if (!$isSuper): ?>
 									<hr class="my-3">

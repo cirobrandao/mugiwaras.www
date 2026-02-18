@@ -212,6 +212,7 @@ $router->get('/admin', [new App\Controllers\Admin\DashboardController(), 'index'
 $router->get('/admin/users', [new App\Controllers\Admin\UsersController(), 'index'], [App\Core\Auth::requireAdmin()]);
 $router->get('/admin/users/import', [new App\Controllers\Admin\UsersController(), 'importPage'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/users/update', [new App\Controllers\Admin\UsersController(), 'update'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/users/update-expires', [new App\Controllers\Admin\UsersController(), 'updateExpires'], [App\Core\Auth::requireRole(['superadmin'])]);
 $router->post('/admin/users/restrict', [new App\Controllers\Admin\UsersController(), 'restrict'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/users/assign-package', [new App\Controllers\Admin\UsersController(), 'assignPackage'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/users/import-preview', [new App\Controllers\Admin\UsersController(), 'importPreview'], [App\Core\Auth::requireAdmin()]);

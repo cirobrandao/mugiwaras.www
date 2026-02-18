@@ -70,6 +70,43 @@ final class UsersController extends Controller
         Response::redirect(base_path('/admin/users'));
     }
 
+    public function updateExpires(Request $request): void
+    {
+        if (!Csrf::verify($request->post['_csrf'] ?? null)) {
+            Response::redirect(base_path('/admin/users'));
+        }
+        $id = (int)($request->post['id'] ?? 0);
+        $expiresRaw = trim((string)($request->post['subscription_expires_at'] ?? ''));
+
+        $current = Auth::user();
+        $target = User::findById($id);
+        if (!$current || !$target) {
+            Response::redirect(base_path('/admin/users'));
+        }
+
+        if (!Auth::isSuperadmin($current)) {
+            Response::redirect(base_path('/admin/users'));
+        }
+
+        if (($target['role'] ?? '') === 'superadmin') {
+            Response::redirect(base_path('/admin/users'));
+        }
+
+        if ($expiresRaw === '') {
+            $normalized = null;
+        } else {
+            $ts = strtotime($expiresRaw);
+            if ($ts === false) {
+                Response::redirect(base_path('/admin/users'));
+            }
+            $normalized = date('Y-m-d H:i:s', $ts);
+        }
+
+        User::setSubscriptionExpiresAt($id, $normalized);
+        Audit::log('user_subscription_update', (int)($current['id'] ?? 0), ['user_id' => $id, 'expires_at' => $normalized]);
+        Response::redirect(base_path('/admin/users'));
+    }
+
     public function restrict(Request $request): void
     {
         if (!Csrf::verify($request->post['_csrf'] ?? null)) {
