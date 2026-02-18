@@ -48,6 +48,39 @@ final class Payment
         return $stmt->fetchAll();
     }
 
+    public static function paginated(int $page = 1, int $perPage = 50): array
+    {
+        $offset = ($page - 1) * $perPage;
+        
+        $sql = "SELECT p.*, u.username AS user_name, u.email AS user_email, u.phone AS user_phone, u.phone_country AS user_phone_country, u.data_registro AS user_registered_at, u.access_tier AS user_tier, u.subscription_expires_at AS user_subscription_expires_at, u.credits AS user_credits, pk.title AS package_name,
+                       au.id AS approved_by_id, au.username AS approved_by_name, al.created_at AS approved_at
+            FROM payments p
+            LEFT JOIN users u ON u.id = p.user_id
+            LEFT JOIN packages pk ON pk.id = p.package_id
+            LEFT JOIN audit_log al ON al.id = (
+                SELECT MAX(id)
+                FROM audit_log
+                WHERE event = 'payment_approve'
+                  AND JSON_EXTRACT(meta, '$.payment_id') = p.id
+            )
+            LEFT JOIN users au ON au.id = al.user_id
+            ORDER BY p.id DESC
+            LIMIT :limit OFFSET :offset";
+        
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->bindValue('limit', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+
+    public static function count(): int
+    {
+        $stmt = Database::connection()->query('SELECT COUNT(*) FROM payments');
+        return (int)$stmt->fetchColumn();
+    }
+
 
     public static function byUsers(array $userIds): array
     {

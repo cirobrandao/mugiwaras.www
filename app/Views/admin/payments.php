@@ -247,6 +247,69 @@ $isZeroDate = static function (?string $dt): bool {
 		</tbody>
 	</table>
 </div>
+
+<?php if (isset($totalPages) && $totalPages > 1): ?>
+<nav class="mt-3" aria-label="Navegação de páginas">
+	<ul class="pagination justify-content-center">
+		<?php if ($page > 1): ?>
+			<li class="page-item">
+				<a class="page-link" href="?page=<?= $page - 1 ?>">
+					<i class="bi bi-chevron-left"></i> Anterior
+				</a>
+			</li>
+		<?php else: ?>
+			<li class="page-item disabled">
+				<span class="page-link"><i class="bi bi-chevron-left"></i> Anterior</span>
+			</li>
+		<?php endif; ?>
+		
+		<?php
+		$range = 2;
+		$start = max(1, $page - $range);
+		$end = min($totalPages, $page + $range);
+		
+		if ($start > 1): ?>
+			<li class="page-item">
+				<a class="page-link" href="?page=1">1</a>
+			</li>
+			<?php if ($start > 2): ?>
+				<li class="page-item disabled"><span class="page-link">...</span></li>
+			<?php endif; ?>
+		<?php endif; ?>
+		
+		<?php for ($i = $start; $i <= $end; $i++): ?>
+			<li class="page-item <?= $i === $page ? 'active' : '' ?>">
+				<a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+			</li>
+		<?php endfor; ?>
+		
+		<?php if ($end < $totalPages): ?>
+			<?php if ($end < $totalPages - 1): ?>
+				<li class="page-item disabled"><span class="page-link">...</span></li>
+			<?php endif; ?>
+			<li class="page-item">
+				<a class="page-link" href="?page=<?= $totalPages ?>"><?= $totalPages ?></a>
+			</li>
+		<?php endif; ?>
+		
+		<?php if ($page < $totalPages): ?>
+			<li class="page-item">
+				<a class="page-link" href="?page=<?= $page + 1 ?>">
+					Próxima <i class="bi bi-chevron-right"></i>
+				</a>
+			</li>
+		<?php else: ?>
+			<li class="page-item disabled">
+				<span class="page-link">Próxima <i class="bi bi-chevron-right"></i></span>
+			</li>
+		<?php endif; ?>
+	</ul>
+	<div class="text-center text-muted small">
+		Página <?= $page ?> de <?= $totalPages ?> (<?= $totalPayments ?> pagamentos)
+	</div>
+</nav>
+<?php endif; ?>
+
 </div>
 <?= implode('', $proofModals) ?>
 <?php

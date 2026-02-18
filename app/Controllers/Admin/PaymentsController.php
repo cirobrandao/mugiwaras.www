@@ -21,7 +21,13 @@ final class PaymentsController extends Controller
 {
     public function index(): void
     {
-        $payments = Payment::all();
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $perPage = 50;
+        
+        $payments = Payment::paginated($page, $perPage);
+        $totalPayments = Payment::count();
+        $totalPages = (int)ceil($totalPayments / $perPage);
+        
         $userIds = array_values(array_unique(array_map(static fn ($p) => (int)($p['user_id'] ?? 0), $payments)));
         $userIds = array_values(array_filter($userIds, static fn ($id) => $id > 0));
         $historyRows = Payment::byUsers($userIds);
@@ -41,6 +47,9 @@ final class PaymentsController extends Controller
             'historyByUser' => $historyByUser,
             'csrf' => Csrf::token(),
             'currentUser' => Auth::user(),
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'totalPayments' => $totalPayments,
         ]);
     }
 

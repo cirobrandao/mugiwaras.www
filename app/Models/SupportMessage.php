@@ -206,6 +206,24 @@ final class SupportMessage
         return $stmt->fetchAll();
     }
 
+    public static function paginated(int $page = 1, int $perPage = 50): array
+    {
+        $offset = ($page - 1) * $perPage;
+        
+        $stmt = Database::connection()->prepare('SELECT sm.*, u.username FROM support_messages sm LEFT JOIN users u ON u.id = sm.user_id ORDER BY sm.id DESC LIMIT :limit OFFSET :offset');
+        $stmt->bindValue('limit', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+
+    public static function count(): int
+    {
+        $stmt = Database::connection()->query('SELECT COUNT(*) FROM support_messages');
+        return (int)$stmt->fetchColumn();
+    }
+
     public static function setStatus(int $id, string $status): void
     {
         $stmt = Database::connection()->prepare('UPDATE support_messages SET status = :s, updated_at = NOW() WHERE id = :id');

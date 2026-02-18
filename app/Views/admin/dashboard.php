@@ -109,7 +109,7 @@ $uploadsValues = [];
 foreach ($uploadsSeries as $row) {
     $uploadsValues[] = (int)round($parseNumber((string)($row['value'] ?? '0')));
 }
-$maxUploads = max(15000, (!empty($uploadsValues) ? max($uploadsValues) : 0));
+$maxUploads = max(20000, (!empty($uploadsValues) ? max($uploadsValues) : 0));
 $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 ?>
 <div class="admin-dashboard">

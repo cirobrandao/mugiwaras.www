@@ -15,8 +15,20 @@ final class SupportController extends Controller
 {
     public function index(): void
     {
-        $messages = SupportMessage::latest();
-        echo $this->view('admin/support', ['messages' => $messages, 'csrf' => Csrf::token()]);
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $perPage = 50;
+        
+        $messages = SupportMessage::paginated($page, $perPage);
+        $totalMessages = SupportMessage::count();
+        $totalPages = (int)ceil($totalMessages / $perPage);
+        
+        echo $this->view('admin/support', [
+            'messages' => $messages,
+            'csrf' => Csrf::token(),
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'totalMessages' => $totalMessages,
+        ]);
     }
 
     public function show(Request $request, string $id): void
