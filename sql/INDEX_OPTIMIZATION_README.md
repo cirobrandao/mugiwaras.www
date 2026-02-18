@@ -64,19 +64,40 @@ Este documento descreve as otimizações de índices aplicadas ao banco de dados
 
 ## 🚀 Como Aplicar
 
-### Opção 1: Aplicar Diretamente via MySQL
+### Opção 1: Usando Ferramenta de Gerenciamento (Recomendado)
+
+```bash
+# Verificar índices recomendados vs existentes
+php bin/optimize_indexes.php check
+
+# Criar backup manual antes de aplicar
+php bin/optimize_indexes.php backup
+
+# Aplicar otimizações (cria backup automático)
+php bin/optimize_indexes.php apply
+
+# Atualizar estatísticas das tabelas
+php bin/optimize_indexes.php analyze
+
+# Gerar relatório completo de índices
+php bin/optimize_indexes.php report
+```
+
+**Benefícios**: Backup automático, validação de índices, relatórios detalhados.
+
+### Opção 2: Aplicar Diretamente via MySQL
 
 ```bash
 mysql -u seu_usuario -p seu_database < sql/013_optimize_indexes.sql
 ```
 
-### Opção 2: Aplicar via Ferramenta PHP
+### Opção 3: Aplicar via Script de Inicialização
 
 ```bash
 php bin/db_init.php
 ```
 
-### Opção 3: Aplicar Manualmente via phpMyAdmin/Adminer
+### Opção 4: Aplicar Manualmente via phpMyAdmin/Adminer
 
 1. Acesse seu gerenciador de banco de dados
 2. Abra o arquivo `sql/013_optimize_indexes.sql`
