@@ -355,27 +355,31 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 					<?php if (empty($loginFailAttempts)): ?>
 						<div class="text-muted text-center py-2">Sem tentativas</div>
 					<?php else: ?>
-						<div class="user-list">
+						<div class="fail-list">
 							<?php foreach ($loginFailAttempts as $fail): ?>
 								<?php
-								$label = (string)($fail['username'] ?? '');
+								$username = (string)($fail['username'] ?? '');
 								$ip = (string)($fail['ip'] ?? '');
 								$when = (string)($fail['created_at'] ?? '');
-								$label = $label !== '' ? $label : 'desconhecido';
+								$username = $username !== '' ? $username : 'desconhecido';
 								?>
-								<?php
-									$fullLabel = $label;
-									if ($ip !== '') {
-										$fullLabel .= ' (' . $ip . ')';
-									}
-									$displayLabel = mb_strimwidth($fullLabel, 0, 28, '...');
-								?>
-								<div class="user-item user-fail" title="<?= View::e($fullLabel) ?>">
-									<div class="user-info">
+								<div class="fail-item">
+									<div class="fail-icon">
 										<i class="bi bi-x-circle text-danger"></i>
-										<span class="user-name"><?= View::e($displayLabel) ?></span>
 									</div>
-									<span class="user-time"><?= View::e(time_ago($when !== '' ? $when : null)) ?></span>
+									<div class="fail-username">
+										<span class="fw-medium"><?= View::e($username) ?></span>
+									</div>
+									<div class="fail-ip">
+										<i class="bi bi-router me-1 text-muted"></i>
+										<span class="text-muted"><?= View::e($ip !== '' ? $ip : 'N/A') ?></span>
+									</div>
+									<div class="fail-country">
+										<span class="country-flag" title="País de origem">🌐</span>
+									</div>
+									<div class="fail-time">
+										<span class="text-muted"><?= View::e(time_ago($when !== '' ? $when : null)) ?></span>
+									</div>
 								</div>
 							<?php endforeach; ?>
 						</div>
