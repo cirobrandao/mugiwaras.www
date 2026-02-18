@@ -312,7 +312,9 @@ class IndexOptimizer
         foreach ($tables as $table) {
             echo "⏳ Analisando $table... ";
             try {
-                $this->db->exec("ANALYZE TABLE $table");
+                // Usa query() ao invés de exec() para evitar problemas com unbuffered queries
+                $stmt = $this->db->query("ANALYZE TABLE $table");
+                $stmt->closeCursor(); // Fecha o cursor imediatamente
                 echo "✅\n";
             } catch (\PDOException $e) {
                 echo "❌ {$e->getMessage()}\n";
