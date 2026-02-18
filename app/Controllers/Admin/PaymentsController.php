@@ -22,7 +22,7 @@ final class PaymentsController extends Controller
     public function index(): void
     {
         $page = max(1, (int)($_GET['page'] ?? 1));
-        $perPage = 50;
+        $perPage = 25;
         
         $payments = Payment::paginated($page, $perPage);
         $totalPayments = Payment::count();

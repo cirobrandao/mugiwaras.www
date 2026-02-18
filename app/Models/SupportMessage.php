@@ -206,7 +206,7 @@ final class SupportMessage
         return $stmt->fetchAll();
     }
 
-    public static function paginated(int $page = 1, int $perPage = 50): array
+    public static function paginated(int $page = 1, int $perPage = 25): array
     {
         $offset = ($page - 1) * $perPage;
         

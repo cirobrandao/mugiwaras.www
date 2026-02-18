@@ -16,7 +16,7 @@ final class SupportController extends Controller
     public function index(): void
     {
         $page = max(1, (int)($_GET['page'] ?? 1));
-        $perPage = 50;
+        $perPage = 25;
         
         $messages = SupportMessage::paginated($page, $perPage);
         $totalMessages = SupportMessage::count();

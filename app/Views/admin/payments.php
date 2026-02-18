@@ -100,16 +100,16 @@ $isZeroDate = static function (?string $dt): bool {
 					];
 					$iconData = $statusIcons[$st] ?? ['icon' => 'question-circle', 'color' => 'text-muted'];
 					?>
-					<i class="bi bi-<?= $iconData['icon'] ?> <?= $iconData['color'] ?>" style="font-size: 1.2rem;" title="<?= View::e($stMeta['label']) ?>" data-bs-toggle="tooltip"></i>
+					<i class="bi bi-<?= $iconData['icon'] ?> <?= $iconData['color'] ?>" style="font-size: 1.25rem;" title="<?= View::e($stMeta['label']) ?>" data-bs-toggle="tooltip"></i>
 				</td>
 				<td><?= View::e($approvedLabel) ?></td>
 				<td class="text-center">
 					<?php if ($proofPath !== ''): ?>
 						<button class="btn btn-link p-0 border-0" type="button" data-bs-toggle="modal" data-bs-target="#proofModal<?= (int)$p['id'] ?>" title="Ver comprovante">
-						<i class="bi bi-file-earmark-text-fill text-primary" style="font-size: 1.8rem;"></i>
+						<i class="bi bi-file-earmark-text-fill text-primary" style="font-size: 1.25rem;"></i>
 					</button>
 				<?php else: ?>
-					<i class="bi bi-dash-circle text-muted" style="font-size: 1.8rem;" title="Sem comprovante"></i>
+					<i class="bi bi-dash-circle text-muted" style="font-size: 1.25rem;" title="Sem comprovante"></i>
 					<?php endif; ?>
 				</td>
 				<td>
