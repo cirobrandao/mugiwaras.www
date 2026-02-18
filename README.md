@@ -115,6 +115,6 @@ Ver detalhes em docs/ARCHITECTURE.md.
 Para enviar uploads via host separado (ex.: `https://upload.exemplo.com`) e manter o restante no domínio principal:
 
 - Configure `APP_UPLOAD_URL=https://upload.exemplo.com`
-- Configure `SESSION_COOKIE_DOMAIN=.mugiverso.com` para compartilhar sessão entre subdomínios
+- Configure `SESSION_COOKIE_DOMAIN=.exemplo.com` para compartilhar sessão entre subdomínios
 
 Sem `APP_UPLOAD_URL`, o sistema continua usando `APP_URL` normalmente.
