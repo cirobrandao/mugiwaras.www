@@ -33,10 +33,9 @@ class IndexOptimizer
             exit(1);
         }
         
-        // Pega o nome do banco de dados do DSN
-        $config = require dirname(__DIR__) . '/config/database.php';
-        preg_match('/dbname=([^;]+)/', $config['dsn'], $matches);
-        $this->dbName = $matches[1] ?? 'unknown';
+        // Pega o nome do banco de dados da configuração
+        $config = \App\Core\Config::get('database');
+        $this->dbName = $config['database'] ?? 'unknown';
     }
 
     /**
