@@ -53,7 +53,7 @@ final class DashboardController extends Controller
         ];
 
         $dbInfo = $this->databaseInfo();
-        $loginFailAttempts = AuditLog::recentLoginFails(10);
+        $loginFailAttempts = AuditLog::recentLoginFails(20);
 
         echo $this->view('admin/dashboard', [
             'stats' => $stats,

@@ -474,4 +474,10 @@ final class User
         $stmt->execute();
         return $stmt->fetchAll();
     }
+
+    public static function allUsernames(): array
+    {
+        $stmt = Database::connection()->query('SELECT username FROM users');
+        return $stmt->fetchAll();
+    }
 }

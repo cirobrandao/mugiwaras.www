@@ -349,39 +349,64 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 			<div class="dashboard-card">
 				<div class="card-header">
 					<i class="bi bi-shield-exclamation me-2"></i>
-					<span class="card-title">Falhas de login</span>
+					<span class="card-title">Tentativas de Login Falhadas</span>
+					<span class="badge bg-danger ms-auto"><?= count($loginFailAttempts) ?></span>
 				</div>
-				<div class="card-body">
+				<div class="card-body p-0">
 					<?php if (empty($loginFailAttempts)): ?>
-						<div class="text-muted text-center py-2">Sem tentativas</div>
+						<div class="text-muted text-center py-4">Nenhuma tentativa de login falhada recentemente</div>
 					<?php else: ?>
-						<div class="fail-list">
-							<?php foreach ($loginFailAttempts as $fail): ?>
-								<?php
-								$username = (string)($fail['username'] ?? '');
-								$ip = (string)($fail['ip'] ?? '');
-								$when = (string)($fail['created_at'] ?? '');
-								$username = $username !== '' ? $username : 'desconhecido';
-								?>
-								<div class="fail-item">
-									<div class="fail-icon">
-										<i class="bi bi-x-circle text-danger"></i>
-									</div>
-									<div class="fail-username">
-										<span class="fw-medium"><?= View::e($username) ?></span>
-									</div>
-									<div class="fail-ip">
-										<i class="bi bi-router me-1 text-muted"></i>
-										<span class="text-muted"><?= View::e($ip !== '' ? $ip : 'N/A') ?></span>
-									</div>
-									<div class="fail-country">
-										<span class="country-flag" title="País de origem">🌐</span>
-									</div>
-									<div class="fail-time">
-										<span class="text-muted"><?= View::e(time_ago($when !== '' ? $when : null)) ?></span>
-									</div>
-								</div>
-							<?php endforeach; ?>
+						<div class="table-responsive">
+							<table class="table table-hover login-fails-table mb-0">
+								<thead>
+									<tr>
+										<th style="width: 40px;"><i class="bi bi-exclamation-triangle"></i></th>
+										<th>Usuário</th>
+										<th style="width: 180px;">Endereço IP</th>
+										<th style="width: 80px;" class="text-center">País</th>
+										<th style="width: 140px;" class="text-end">Quando</th>
+									</tr>
+								</thead>
+								<tbody>
+									<?php 
+									$existingUsernames = array_column(User::allUsernames(), 'username');
+									foreach ($loginFailAttempts as $fail): 
+										$username = (string)($fail['username'] ?? '');
+										$ip = (string)($fail['ip'] ?? '');
+										$when = (string)($fail['created_at'] ?? '');
+										$username = $username !== '' ? $username : 'desconhecido';
+										$userExists = in_array($username, $existingUsernames, true);
+										$rowClass = $userExists ? 'fail-existing-user' : 'fail-unknown-user';
+									?>
+										<tr class="<?= $rowClass ?>">
+											<td class="text-center">
+												<?php if ($userExists): ?>
+													<i class="bi bi-person-x text-warning" title="Usuário existe"></i>
+												<?php else: ?>
+													<i class="bi bi-question-circle text-danger" title="Usuário não encontrado"></i>
+												<?php endif; ?>
+											</td>
+											<td>
+												<span class="fail-username-text <?= $userExists ? 'text-warning' : 'text-muted' ?>">
+													<?= View::e($username) ?>
+												</span>
+												<?php if (!$userExists): ?>
+													<small class="badge bg-secondary ms-2">inexistente</small>
+												<?php endif; ?>
+											</td>
+											<td>
+												<code class="fail-ip-text"><?= View::e($ip !== '' ? $ip : 'N/A') ?></code>
+											</td>
+											<td class="text-center">
+												<span class="country-flag-icon" title="Aguardando implementação GeoIP">🌐</span>
+											</td>
+											<td class="text-end text-muted">
+												<small><?= View::e(time_ago($when !== '' ? $when : null)) ?></small>
+											</td>
+										</tr>
+									<?php endforeach; ?>
+								</tbody>
+							</table>
 						</div>
 					<?php endif; ?>
 				</div>

@@ -13748,3 +13748,113 @@ body.theme-dark .fail-username,
         display: none;
     }
 }
+
+/* Login Failures Table - Organized View */
+.login-fails-table {
+    font-size: 0.875rem;
+}
+
+.login-fails-table thead {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border-bottom: 2px solid #ef4444;
+}
+
+.login-fails-table thead th {
+    font-weight: 600;
+    font-size: 0.8125rem;
+    color: #991b1b;
+    padding: 0.75rem 1rem;
+    border: none;
+}
+
+.login-fails-table tbody tr {
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.login-fails-table tbody tr:hover {
+    background: #fef2f2;
+    border-left-color: #ef4444;
+}
+
+.login-fails-table tbody tr.fail-existing-user {
+    background: rgba(251, 191, 36, 0.05);
+}
+
+.login-fails-table tbody tr.fail-existing-user:hover {
+    background: rgba(251, 191, 36, 0.1);
+    border-left-color: #f59e0b;
+}
+
+.login-fails-table tbody tr.fail-unknown-user {
+    background: rgba(239, 68, 68, 0.03);
+}
+
+.login-fails-table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.fail-username-text {
+    font-weight: 500;
+    font-family: 'Courier New', monospace;
+}
+
+.fail-ip-text {
+    font-size: 0.8125rem;
+    color: #64748b;
+    background: #f8fafc;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-family: 'Courier New', monospace;
+}
+
+.country-flag-icon {
+    font-size: 1.5rem;
+    cursor: help;
+    display: inline-block;
+}
+
+/* Dark theme adjustments */
+body.theme-dark .login-fails-table thead,
+[data-bs-theme="dark"] .login-fails-table thead {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.2) 100%);
+    border-bottom-color: #ef4444;
+}
+
+body.theme-dark .login-fails-table thead th,
+[data-bs-theme="dark"] .login-fails-table thead th {
+    color: #fca5a5;
+}
+
+body.theme-dark .login-fails-table tbody tr,
+[data-bs-theme="dark"] .login-fails-table tbody tr {
+    background: transparent;
+}
+
+body.theme-dark .login-fails-table tbody tr:hover,
+[data-bs-theme="dark"] .login-fails-table tbody tr:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+body.theme-dark .login-fails-table tbody tr.fail-existing-user,
+[data-bs-theme="dark"] .login-fails-table tbody tr.fail-existing-user {
+    background: rgba(251, 191, 36, 0.08);
+}
+
+body.theme-dark .login-fails-table tbody tr.fail-existing-user:hover,
+[data-bs-theme="dark"] .login-fails-table tbody tr.fail-existing-user:hover {
+    background: rgba(251, 191, 36, 0.15);
+}
+
+body.theme-dark .login-fails-table tbody td,
+[data-bs-theme="dark"] .login-fails-table tbody td {
+    border-bottom-color: rgba(241, 245, 249, 0.1);
+}
+
+body.theme-dark .fail-ip-text,
+[data-bs-theme="dark"] .fail-ip-text {
+    background: rgba(248, 250, 252, 0.05);
+    color: #94a3b8;
+}
