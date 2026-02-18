@@ -9,7 +9,8 @@
  * - php bin/optimize_indexes.php report    # Gera relatório de performance
  */
 
-require_once __DIR__ . '/../config/bootstrap.php';
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+require_once dirname(__DIR__) . '/config/bootstrap.php';
 
 use App\Core\Database;
 
@@ -20,10 +21,20 @@ class IndexOptimizer
 
     public function __construct()
     {
-        $this->db = Database::connection();
+        try {
+            $this->db = Database::connection();
+        } catch (\Exception $e) {
+            echo "❌ ERRO: Não foi possível conectar ao banco de dados\n";
+            echo "   Detalhes: " . $e->getMessage() . "\n\n";
+            echo "💡 Verifique:\n";
+            echo "   1. Se o arquivo .env existe e está configurado corretamente\n";
+            echo "   2. Se o MySQL está rodando\n";
+            echo "   3. Se as credenciais estão corretas\n\n";
+            exit(1);
+        }
         
         // Pega o nome do banco de dados do DSN
-        $config = require __DIR__ . '/../config/database.php';
+        $config = require dirname(__DIR__) . '/config/database.php';
         preg_match('/dbname=([^;]+)/', $config['dsn'], $matches);
         $this->dbName = $matches[1] ?? 'unknown';
     }
@@ -98,7 +109,7 @@ class IndexOptimizer
         echo "🚀 APLICANDO OTIMIZAÇÕES DE ÍNDICES\n";
         echo str_repeat("=", 60) . "\n\n";
         
-        $sqlFile = __DIR__ . '/../sql/013_optimize_indexes.sql';
+        $sqlFile = dirname(__DIR__) . '/sql/013_optimize_indexes.sql';
         
         if (!file_exists($sqlFile)) {
             echo "❌ Arquivo não encontrado: $sqlFile\n";
@@ -287,9 +298,18 @@ if (php_sapi_name() !== 'cli') {
     die("Este script deve ser executado via CLI\n");
 }
 
+// Verificação básica de requisitos
+if (!class_exists('App\Core\Database')) {
+    die("❌ ERRO: Classe Database não encontrada. Verifique se o autoloader está funcionando.\n");
+}
+
 $command = $argv[1] ?? 'help';
 
-$optimizer = new IndexOptimizer();
+try {
+    $optimizer = new IndexOptimizer();
+} catch (\Exception $e) {
+    die("❌ ERRO ao inicializar: {$e->getMessage()}\n");
+}
 
 switch ($command) {
     case 'check':
