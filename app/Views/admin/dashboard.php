@@ -344,42 +344,42 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 						<?php endif; ?>
 					</div>
 				</div>
+			</div>
 
-				<div class="dashboard-card">
-					<div class="card-header">
-						<i class="bi bi-shield-exclamation me-2"></i>
-						<span class="card-title">Falhas de login</span>
-					</div>
-					<div class="card-body">
-						<?php if (empty($loginFailAttempts)): ?>
-							<div class="text-muted text-center py-2">Sem tentativas</div>
-						<?php else: ?>
-							<div class="user-list">
-								<?php foreach ($loginFailAttempts as $fail): ?>
-									<?php
-									$label = (string)($fail['username'] ?? '');
-									$ip = (string)($fail['ip'] ?? '');
-									$when = (string)($fail['created_at'] ?? '');
-									$label = $label !== '' ? $label : 'desconhecido';
-									?>
-									<?php
-										$fullLabel = $label;
-										if ($ip !== '') {
-											$fullLabel .= ' (' . $ip . ')';
-										}
-										$displayLabel = mb_strimwidth($fullLabel, 0, 28, '...');
-									?>
-									<div class="user-item user-fail" title="<?= View::e($fullLabel) ?>">
-										<div class="user-info">
-											<i class="bi bi-x-circle text-danger"></i>
-											<span class="user-name"><?= View::e($displayLabel) ?></span>
-										</div>
-										<span class="user-time"><?= View::e(time_ago($when !== '' ? $when : null)) ?></span>
+			<div class="dashboard-card">
+				<div class="card-header">
+					<i class="bi bi-shield-exclamation me-2"></i>
+					<span class="card-title">Falhas de login</span>
+				</div>
+				<div class="card-body">
+					<?php if (empty($loginFailAttempts)): ?>
+						<div class="text-muted text-center py-2">Sem tentativas</div>
+					<?php else: ?>
+						<div class="user-list">
+							<?php foreach ($loginFailAttempts as $fail): ?>
+								<?php
+								$label = (string)($fail['username'] ?? '');
+								$ip = (string)($fail['ip'] ?? '');
+								$when = (string)($fail['created_at'] ?? '');
+								$label = $label !== '' ? $label : 'desconhecido';
+								?>
+								<?php
+									$fullLabel = $label;
+									if ($ip !== '') {
+										$fullLabel .= ' (' . $ip . ')';
+									}
+									$displayLabel = mb_strimwidth($fullLabel, 0, 28, '...');
+								?>
+								<div class="user-item user-fail" title="<?= View::e($fullLabel) ?>">
+									<div class="user-info">
+										<i class="bi bi-x-circle text-danger"></i>
+										<span class="user-name"><?= View::e($displayLabel) ?></span>
 									</div>
-								<?php endforeach; ?>
-							</div>
-						<?php endif; ?>
-					</div>
+									<span class="user-time"><?= View::e(time_ago($when !== '' ? $when : null)) ?></span>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
 				</div>
 			</div>
 		</div>
@@ -434,7 +434,7 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 								<div class="user-item">
 									<div class="user-info">
 										<i class="bi bi-person-circle <?= $iconColor ?>"></i>
-										<a href="/admin/profile?id=<?= $userId ?>" class="user-name text-decoration-none"><?= View::e($username) ?></a>
+									<a href="/perfil/<?= View::e($username) ?>" target="_blank" class="user-name text-decoration-none"><?= View::e($username) ?></a>
 									</div>
 									<span class="user-time"><?= View::e($timeDisplay) ?></span>
 								</div>
