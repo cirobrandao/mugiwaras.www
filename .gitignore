@@ -26,11 +26,15 @@
 /srv/
 /sql/dev_*.sql
 /sql/0*.sql
-/z1hd/
-/public/assets/css/*.backup.css
-/public/assets/css/*.old
+
+# Arquivos de backup/antigos
+*.backup.*
 *.old
-/docs/
+
+# Docs temporários/exemplos
+docs/ai/
+docs/examples/
+docs/theme-examples/
 
 # Environment overrides
 .env.local
@@ -40,17 +44,8 @@
 # PHPUnit / test artifacts
 .phpunit.result.cache
 
-# IDE
+# IDE / Editors
 .idea/
-
-# Cache / runtime
-/storage/*.key
-/storage/logs/
-storage/cache/
-storage/sessions/
-storage/views/
-
-# IDE
 .vscode/
 
 # OS
