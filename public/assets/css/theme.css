@@ -3337,6 +3337,204 @@ body.theme-dark .category-item-admin {
   border-left-color: rgba(102, 126, 234, 0.25);
 }
 
+/* ==============================================
+   SERIES GROUPS
+   ============================================== */
+
+.series-group {
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.series-group:hover {
+  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.series-group-header {
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.06) 0%, rgba(118, 75, 162, 0.06) 100%);
+  border-bottom: 1px solid rgba(102, 126, 234, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.series-group-header:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.series-group-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.series-group-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 0.25rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.series-group-title i {
+  color: rgba(102, 126, 234, 0.7);
+  font-size: 1rem;
+}
+
+.series-group-description {
+  font-size: 0.85rem;
+  color: var(--slate);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.series-group-toggle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  background: var(--surface);
+  color: rgba(102, 126, 234, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.series-group-toggle:hover {
+  background: rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.4);
+  transform: scale(1.08);
+}
+
+.series-group-toggle.collapsed {
+  transform: rotate(0deg);
+}
+
+.series-group-toggle:not(.collapsed) {
+  transform: rotate(180deg);
+}
+
+.series-group-toggle:hover:not(.collapsed) {
+  transform: rotate(180deg) scale(1.08);
+}
+
+.series-group-content {
+  padding: 0.75rem;
+  background: var(--surface);
+}
+
+.series-group-content .category-list {
+  padding: 0;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+/* Series Group - Dark Mode */
+body.theme-dark .series-group {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  border-color: rgba(102, 126, 234, 0.25);
+}
+
+body.theme-dark .series-group:hover {
+  border-color: rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+body.theme-dark .series-group-header {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%);
+  border-bottom-color: rgba(102, 126, 234, 0.25);
+}
+
+body.theme-dark .series-group-header:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.18) 0%, rgba(118, 75, 162, 0.18) 100%);
+}
+
+body.theme-dark .series-group-toggle {
+  background: rgba(31, 41, 55, 0.8);
+  border-color: rgba(102, 126, 234, 0.3);
+  color: rgba(102, 126, 234, 0.9);
+}
+
+body.theme-dark .series-group-toggle:hover {
+  background: rgba(102, 126, 234, 0.15);
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+body.theme-dark .series-group-content {
+  background: rgba(31, 41, 55, 0.4);
+}
+
+/* Series Group - Mobile */
+@media (max-width: 768px) {
+  .series-group {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+  }
+  
+  .series-group-header {
+    padding: 0.85rem 1rem;
+  }
+  
+  .series-group-title {
+    font-size: 1rem;
+  }
+  
+  .series-group-description {
+    font-size: 0.8rem;
+  }
+  
+  .series-group-toggle {
+    width: 34px;
+    height: 34px;
+    font-size: 1.1rem;
+  }
+  
+  .series-group-content {
+    padding: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .series-group {
+    margin-bottom: 0.85rem;
+  }
+  
+  .series-group-header {
+    padding: 0.75rem 0.85rem;
+  }
+  
+  .series-group-title {
+    font-size: 0.95rem;
+  }
+  
+  .series-group-description {
+    font-size: 0.75rem;
+  }
+  
+  .series-group-toggle {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+  
+  .series-group-content {
+    padding: 0.5rem;
+  }
+}
+
 @media (max-width: 480px) {
   .library-catalog {
     padding: 1rem 0.75rem;

@@ -200,7 +200,7 @@ final class LibraryController extends Controller
                 }
             }
         }
-        $seriesAll = Series::byCategoryWithCountsAndTypes((int)$cat['id']);
+        $seriesAll = Series::byCategoryWithCountsTypesAndGroups((int)$cat['id']);
         $isAdultUser = $this->isAdultUser($user);
         if (!$isStaff && !$isAdultUser) {
             $seriesAll = array_values(array_filter($seriesAll, static fn ($s) => empty($s['adult_only'])));

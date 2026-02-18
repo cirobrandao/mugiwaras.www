@@ -58,6 +58,81 @@ final class Series
         return $stmt->fetchAll();
     }
 
+    /**
+     * Busca séries de uma categoria com contagens, incluindo informação de grupo
+     */
+    public static function byCategoryWithCountsTypesAndGroups(int $categoryId): array
+    {
+        $sql = "SELECT s.*, 
+                   sg.id AS group_id,
+                   sg.name AS group_name,
+                   sg.description AS group_description,
+                   sg.display_order AS group_display_order,
+                   sg.is_collapsed AS group_is_collapsed,
+                   COUNT(ci.id) AS chapter_count,
+                   SUM(CASE WHEN LOWER(ci.cbz_path) LIKE '%.pdf' THEN 1 ELSE 0 END) AS pdf_count,
+                   SUM(CASE WHEN LOWER(ci.cbz_path) LIKE '%.epub' THEN 1 ELSE 0 END) AS epub_count,
+                   SUM(CASE WHEN ci.cbz_path IS NOT NULL AND LOWER(ci.cbz_path) NOT LIKE '%.pdf' AND LOWER(ci.cbz_path) NOT LIKE '%.epub' THEN 1 ELSE 0 END) AS cbz_count
+            FROM series s
+            LEFT JOIN series_groups sg ON sg.id = s.group_id
+            LEFT JOIN content_items ci ON ci.series_id = s.id
+            WHERE s.category_id = :c
+            GROUP BY s.id
+            ORDER BY s.pin_order DESC, s.id ASC";
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute(['c' => $categoryId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Atualiza o grupo de uma série
+     */
+    public static function updateGroup(int $seriesId, ?int $groupId): void
+    {
+        $stmt = Database::connection()->prepare('UPDATE series SET group_id = :g WHERE id = :id');
+        $stmt->execute(['g' => $groupId, 'id' => $seriesId]);
+    }
+
+    /**
+     * Busca séries sem grupo em uma categoria
+     */
+    public static function withoutGroupByCategory(int $categoryId): array
+    {
+        $sql = "SELECT s.*,
+                COUNT(ci.id) AS chapter_count,
+                SUM(CASE WHEN LOWER(ci.cbz_path) LIKE '%.pdf' THEN 1 ELSE 0 END) AS pdf_count,
+                SUM(CASE WHEN LOWER(ci.cbz_path) LIKE '%.epub' THEN 1 ELSE 0 END) AS epub_count,
+                SUM(CASE WHEN ci.cbz_path IS NOT NULL AND LOWER(ci.cbz_path) NOT LIKE '%.pdf' AND LOWER(ci.cbz_path) NOT LIKE '%.epub' THEN 1 ELSE 0 END) AS cbz_count
+                FROM series s
+                LEFT JOIN content_items ci ON ci.series_id = s.id
+                WHERE s.category_id = :c AND s.group_id IS NULL
+                GROUP BY s.id
+                ORDER BY s.name ASC";
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute(['c' => $categoryId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Busca séries de um grupo específico
+     */
+    public static function byGroup(int $groupId): array
+    {
+        $sql = "SELECT s.*,
+                COUNT(ci.id) AS chapter_count,
+                SUM(CASE WHEN LOWER(ci.cbz_path) LIKE '%.pdf' THEN 1 ELSE 0 END) AS pdf_count,
+                SUM(CASE WHEN LOWER(ci.cbz_path) LIKE '%.epub' THEN 1 ELSE 0 END) AS epub_count,
+                SUM(CASE WHEN ci.cbz_path IS NOT NULL AND LOWER(ci.cbz_path) NOT LIKE '%.pdf' AND LOWER(ci.cbz_path) NOT LIKE '%.epub' THEN 1 ELSE 0 END) AS cbz_count
+                FROM series s
+                LEFT JOIN content_items ci ON ci.series_id = s.id
+                WHERE s.group_id = :g
+                GROUP BY s.id
+                ORDER BY s.name ASC";
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute(['g' => $groupId]);
+        return $stmt->fetchAll();
+    }
+
     public static function searchByNameWithCounts(string $query, int $limit = 60, int $minChapters = 0): array
     {
         $sql = 'SELECT s.*, c.name AS category_name, c.slug AS category_slug, COUNT(ci.id) AS chapter_count

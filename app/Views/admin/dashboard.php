@@ -219,8 +219,10 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 						<a class="shortcut-btn" href="<?= base_path('/admin/categories') ?>">
 							<i class="bi bi-collection-fill"></i>
 							<span>Categorias</span>
-						</a>
-						<a class="shortcut-btn" href="<?= base_path('/admin/connectors') ?>">
+						</a>					<a class="shortcut-btn" href="<?= base_path('/admin/series-groups') ?>">
+						<i class="bi bi-layers-fill"></i>
+						<span>Grupos de Séries</span>
+					</a>						<a class="shortcut-btn" href="<?= base_path('/admin/connectors') ?>">
 							<i class="bi bi-plug-fill"></i>
 							<span>Conectores</span>
 						</a>

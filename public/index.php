@@ -286,6 +286,19 @@ $router->get('/admin/categories', [new App\Controllers\Admin\CategoriesControlle
 $router->post('/admin/categories/create', [new App\Controllers\Admin\CategoriesController(), 'create'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/categories/update', [new App\Controllers\Admin\CategoriesController(), 'update'], [App\Core\Auth::requireAdmin()]);
 $router->post('/admin/categories/delete', [new App\Controllers\Admin\CategoriesController(), 'delete'], [App\Core\Auth::requireAdmin()]);
+
+// Series Groups Routes
+$router->get('/admin/series-groups', [new App\Controllers\Admin\SeriesGroupsController(), 'index'], [App\Core\Auth::requireAdmin()]);
+$router->get('/admin/series-groups/create', [new App\Controllers\Admin\SeriesGroupsController(), 'create'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/series-groups/store', [new App\Controllers\Admin\SeriesGroupsController(), 'store'], [App\Core\Auth::requireAdmin()]);
+$router->get('/admin/series-groups/{id}/edit', [new App\Controllers\Admin\SeriesGroupsController(), 'edit'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/series-groups/{id}/update', [new App\Controllers\Admin\SeriesGroupsController(), 'update'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/series-groups/{id}/delete', [new App\Controllers\Admin\SeriesGroupsController(), 'delete'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/series-groups/{id}/add-series', [new App\Controllers\Admin\SeriesGroupsController(), 'addSeries'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/series-groups/{id}/remove-series', [new App\Controllers\Admin\SeriesGroupsController(), 'removeSeries'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/series-groups/{id}/reorder', [new App\Controllers\Admin\SeriesGroupsController(), 'reorder'], [App\Core\Auth::requireAdmin()]);
+$router->post('/admin/series-groups/{id}/toggle-collapsed', [new App\Controllers\Admin\SeriesGroupsController(), 'toggleCollapsed'], [App\Core\Auth::requireAdmin()]);
+
 $router->get('/admin/connectors', [new App\Controllers\Admin\ConnectorsController(), 'index'], [App\Core\Auth::requireUploadAccess()]);
 $router->post('/admin/connectors/detect', [new App\Controllers\Admin\ConnectorsController(), 'detect'], [App\Core\Auth::requireUploadAccess()]);
 $router->post('/admin/connectors/create', [new App\Controllers\Admin\ConnectorsController(), 'create'], [App\Core\Auth::requireUploadAccess()]);
