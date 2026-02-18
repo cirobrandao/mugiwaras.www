@@ -65,6 +65,8 @@ php bin/optimize_indexes.php report
 **Benefícios**: Melhoria de 60-90% em performance de queries otimizadas.
 **Backups**: Salvos em `storage/backups/` com timestamp.
 
+Ver [docs/CHANGELOG.md](docs/CHANGELOG.md) para histórico completo de mudanças.
+
 ## Conversao CBZ -> PDF
 Script para gerar PDF a partir de CBZ mantendo ambos no servidor (nao cria novo volume no banco):
 ```
@@ -110,9 +112,9 @@ Ver detalhes em docs/ARCHITECTURE.md.
 - Conversores reais estão implementados e dependem de binários externos configurados.
 
 ## Upload em subdomínio dedicado
-Para enviar uploads via host separado (ex.: `https://dash.mugiverso.com`) e manter o restante no domínio principal:
+Para enviar uploads via host separado (ex.: `https://upload.exemplo.com`) e manter o restante no domínio principal:
 
-- Configure `APP_UPLOAD_URL=https://dash.mugiverso.com`
+- Configure `APP_UPLOAD_URL=https://upload.exemplo.com`
 - Configure `SESSION_COOKIE_DOMAIN=.mugiverso.com` para compartilhar sessão entre subdomínios
 
 Sem `APP_UPLOAD_URL`, o sistema continua usando `APP_URL` normalmente.
