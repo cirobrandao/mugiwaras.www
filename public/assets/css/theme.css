@@ -13629,3 +13629,13 @@ body.theme-dark .admin-news-categories-list tbody td {
     height: 5px !important;
 }
 
+
+/* Custom text color for restricted users */
+.text-purple {
+    color: #8b5cf6 !important;
+}
+
+body.theme-dark .text-purple,
+[data-bs-theme="dark"] .text-purple {
+    color: #a78bfa !important;
+}

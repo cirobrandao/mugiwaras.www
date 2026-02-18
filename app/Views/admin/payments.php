@@ -52,8 +52,8 @@ $isZeroDate = static function (?string $dt): bool {
 	<table class="table table-hover align-middle mb-0">
 		<thead>
 		<tr>
-			<th scope="col"><i class="bi bi-person me-1"></i>Usuário</th>
-			<th scope="col"><i class="bi bi-box me-1"></i>Pacote</th>
+			<th scope="col" style="width: 150px;"><i class="bi bi-person me-1"></i>Usuário</th>
+			<th scope="col" style="width: 250px;"><i class="bi bi-box me-1"></i>Pacote</th>
 			<th scope="col" style="width: 90px;"><i class="bi bi-calendar-range me-1"></i>Meses</th>
 			<th scope="col" style="width: 70px;"><i class="bi bi-flag me-1"></i>Status</th>
 			<th scope="col" style="width: 160px;"><i class="bi bi-person-check me-1"></i>Liberado por</th>

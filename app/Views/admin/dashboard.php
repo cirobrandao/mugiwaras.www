@@ -104,12 +104,27 @@ if ($diskPercent === 0 && $diskUsed > 0) {
 }
 $paymentsSeries = (array)($charts['payments_by_month'] ?? []);
 $uploadsSeries = (array)($charts['uploads_by_week'] ?? []);
-$maxPayments = 2500.0;
+
+// Calcular o valor máximo dos pagamentos mensais
+$paymentsValues = [];
+foreach ($paymentsSeries as $row) {
+    $paymentsValues[] = $parseNumber((string)($row['value'] ?? '0'));
+}
+$maxPayments = !empty($paymentsValues) ? max($paymentsValues) : 1.0;
+if ($maxPayments <= 0) {
+    $maxPayments = 1.0;
+}
+
+// Calcular o valor máximo dos uploads semanais
 $uploadsValues = [];
 foreach ($uploadsSeries as $row) {
     $uploadsValues[] = (int)round($parseNumber((string)($row['value'] ?? '0')));
 }
-$maxUploads = max(20000, (!empty($uploadsValues) ? max($uploadsValues) : 0));
+$maxUploads = !empty($uploadsValues) ? max($uploadsValues) : 1;
+if ($maxUploads <= 0) {
+    $maxUploads = 1;
+}
+
 $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 ?>
 <div class="admin-dashboard">
@@ -329,6 +344,43 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 						<?php endif; ?>
 					</div>
 				</div>
+
+				<div class="dashboard-card">
+					<div class="card-header">
+						<i class="bi bi-shield-exclamation me-2"></i>
+						<span class="card-title">Falhas de login</span>
+					</div>
+					<div class="card-body">
+						<?php if (empty($loginFailAttempts)): ?>
+							<div class="text-muted text-center py-2">Sem tentativas</div>
+						<?php else: ?>
+							<div class="user-list">
+								<?php foreach ($loginFailAttempts as $fail): ?>
+									<?php
+									$label = (string)($fail['username'] ?? '');
+									$ip = (string)($fail['ip'] ?? '');
+									$when = (string)($fail['created_at'] ?? '');
+									$label = $label !== '' ? $label : 'desconhecido';
+									?>
+									<?php
+										$fullLabel = $label;
+										if ($ip !== '') {
+											$fullLabel .= ' (' . $ip . ')';
+										}
+										$displayLabel = mb_strimwidth($fullLabel, 0, 28, '...');
+									?>
+									<div class="user-item user-fail" title="<?= View::e($fullLabel) ?>">
+										<div class="user-info">
+											<i class="bi bi-x-circle text-danger"></i>
+											<span class="user-name"><?= View::e($displayLabel) ?></span>
+										</div>
+										<span class="user-time"><?= View::e(time_ago($when !== '' ? $when : null)) ?></span>
+									</div>
+								<?php endforeach; ?>
+							</div>
+						<?php endif; ?>
+					</div>
+				</div>
 			</div>
 		</div>
 
@@ -344,13 +396,47 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 					<?php else: ?>
 						<div class="user-list">
 							<?php foreach ($recentUsers as $ru): ?>
+								<?php
+									$userId = (int)($ru['id'] ?? 0);
+									$username = (string)($ru['username'] ?? '');
+									$role = (string)($ru['role'] ?? 'user');
+									$accessTier = (string)($ru['access_tier'] ?? 'user');
+									$lastLogin = $ru['data_ultimo_login'] ?? $ru['data_registro'] ?? null;
+									
+									// Determinar cor do ícone
+									$iconColor = 'text-primary'; // azul padrão
+									if ($role === 'superadmin') {
+										$iconColor = 'text-danger'; // vermelho
+									} elseif ($role === 'admin' || $role === 'equipe') {
+										$iconColor = 'text-warning'; // amarelo
+									} elseif ($accessTier === 'restrito') {
+										$iconColor = 'text-purple'; // roxo
+									} elseif ($accessTier === 'assinante' || $accessTier === 'vitalicio') {
+										$iconColor = 'text-success'; // verde
+									}
+									
+									// Calcular tempo desde o login
+									$timeDisplay = 'agora';
+									if (is_string($lastLogin) && $lastLogin !== '') {
+										$loginTime = strtotime($lastLogin);
+										if ($loginTime !== false) {
+											$minutesAgo = (int)((time() - $loginTime) / 60);
+											if ($minutesAgo >= 15) {
+												if ($minutesAgo < 60) {
+													$timeDisplay = $minutesAgo . ' min';
+												} else {
+													$timeDisplay = time_ago($lastLogin);
+												}
+											}
+										}
+									}
+									?>
 								<div class="user-item">
 									<div class="user-info">
-										<i class="bi bi-person-circle text-primary"></i>
-										<span class="user-name"><?= View::e((string)($ru['username'] ?? '')) ?></span>
+										<i class="bi bi-person-circle <?= $iconColor ?>"></i>
+										<a href="/admin/profile?id=<?= $userId ?>" class="user-name text-decoration-none"><?= View::e($username) ?></a>
 									</div>
-									<?php $lastLogin = $ru['data_ultimo_login'] ?? $ru['data_registro'] ?? null; ?>
-									<span class="user-time"><?= View::e(time_ago(is_string($lastLogin) ? $lastLogin : null)) ?></span>
+									<span class="user-time"><?= View::e($timeDisplay) ?></span>
 								</div>
 							<?php endforeach; ?>
 						</div>
@@ -358,42 +444,6 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 				</div>
 			</div>
 
-			<div class="dashboard-card">
-				<div class="card-header">
-					<i class="bi bi-shield-exclamation me-2"></i>
-					<span class="card-title">Falhas de login</span>
-				</div>
-				<div class="card-body">
-					<?php if (empty($loginFailAttempts)): ?>
-						<div class="text-muted text-center py-2">Sem tentativas</div>
-					<?php else: ?>
-						<div class="user-list">
-							<?php foreach ($loginFailAttempts as $fail): ?>
-								<?php
-								$label = (string)($fail['username'] ?? '');
-								$ip = (string)($fail['ip'] ?? '');
-								$when = (string)($fail['created_at'] ?? '');
-								$label = $label !== '' ? $label : 'desconhecido';
-								?>
-								<?php
-									$fullLabel = $label;
-									if ($ip !== '') {
-										$fullLabel .= ' (' . $ip . ')';
-									}
-									$displayLabel = mb_strimwidth($fullLabel, 0, 28, '...');
-								?>
-								<div class="user-item user-fail" title="<?= View::e($fullLabel) ?>">
-									<div class="user-info">
-										<i class="bi bi-x-circle text-danger"></i>
-										<span class="user-name"><?= View::e($displayLabel) ?></span>
-									</div>
-									<span class="user-time"><?= View::e(time_ago($when !== '' ? $when : null)) ?></span>
-								</div>
-							<?php endforeach; ?>
-						</div>
-					<?php endif; ?>
-				</div>
-			</div>
 
 			<div class="dashboard-card">
 				<div class="card-header">
