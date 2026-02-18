@@ -47,8 +47,16 @@
         
         const currentTheme = localStorage.getItem('theme') || 'light';
         
-        // Apply saved theme
-        applyTheme(currentTheme);
+        // Only apply if theme doesn't match (inline script may have already applied it)
+        const isDarkApplied = document.body.classList.contains('theme-dark');
+        const shouldBeDark = currentTheme === 'dark';
+        
+        if (isDarkApplied !== shouldBeDark) {
+            applyTheme(currentTheme);
+        } else {
+            // Just update the icon without re-applying theme
+            updateThemeIcon(currentTheme);
+        }
         
         // Toggle on click
         themeToggle.addEventListener('click', () => {
@@ -57,6 +65,24 @@
             applyTheme(newTheme);
             localStorage.setItem('theme', newTheme);
         });
+    };
+    
+    const updateThemeIcon = (theme) => {
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            const icon = themeToggle.querySelector('i');
+            if (icon) {
+                if (theme === 'dark') {
+                    if (icon.classList.contains('bi-moon-fill')) {
+                        icon.classList.replace('bi-moon-fill', 'bi-sun-fill');
+                    }
+                } else {
+                    if (icon.classList.contains('bi-sun-fill')) {
+                        icon.classList.replace('bi-sun-fill', 'bi-moon-fill');
+                    }
+                }
+            }
+        }
     };
     
     const applyTheme = (theme) => {
@@ -69,15 +95,7 @@
             document.body.classList.remove('theme-dark');
         }
         
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            const icon = themeToggle.querySelector('i');
-            if (theme === 'dark') {
-                icon.classList.replace('bi-moon-fill', 'bi-sun-fill');
-            } else {
-                icon.classList.replace('bi-sun-fill', 'bi-moon-fill');
-            }
-        }
+        updateThemeIcon(theme);
     };
     
     // ================================================

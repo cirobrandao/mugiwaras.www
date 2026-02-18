@@ -155,13 +155,28 @@ document.addEventListener('DOMContentLoaded', () => {
 	const applyTheme = (theme) => {
 		const isDark = theme === 'dark';
 		body.classList.toggle('theme-dark', isDark);
+		document.documentElement.setAttribute('data-theme', theme);
 		if (icon) {
 			icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
 		}
 		if (toggle) toggle.setAttribute('aria-pressed', String(isDark));
 	};
 
-	applyTheme(initialTheme);
+	// Only apply if not already applied by inline script
+	if (!body.classList.contains('theme-dark') && initialTheme === 'dark') {
+		applyTheme(initialTheme);
+	} else if (body.classList.contains('theme-dark') && initialTheme === 'light') {
+		applyTheme(initialTheme);
+	} else {
+		// Just update icon without re-applying theme
+		if (icon) {
+			const isDark = body.classList.contains('theme-dark');
+			icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+		}
+		if (toggle) {
+			toggle.setAttribute('aria-pressed', String(body.classList.contains('theme-dark')));
+		}
+	}
 
 	if (toggle) {
 		toggle.addEventListener('click', () => {

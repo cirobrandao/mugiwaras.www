@@ -7,6 +7,23 @@ use App\Core\SimpleCache;
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        // Apply theme immediately to prevent flash
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.documentElement.classList.add('theme-dark-loading');
+            }
+        })();
+    </script>
+    <style>
+        /* Prevent flash of light theme */
+        html.theme-dark-loading body:not(.theme-dark) {
+            opacity: 0;
+            transition: none;
+        }
+    </style>
     <?php
     $systemName = SimpleCache::remember('system_name', 3600, function() {
         return \App\Models\Setting::get('system_name', 'Mugiwaras');
@@ -38,6 +55,18 @@ use App\Core\SimpleCache;
     <?php endif; ?>
 </head>
 <body class="app-body">
+<script>
+    // Apply theme-dark class immediately to prevent FOUC
+    (function() {
+        const theme = localStorage.getItem('theme') || 'light';
+        if (theme === 'dark') {
+            document.body.classList.add('theme-dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+        // Remove loading class now that body theme is applied
+        document.documentElement.classList.remove('theme-dark-loading');
+    })();
+</script>
 <?= $content ?? '' ?>
 <script src="<?= base_path('/assets/bootstrap.bundle.min.js') ?>?v=5.3"></script>
 <script src="<?= base_path('/assets/js/app.js') ?>"></script>

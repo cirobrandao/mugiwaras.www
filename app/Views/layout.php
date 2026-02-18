@@ -7,6 +7,23 @@ use App\Core\SimpleCache;
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        // Apply theme immediately to prevent flash
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.documentElement.classList.add('theme-dark-loading');
+            }
+        })();
+    </script>
+    <style>
+        /* Prevent flash of light theme */
+        html.theme-dark-loading body:not(.theme-dark) {
+            opacity: 0;
+            transition: none;
+        }
+    </style>
     <?php
     // Cache system settings (1 hour TTL)
     $systemName = SimpleCache::remember('system_name', 3600, function() {
@@ -41,6 +58,18 @@ use App\Core\SimpleCache;
     <link rel="stylesheet" href="<?= asset('/assets/category-tags.css') ?>">
 </head>
 <body class="app-body">
+<script>
+    // Apply theme-dark class immediately to prevent FOUC
+    (function() {
+        const theme = localStorage.getItem('theme') || 'light';
+        if (theme === 'dark') {
+            document.body.classList.add('theme-dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+        // Remove loading class now that body theme is applied
+        document.documentElement.classList.remove('theme-dark-loading');
+    })();
+</script>
 <?php
 $currentUser = \App\Core\Auth::user();
 
