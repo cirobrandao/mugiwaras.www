@@ -22,7 +22,7 @@ if (isset($options['help'])) {
     echo "  - Gera somente o arquivo PDF ao lado do CBZ.\n";
     echo "  - Nao cria registro de PDF no banco.\n";
     echo "\nCron example:\n";
-    echo "  */30 * * * * cd /srv/web/www/mugiwaras.www && /usr/bin/php bin/cbz_to_pdf.php --magick=/usr/bin/convert >> storage/logs/cbz_to_pdf.log 2>&1\n";
+    echo "  */30 * * * * cd /srv/web/www/exemplo.www && /usr/bin/php bin/cbz_to_pdf.php --magick=/usr/bin/convert >> storage/logs/cbz_to_pdf.log 2>&1\n";
     exit(0);
 }
 

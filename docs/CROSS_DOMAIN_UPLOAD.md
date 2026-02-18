@@ -39,13 +39,13 @@ Ao chegar no domínio de upload com token:
 
 ```env
 # Domínio principal (atrás do Cloudflare)
-APP_URL=https://www.mugiverso.com
+APP_URL=https://www.example.com
 
 # Domínio de upload (bypass Cloudflare - sem proxy laranja)
-APP_UPLOAD_URL=https://dash.mugiverso.com
+APP_UPLOAD_URL=https://dash.example.com
 
 # Cookie compartilhado entre subdomínios (com ponto inicial!)
-SESSION_COOKIE_DOMAIN=.mugiverso.com
+SESSION_COOKIE_DOMAIN=.example.com
 ```
 
 **Vantagens**: Cookie funciona nativamente + token como fallback.
@@ -53,7 +53,7 @@ SESSION_COOKIE_DOMAIN=.mugiverso.com
 ### Opção 2: Domínios Completamente Diferentes
 
 ```env
-APP_URL=https://mugiverso.com
+APP_URL=https://example.com
 APP_UPLOAD_URL=https://upload-direto.example.com
 SESSION_COOKIE_DOMAIN=
 ```
@@ -63,8 +63,8 @@ SESSION_COOKIE_DOMAIN=
 ### Opção 3: Mesmo Domínio (Sem Bypass)
 
 ```env
-APP_URL=https://mugiverso.com
-APP_UPLOAD_URL=https://mugiverso.com
+APP_URL=https://example.com
+APP_UPLOAD_URL=https://example.com
 # ou deixe APP_UPLOAD_URL vazio
 ```
 
@@ -72,11 +72,11 @@ Sem separação de domínio, usa URL normal. Sem necessidade de token.
 
 ## Configuração do Cloudflare
 
-### No domínio principal (www.mugiverso.com):
+### No domínio principal (www.example.com):
 - ☁️ Proxy ativo (laranja)
 - Todas otimizações habilitadas
 
-### No domínio de upload (dash.mugiverso.com):
+### No domínio de upload (dash.example.com):
 - 🌐 DNS only (cinza/sem proxy)
 - Aponta direto para o servidor
 
@@ -90,16 +90,16 @@ CNAME @      -> www.mugiverso.com
 
 ## Como Funciona na Prática
 
-1. **Usuário navega normalmente**: `www.mugiverso.com` (atrás do Cloudflare)
+1. **Usuário navega normalmente**: `www.example.com` (atrás do Cloudflare)
 2. **Clica em "Upload"**: 
    - Sistema detecta que precisa mudar domínio
-   - Gera token: `https://dash.mugiverso.com/upload?_t=abc123...`
+   - Gera token: `https://dash.example.com/upload?_t=abc123...`
 3. **Chega no domínio de upload**:
    - Token validado
    - Sessão restaurada
-   - Redirect para: `https://dash.mugiverso.com/upload` (URL limpa)
+   - Redirect para: `https://dash.example.com/upload` (URL limpa)
 4. **Faz upload**: Direto no servidor, sem passar pelo Cloudflare
-5. **Volta para navegação**: Links automáticos retornam para `www.mugiverso.com`
+5. **Volta para navegação**: Links automáticos retornam para `www.example.com`
 
 ## Rotas que Usam Upload Domain
 
@@ -124,11 +124,11 @@ Todas as outras rotas permanecem no domínio principal.
 1. **Verifique SESSION_COOKIE_DOMAIN**:
    ```bash
    # No .env
-   SESSION_COOKIE_DOMAIN=.mugiverso.com  # COM O PONTO INICIAL!
+   SESSION_COOKIE_DOMAIN=.example.com  # COM O PONTO INICIAL!
    ```
 
 2. **Teste o token manualmente**:
-   - Acesse: `https://www.mugiverso.com/upload`
+   - Acesse: `https://www.example.com/upload`
    - Verifique se URL contém `?_t=...`
    - Se não contém, usuário não está autenticado
 
@@ -140,12 +140,12 @@ Todas as outras rotas permanecem no domínio principal.
 4. **Teste com curl**:
    ```bash
    # Obtenha um token válido (faça login primeiro)
-   curl -v 'https://dash.mugiverso.com/upload?_t=TOKEN_AQUI'
+   curl -v 'https://dash.example.com/upload?_t=TOKEN_AQUI'
    ```
 
 ### Upload ainda falhando com arquivos grandes?
 
-1. **Verifique DNS**: `dash.mugiverso.com` deve estar SEM proxy (cinza)
+1. **Verifique DNS**: `dash.example.com` deve estar SEM proxy (cinza)
 2. **PHP limits**: 
    ```ini
    upload_max_filesize = 512M
