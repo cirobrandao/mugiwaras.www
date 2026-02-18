@@ -13,6 +13,7 @@ use App\Models\SupportMessage;
 use App\Models\Category;
 use App\Models\Package;
 use App\Models\AuditLog;
+use App\Models\LoginHistory;
 
 final class DashboardController extends Controller
 {
@@ -54,6 +55,8 @@ final class DashboardController extends Controller
 
         $dbInfo = $this->databaseInfo();
         $loginFailAttempts = AuditLog::recentLoginFails(20);
+        $topDevices = LoginHistory::topDevices(8, 30); // Top 8 dispositivos dos últimos 30 dias
+        $topBrowsers = LoginHistory::topBrowsers(8, 30); // Top 8 navegadores dos últimos 30 dias
 
         echo $this->view('admin/dashboard', [
             'stats' => $stats,
@@ -61,6 +64,8 @@ final class DashboardController extends Controller
             'charts' => $charts,
             'dbInfo' => $dbInfo,
             'loginFailAttempts' => $loginFailAttempts,
+            'topDevices' => $topDevices,
+            'topBrowsers' => $topBrowsers,
         ]);
     }
 

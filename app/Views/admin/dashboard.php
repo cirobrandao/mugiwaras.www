@@ -13,6 +13,8 @@ $server = (array)($server ?? []);
 $charts = (array)($charts ?? []);
 $dbInfo = (array)($dbInfo ?? []);
 $loginFailAttempts = (array)($loginFailAttempts ?? []);
+$topDevices = (array)($topDevices ?? []);
+$topBrowsers = (array)($topBrowsers ?? []);
 $formatNumber = static function (int $value): string {
     return number_format($value, 0, ',', '.');
 };
@@ -354,17 +356,17 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 				</div>
 				<div class="card-body p-0">
 					<?php if (empty($loginFailAttempts)): ?>
-						<div class="text-muted text-center py-4">Nenhuma tentativa de login falhada recentemente</div>
+						<div class="text-muted text-center py-3" style="font-size: 0.8rem;">Nenhuma tentativa de login falhada recentemente</div>
 					<?php else: ?>
 						<div class="table-responsive">
-							<table class="table table-hover login-fails-table mb-0">
+							<table class="table table-hover login-fails-table login-fails-table-compact mb-0">
 								<thead>
 									<tr>
-										<th style="width: 40px;"><i class="bi bi-exclamation-triangle"></i></th>
+										<th style="width: 30px;"></th>
 										<th>Usuário</th>
-										<th style="width: 220px;">Endereço IP</th>
-										<th style="width: 80px;" class="text-center">País</th>
-										<th style="width: 140px;" class="text-end">Quando</th>
+										<th style="width: 180px;">IP</th>
+										<th style="width: 50px;" class="text-center">País</th>
+										<th style="width: 100px;" class="text-end">Quando</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -377,40 +379,23 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 										$username = $username !== '' ? $username : 'desconhecido';
 										$userExists = in_array($username, $existingUsernames, true);
 										$rowClass = $userExists ? 'fail-existing-user' : 'fail-unknown-user';
+										// Truncar IPv6 se for muito longo
+										$displayIp = $ip;
+										if ($ip !== '' && strpos($ip, ':') !== false && strlen($ip) > 20) {
+											$parts = explode(':', $ip);
+											if (count($parts) > 5) {
+												$displayIp = implode(':', array_slice($parts, 0, 2)) . '...' . end($parts);
+											}
+										}
 									?>
 										<tr class="<?= $rowClass ?>">
 											<td class="text-center">
-												<?php if ($userExists): ?>
-													<i class="bi bi-person-x text-warning" title="Usuário existe"></i>
-												<?php else: ?>
-													<i class="bi bi-question-circle text-danger" title="Usuário não encontrado"></i>
-												<?php endif; ?>
+												<i class="bi <?= $userExists ? 'bi-person-x text-warning' : 'bi-question-circle text-danger' ?>" title="<?= $userExists ? 'Usuário existe' : 'Usuário não encontrado' ?>"></i>
 											</td>
-											<td>
-												<span class="fail-username-text <?= $userExists ? 'text-warning' : 'text-muted' ?>">
-													<?= View::e($username) ?>
-												</span>
-										</td>
-										<td>
-											<?php
-											// Truncar IPv6 se for muito longo
-											$displayIp = $ip;
-											if ($ip !== '' && strpos($ip, ':') !== false && strlen($ip) > 25) {
-												// IPv6 - mostrar início e fim
-												$parts = explode(':', $ip);
-												if (count($parts) > 6) {
-													$displayIp = implode(':', array_slice($parts, 0, 3)) . ':...:' . implode(':', array_slice($parts, -2));
-												}
-											}
-											?>
-											<code class="fail-ip-text clickable-ip" data-ip="<?= View::e($ip !== '' ? $ip : '') ?>" title="Clique para copiar: <?= View::e($ip) ?>"><?= View::e($displayIp !== '' ? $displayIp : 'N/A') ?></code>
-											</td>
-											<td class="text-center">
-												<span class="country-flag-icon" title="Aguardando implementação GeoIP">🌐</span>
-											</td>
-											<td class="text-end text-muted">
-												<small><?= View::e(time_ago($when !== '' ? $when : null)) ?></small>
-											</td>
+											<td><span class="fail-username-text <?= $userExists ? 'text-warning' : 'text-muted' ?>"><?= View::e($username) ?></span></td>
+											<td><code class="fail-ip-text clickable-ip" data-ip="<?= View::e($ip !== '' ? $ip : '') ?>" title="<?= View::e($ip) ?>"><?= View::e($displayIp !== '' ? $displayIp : 'N/A') ?></code></td>
+											<td class="text-center"><span class="country-flag-icon" title="GeoIP">🌐</span></td>
+											<td class="text-end"><small class="text-muted"><?= View::e(time_ago($when !== '' ? $when : null)) ?></small></td>
 										</tr>
 									<?php endforeach; ?>
 								</tbody>
@@ -481,6 +466,99 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 				</div>
 			</div>
 
+			<div class="dashboard-card">
+				<div class="card-header">
+					<i class="bi bi-devices me-2"></i>
+					<span class="card-title">Dispositivos Mais Usados</span>
+					<span class="badge bg-secondary ms-auto" style="font-size: 0.75rem;">30 dias</span>
+				</div>
+				<div class="card-body">
+					<?php if (empty($topDevices)): ?>
+						<div class="text-muted text-center py-2">Sem dados de dispositivos</div>
+					<?php else: ?>
+						<?php
+							// Calcular o máximo para porcentagem
+							$maxDeviceCount = 0;
+							foreach ($topDevices as $device) {
+								$maxDeviceCount = max($maxDeviceCount, (int)($device['count'] ?? 0));
+							}
+							$maxDeviceCount = max(1, $maxDeviceCount);
+						?>
+						<div class="device-list">
+							<?php foreach ($topDevices as $device): ?>
+								<?php
+									$deviceName = (string)($device['device'] ?? 'Desconhecido');
+									$deviceCount = (int)($device['count'] ?? 0);
+									$deviceIcon = (string)($device['icon'] ?? 'bi-laptop');
+									$devicePercent = $maxDeviceCount > 0 ? (int)round(($deviceCount / $maxDeviceCount) * 100) : 0;
+									if ($devicePercent === 0 && $deviceCount > 0) {
+										$devicePercent = 1;
+									}
+								?>
+								<div class="device-item-bar">
+									<div class="d-flex justify-content-between align-items-center mb-1">
+										<div class="device-info">
+											<i class="bi <?= View::e($deviceIcon) ?> text-info"></i>
+											<span class="device-name"><?= View::e($deviceName) ?></span>
+										</div>
+										<span class="device-count"><?= $formatNumber($deviceCount) ?></span>
+									</div>
+									<div class="progress">
+										<div class="progress-bar bg-info" data-progress="<?= $devicePercent ?>" style="width: 0%;"></div>
+									</div>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+				</div>
+			</div>
+
+			<div class="dashboard-card">
+				<div class="card-header">
+					<i class="bi bi-browser-chrome me-2"></i>
+					<span class="card-title">Navegadores Mais Usados</span>
+					<span class="badge bg-secondary ms-auto" style="font-size: 0.75rem;">30 dias</span>
+				</div>
+				<div class="card-body">
+					<?php if (empty($topBrowsers)): ?>
+						<div class="text-muted text-center py-2">Sem dados de navegadores</div>
+					<?php else: ?>
+						<?php
+							// Calcular o máximo para porcentagem
+							$maxBrowserCount = 0;
+							foreach ($topBrowsers as $browser) {
+								$maxBrowserCount = max($maxBrowserCount, (int)($browser['count'] ?? 0));
+							}
+							$maxBrowserCount = max(1, $maxBrowserCount);
+						?>
+						<div class="device-list">
+							<?php foreach ($topBrowsers as $browser): ?>
+								<?php
+									$browserName = (string)($browser['browser'] ?? 'Desconhecido');
+									$browserCount = (int)($browser['count'] ?? 0);
+									$browserIcon = (string)($browser['icon'] ?? 'bi-browser-chrome');
+									$browserPercent = $maxBrowserCount > 0 ? (int)round(($browserCount / $maxBrowserCount) * 100) : 0;
+									if ($browserPercent === 0 && $browserCount > 0) {
+										$browserPercent = 1;
+									}
+								?>
+								<div class="device-item-bar">
+									<div class="d-flex justify-content-between align-items-center mb-1">
+										<div class="device-info">
+											<i class="bi <?= View::e($browserIcon) ?> text-primary"></i>
+											<span class="device-name"><?= View::e($browserName) ?></span>
+										</div>
+										<span class="device-count"><?= $formatNumber($browserCount) ?></span>
+									</div>
+									<div class="progress">
+										<div class="progress-bar bg-primary" data-progress="<?= $browserPercent ?>" style="width: 0%;"></div>
+									</div>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+				</div>
+			</div>
 
 			<div class="dashboard-card">
 				<div class="card-header">
@@ -653,6 +731,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			}, 1500);
 		}
 	}
+	
+	// Animar barras de progresso
+	setTimeout(function() {
+		document.querySelectorAll('.progress-bar[data-progress]').forEach(function(bar) {
+			const progress = bar.getAttribute('data-progress');
+			if (progress) {
+				bar.style.width = progress + '%';
+			}
+		});
+	}, 100);
 });
 </script>
 

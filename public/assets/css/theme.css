@@ -13362,6 +13362,110 @@ body.theme-dark .admin-news-categories-list tbody td {
     background: #fee2e2;
 }
 
+/* Device List */
+.device-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.device-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 0.75rem;
+    background: #f8fafc;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+    font-size: 0.8125rem;
+    transition: all 0.2s ease;
+}
+
+.device-item:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.device-item .device-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.device-item .device-info i {
+    font-size: 1.125rem;
+    flex-shrink: 0;
+}
+
+.device-item .device-name {
+    font-weight: 500;
+    color: #1e293b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.device-item .device-count {
+    font-size: 0.875rem;
+    color: #475569;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    background: #e0f2fe;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.75rem;
+    border: 1px solid #bae6fd;
+}
+
+/* Device Item with Progress Bar */
+.device-item-bar {
+    margin-bottom: 0.75rem;
+}
+
+.device-item-bar:last-child {
+    margin-bottom: 0;
+}
+
+.device-item-bar .device-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.device-item-bar .device-info i {
+    font-size: 1.05rem;
+    flex-shrink: 0;
+}
+
+.device-item-bar .device-name {
+    font-weight: 600;
+    font-size: 0.86rem;
+    color: #1e293b;
+}
+
+.device-item-bar .device-count {
+    font-size: 0.8rem;
+    color: #475569;
+    font-weight: 600;
+    white-space: nowrap;
+    background: transparent;
+    padding: 0;
+    border: none;
+}
+
+.device-item-bar .progress {
+    height: 6px;
+    background-color: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.device-item-bar .progress-bar {
+    transition: width 0.8s ease;
+}
+
 /* System Info */
 .system-info {
     display: flex;
@@ -13586,6 +13690,49 @@ body.theme-dark .admin-news-categories-list tbody td {
     font-size: 0.625rem !important;
 }
 
+/* Device Lists - COMPACT */
+.device-list {
+    gap: 0.375rem !important;
+}
+
+.device-item {
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.75rem !important;
+}
+
+.device-item .device-info {
+    gap: 0.375rem !important;
+}
+
+.device-item .device-info i {
+    font-size: 1rem !important;
+}
+
+.device-item .device-name {
+    font-size: 0.75rem !important;
+}
+
+.device-item .device-count {
+    font-size: 0.625rem !important;
+    padding: 0.1875rem 0.5rem !important;
+}
+
+.device-item-bar {
+    margin-bottom: 0.5rem !important;
+}
+
+.device-item-bar .device-name {
+    font-size: 0.75rem !important;
+}
+
+.device-item-bar .device-count {
+    font-size: 0.7rem !important;
+}
+
+.device-item-bar .progress {
+    height: 5px !important;
+}
+
 /* System Info - COMPACT */
 .system-info {
     gap: 0.375rem !important;
@@ -13754,6 +13901,49 @@ body.theme-dark .fail-username,
     font-size: 0.875rem;
 }
 
+.login-fails-table.login-fails-table-compact {
+    font-size: 0.8125rem;
+}
+
+.login-fails-table.login-fails-table-compact thead th {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.login-fails-table.login-fails-table-compact tbody td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.login-fails-table.login-fails-table-compact .fail-username-text {
+    font-size: 0.8125rem;
+}
+
+.login-fails-table.login-fails-table-compact .fail-ip-text {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+}
+
+.login-fails-table.login-fails-table-compact .country-flag-icon {
+    font-size: 1.1rem;
+}
+
+.login-fails-table.login-fails-table-compact tbody td small {
+    font-size: 0.75rem;
+}
+
+.login-fails-table.login-fails-table-compact tbody td i {
+    font-size: 0.9rem;
+}
+
+.login-fails-table.login-fails-table-compact tbody tr {
+    border-left-width: 2px;
+}
+
+.login-fails-table.login-fails-table-compact thead {
+    border-bottom-width: 1px;
+}
+
 .login-fails-table thead {
     background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
     border-bottom: 2px solid #ef4444;
@@ -13808,6 +13998,22 @@ body.theme-dark .fail-username,
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
     font-family: 'Courier New', monospace;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fail-ip-text:hover {
+    background: #e2e8f0;
+    color: #475569;
+    transform: translateY(-1px);
+}
+
+.fail-ip-text.clickable-ip:hover {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.login-fails-table.login-fails-table-compact .fail-ip-text:hover {
+    transform: translateY(-0.5px);
 }
 
 .country-flag-icon {
@@ -13857,6 +14063,12 @@ body.theme-dark .fail-ip-text,
 [data-bs-theme="dark"] .fail-ip-text {
     background: rgba(248, 250, 252, 0.05);
     color: #94a3b8;
+}
+
+body.theme-dark .fail-ip-text:hover,
+[data-bs-theme="dark"] .fail-ip-text:hover {
+    background: rgba(248, 250, 252, 0.1);
+    color: #cbd5e1;
 }
 
 /* IP Clickable - Copy to Clipboard */
