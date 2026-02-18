@@ -1,0 +1,350 @@
+<?php
+/**
+ * Script de Verificação e Otimização de Índices
+ * 
+ * Uso:
+ * - php bin/optimize_indexes.php check     # Verifica índices atuais
+ * - php bin/optimize_indexes.php apply     # Aplica as otimizações
+ * - php bin/optimize_indexes.php analyze   # Atualiza estatísticas
+ * - php bin/optimize_indexes.php report    # Gera relatório de performance
+ */
+
+require_once __DIR__ . '/../config/bootstrap.php';
+
+use App\Core\Database;
+
+class IndexOptimizer
+{
+    private $db;
+    private $dbName;
+
+    public function __construct()
+    {
+        $this->db = Database::connection();
+        
+        // Pega o nome do banco de dados do DSN
+        $config = require __DIR__ . '/../config/database.php';
+        preg_match('/dbname=([^;]+)/', $config['dsn'], $matches);
+        $this->dbName = $matches[1] ?? 'unknown';
+    }
+
+    /**
+     * Verifica quais índices da otimização já existem
+     */
+    public function checkIndexes()
+    {
+        echo "🔍 VERIFICANDO ÍNDICES ATUAIS\n";
+        echo str_repeat("=", 60) . "\n\n";
+
+        $expectedIndexes = [
+            'users' => ['idx_data_ultimo_login', 'idx_access_tier', 'idx_role', 'idx_subscription_expires', 'idx_tier_expires'],
+            'support_messages' => ['idx_user_id', 'idx_status', 'idx_status_created', 'idx_created_at'],
+            'payments' => ['idx_status', 'idx_created_at', 'idx_user_status', 'idx_status_created_for_reports'],
+            'vouchers' => ['idx_is_active', 'idx_expires_at', 'idx_active_expires'],
+            'jobs' => ['idx_status', 'idx_job_type', 'idx_status_created'],
+            'content_items' => ['idx_created_at', 'idx_view_count', 'idx_download_count', 'idx_series_order', 'idx_category_order', 'idx_series_id_navigation'],
+            'series' => ['idx_pin_order', 'idx_category_pin', 'idx_adult_only'],
+            'content_events' => ['idx_content_event_date', 'idx_created_at', 'idx_user_event_date'],
+            'user_content_status' => ['idx_user_read', 'idx_updated_at'],
+            'uploads' => ['idx_status', 'idx_user_status', 'idx_created_at'],
+            'news' => ['idx_is_published', 'idx_published_at', 'idx_published_date'],
+            'avatar_gallery' => ['idx_active_order'],
+            'audit_log' => ['idx_created_at', 'idx_event_created', 'idx_user_id'],
+            'categories' => ['idx_sort_order', 'idx_requires_subscription', 'idx_adult_only', 'idx_hide_from_store'],
+            'packages' => ['idx_sort_order'],
+            'news_categories' => ['idx_show_sidebar', 'idx_show_below_most_read'],
+        ];
+
+        $totalExpected = 0;
+        $totalExisting = 0;
+
+        foreach ($expectedIndexes as $table => $indexes) {
+            $existingIndexes = $this->getTableIndexes($table);
+            
+            echo "📋 Tabela: $table\n";
+            
+            foreach ($indexes as $indexName) {
+                $totalExpected++;
+                $exists = in_array($indexName, $existingIndexes);
+                
+                if ($exists) {
+                    echo "  ✅ $indexName\n";
+                    $totalExisting++;
+                } else {
+                    echo "  ❌ $indexName (faltando)\n";
+                }
+            }
+            echo "\n";
+        }
+
+        echo str_repeat("=", 60) . "\n";
+        echo "📊 RESUMO: $totalExisting/$totalExpected índices aplicados\n";
+        
+        if ($totalExisting < $totalExpected) {
+            echo "⚠️  Execute: php bin/optimize_indexes.php apply\n";
+        } else {
+            echo "✅ Todos os índices de otimização estão aplicados!\n";
+        }
+        echo "\n";
+
+        return $totalExisting === $totalExpected;
+    }
+
+    /**
+     * Aplica as otimizações de índice
+     */
+    public function applyOptimizations()
+    {
+        echo "🚀 APLICANDO OTIMIZAÇÕES DE ÍNDICES\n";
+        echo str_repeat("=", 60) . "\n\n";
+        
+        $sqlFile = __DIR__ . '/../sql/013_optimize_indexes.sql';
+        
+        if (!file_exists($sqlFile)) {
+            echo "❌ Arquivo não encontrado: $sqlFile\n";
+            return false;
+        }
+
+        $sql = file_get_contents($sqlFile);
+        
+        // Remove comentários
+        $sql = preg_replace('/--.*$/m', '', $sql);
+        
+        // Separa statements individuais
+        $statements = array_filter(
+            array_map('trim', explode(';', $sql)),
+            fn($s) => !empty($s) && stripos($s, 'ALTER TABLE') === 0
+        );
+
+        $success = 0;
+        $skipped = 0;
+        $failed = 0;
+
+        foreach ($statements as $statement) {
+            // Extrai nome da tabela e índice para mensagem
+            if (preg_match('/ALTER TABLE\s+(\w+)\s+ADD INDEX\s+(\w+)/i', $statement, $matches)) {
+                $table = $matches[1];
+                $index = $matches[2];
+                
+                echo "⏳ Criando $index em $table... ";
+                
+                try {
+                    $this->db->exec($statement);
+                    echo "✅\n";
+                    $success++;
+                } catch (\PDOException $e) {
+                    if (strpos($e->getMessage(), 'Duplicate key name') !== false) {
+                        echo "⏭️  (já existe)\n";
+                        $skipped++;
+                    } else {
+                        echo "❌ Erro: {$e->getMessage()}\n";
+                        $failed++;
+                    }
+                }
+            }
+        }
+
+        echo "\n" . str_repeat("=", 60) . "\n";
+        echo "📊 RESULTADO:\n";
+        echo "  ✅ Criados: $success\n";
+        echo "  ⏭️  Pulados: $skipped (já existiam)\n";
+        echo "  ❌ Falhas: $failed\n";
+        
+        if ($failed === 0) {
+            echo "\n✅ Otimizações aplicadas com sucesso!\n";
+            echo "💡 Execute: php bin/optimize_indexes.php analyze\n";
+        }
+        
+        echo "\n";
+        
+        return $failed === 0;
+    }
+
+    /**
+     * Atualiza estatísticas das tabelas
+     */
+    public function analyzeTablesInfo()
+    {
+        echo "📊 ATUALIZANDO ESTATÍSTICAS DAS TABELAS\n";
+        echo str_repeat("=", 60) . "\n\n";
+
+        $tables = [
+            'users', 'payments', 'content_items', 'content_events',
+            'support_messages', 'jobs', 'news', 'series', 'uploads',
+            'vouchers', 'audit_log', 'avatar_gallery', 'categories',
+            'packages', 'news_categories', 'user_content_status'
+        ];
+
+        foreach ($tables as $table) {
+            echo "⏳ Analisando $table... ";
+            try {
+                $this->db->exec("ANALYZE TABLE $table");
+                echo "✅\n";
+            } catch (\PDOException $e) {
+                echo "❌ {$e->getMessage()}\n";
+            }
+        }
+
+        echo "\n✅ Estatísticas atualizadas!\n\n";
+    }
+
+    /**
+     * Gera relatório de performance
+     */
+    public function generateReport()
+    {
+        echo "📈 RELATÓRIO DE PERFORMANCE DO BANCO DE DADOS\n";
+        echo str_repeat("=", 60) . "\n\n";
+
+        // 1. Tamanho das tabelas e índices
+        echo "💾 TAMANHO DAS TABELAS E ÍNDICES:\n";
+        $stmt = $this->db->prepare("
+            SELECT 
+                TABLE_NAME as tabela,
+                ROUND(DATA_LENGTH / 1024 / 1024, 2) AS dados_mb,
+                ROUND(INDEX_LENGTH / 1024 / 1024, 2) AS indices_mb,
+                ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 2) AS total_mb
+            FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = :db
+            ORDER BY (DATA_LENGTH + INDEX_LENGTH) DESC
+            LIMIT 10
+        ");
+        $stmt->execute(['db' => $this->dbName]);
+        
+        echo sprintf("%-25s %12s %12s %12s\n", "Tabela", "Dados (MB)", "Índices (MB)", "Total (MB)");
+        echo str_repeat("-", 65) . "\n";
+        
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            echo sprintf(
+                "%-25s %12s %12s %12s\n",
+                $row['tabela'],
+                $row['dados_mb'],
+                $row['indices_mb'],
+                $row['total_mb']
+            );
+        }
+        echo "\n";
+
+        // 2. Contagem de registros
+        echo "📝 REGISTROS NAS TABELAS PRINCIPAIS:\n";
+        $tables = ['users', 'content_items', 'content_events', 'payments', 'series', 'news'];
+        
+        foreach ($tables as $table) {
+            try {
+                $count = $this->db->query("SELECT COUNT(*) FROM $table")->fetchColumn();
+                echo sprintf("  %-20s %s\n", $table . ":", number_format($count, 0, ',', '.') . " registros");
+            } catch (\PDOException $e) {
+                echo sprintf("  %-20s %s\n", $table . ":", "Erro ao contar");
+            }
+        }
+        echo "\n";
+
+        // 3. Índices por tabela
+        echo "📑 TOTAL DE ÍNDICES POR TABELA:\n";
+        $stmt = $this->db->prepare("
+            SELECT 
+                TABLE_NAME as tabela,
+                COUNT(DISTINCT INDEX_NAME) as total_indices
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = :db
+            GROUP BY TABLE_NAME
+            ORDER BY total_indices DESC
+            LIMIT 10
+        ");
+        $stmt->execute(['db' => $this->dbName]);
+        
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            echo sprintf("  %-25s %d índices\n", $row['tabela'], $row['total_indices']);
+        }
+        echo "\n";
+
+        echo str_repeat("=", 60) . "\n";
+    }
+
+    /**
+     * Obtém índices de uma tabela
+     */
+    private function getTableIndexes($table)
+    {
+        $stmt = $this->db->prepare("
+            SELECT DISTINCT INDEX_NAME 
+            FROM information_schema.STATISTICS 
+            WHERE TABLE_SCHEMA = :db 
+            AND TABLE_NAME = :table
+            AND INDEX_NAME != 'PRIMARY'
+        ");
+        $stmt->execute(['db' => $this->dbName, 'table' => $table]);
+        
+        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+    }
+}
+
+// ====================================================================
+// EXECUÇÃO DO SCRIPT
+// ====================================================================
+
+if (php_sapi_name() !== 'cli') {
+    die("Este script deve ser executado via CLI\n");
+}
+
+$command = $argv[1] ?? 'help';
+
+$optimizer = new IndexOptimizer();
+
+switch ($command) {
+    case 'check':
+        $optimizer->checkIndexes();
+        break;
+        
+    case 'apply':
+        echo "⚠️  ATENÇÃO: Esta operação irá criar novos índices no banco de dados.\n";
+        echo "           Pode levar alguns minutos e afetar a performance temporariamente.\n\n";
+        echo "Deseja continuar? (s/N): ";
+        
+        $handle = fopen("php://stdin", "r");
+        $line = fgets($handle);
+        fclose($handle);
+        
+        if (trim(strtolower($line)) === 's') {
+            $optimizer->applyOptimizations();
+        } else {
+            echo "❌ Operação cancelada.\n";
+        }
+        break;
+        
+    case 'analyze':
+        $optimizer->analyzeTablesInfo();
+        break;
+        
+    case 'report':
+        $optimizer->generateReport();
+        break;
+        
+    case 'all':
+        echo "🔧 EXECUTANDO OTIMIZAÇÃO COMPLETA\n\n";
+        $optimizer->checkIndexes();
+        echo "\n";
+        $optimizer->applyOptimizations();
+        echo "\n";
+        $optimizer->analyzeTablesInfo();
+        echo "\n";
+        $optimizer->generateReport();
+        break;
+        
+    default:
+        echo "📚 USO DO SCRIPT DE OTIMIZAÇÃO DE ÍNDICES\n";
+        echo str_repeat("=", 60) . "\n\n";
+        echo "Comandos disponíveis:\n\n";
+        echo "  check    - Verifica quais índices já estão aplicados\n";
+        echo "  apply    - Aplica as otimizações de índices\n";
+        echo "  analyze  - Atualiza estatísticas das tabelas\n";
+        echo "  report   - Gera relatório de performance\n";
+        echo "  all      - Executa todas as operações acima\n";
+        echo "\nExemplos:\n\n";
+        echo "  php bin/optimize_indexes.php check\n";
+        echo "  php bin/optimize_indexes.php apply\n";
+        echo "  php bin/optimize_indexes.php analyze\n";
+        echo "  php bin/optimize_indexes.php report\n";
+        echo "\n";
+        break;
+}
