@@ -362,7 +362,7 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 									<tr>
 										<th style="width: 40px;"><i class="bi bi-exclamation-triangle"></i></th>
 										<th>Usuário</th>
-										<th style="width: 180px;">Endereço IP</th>
+										<th style="width: 220px;">Endereço IP</th>
 										<th style="width: 80px;" class="text-center">País</th>
 										<th style="width: 140px;" class="text-end">Quando</th>
 									</tr>
@@ -390,12 +390,20 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 												<span class="fail-username-text <?= $userExists ? 'text-warning' : 'text-muted' ?>">
 													<?= View::e($username) ?>
 												</span>
-												<?php if (!$userExists): ?>
-													<small class="badge bg-secondary ms-2">inexistente</small>
-												<?php endif; ?>
-											</td>
-											<td>
-												<code class="fail-ip-text"><?= View::e($ip !== '' ? $ip : 'N/A') ?></code>
+										</td>
+										<td>
+											<?php
+											// Truncar IPv6 se for muito longo
+											$displayIp = $ip;
+											if ($ip !== '' && strpos($ip, ':') !== false && strlen($ip) > 25) {
+												// IPv6 - mostrar início e fim
+												$parts = explode(':', $ip);
+												if (count($parts) > 6) {
+													$displayIp = implode(':', array_slice($parts, 0, 3)) . ':...:' . implode(':', array_slice($parts, -2));
+												}
+											}
+											?>
+											<code class="fail-ip-text clickable-ip" data-ip="<?= View::e($ip !== '' ? $ip : '') ?>" title="Clique para copiar: <?= View::e($ip) ?>"><?= View::e($displayIp !== '' ? $displayIp : 'N/A') ?></code>
 											</td>
 											<td class="text-center">
 												<span class="country-flag-icon" title="Aguardando implementação GeoIP">🌐</span>
@@ -579,6 +587,74 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 	</div>
 <?php endif; ?>
 </div>
+
+<script>
+// Copiar IP para área de transferência ao clicar
+document.addEventListener('DOMContentLoaded', function() {
+	const ipElements = document.querySelectorAll('.clickable-ip');
+	
+	ipElements.forEach(function(el) {
+		el.addEventListener('click', function() {
+			const ip = this.getAttribute('data-ip');
+			if (!ip || ip === '') return;
+			
+			// Copiar para clipboard
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(ip).then(function() {
+					showIpCopiedFeedback(el, true);
+				}).catch(function() {
+					fallbackCopyToClipboard(ip, el);
+				});
+			} else {
+				fallbackCopyToClipboard(ip, el);
+			}
+		});
+	});
+	
+	function fallbackCopyToClipboard(text, el) {
+		const textarea = document.createElement('textarea');
+		textarea.value = text;
+		textarea.style.position = 'fixed';
+		textarea.style.opacity = '0';
+		document.body.appendChild(textarea);
+		textarea.select();
+		try {
+			const success = document.execCommand('copy');
+			showIpCopiedFeedback(el, success);
+		} catch (err) {
+			showIpCopiedFeedback(el, false);
+		}
+		document.body.removeChild(textarea);
+	}
+	
+	function showIpCopiedFeedback(el, success) {
+		const originalText = el.textContent;
+		const originalTitle = el.getAttribute('title');
+		
+		if (success) {
+			el.textContent = '✓ Copiado!';
+			el.style.background = '#10b981';
+			el.style.color = 'white';
+			
+			setTimeout(function() {
+				el.textContent = originalText;
+				el.style.background = '';
+				el.style.color = '';
+			}, 1500);
+		} else {
+			el.textContent = '✗ Erro';
+			el.style.background = '#ef4444';
+			el.style.color = 'white';
+			
+			setTimeout(function() {
+				el.textContent = originalText;
+				el.style.background = '';
+				el.style.color = '';
+			}, 1500);
+		}
+	}
+});
+</script>
 
 <?php
 $content = ob_get_clean();

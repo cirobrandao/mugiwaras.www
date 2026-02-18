@@ -13858,3 +13858,27 @@ body.theme-dark .fail-ip-text,
     background: rgba(248, 250, 252, 0.05);
     color: #94a3b8;
 }
+
+/* IP Clickable - Copy to Clipboard */
+.clickable-ip {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.clickable-ip:hover {
+    background: #e0e7ff !important;
+    color: #4338ca !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.clickable-ip:active {
+    transform: translateY(0);
+}
+
+body.theme-dark .clickable-ip:hover,
+[data-bs-theme="dark"] .clickable-ip:hover {
+    background: rgba(99, 102, 241, 0.2) !important;
+    color: #a5b4fc !important;
+}
