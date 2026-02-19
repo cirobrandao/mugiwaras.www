@@ -6,6 +6,7 @@ namespace App\Controllers\Admin;
 
 use App\Core\Controller;
 use App\Core\Database;
+use App\Core\Config;
 use App\Models\User;
 use App\Models\Payment;
 use App\Models\Upload;
@@ -41,9 +42,11 @@ final class DashboardController extends Controller
         $diskFree = @disk_free_space($rootPath);
         $systemMem = $this->systemMemoryInfo();
         $server = [
+            'hostname' => (string)(gethostname() ?: 'N/A'),
             'php_version' => PHP_VERSION,
             'os' => php_uname('s') . ' ' . php_uname('r'),
             'server_software' => (string)($_SERVER['SERVER_SOFTWARE'] ?? 'N/A'),
+            'server_addr' => (string)($_SERVER['SERVER_ADDR'] ?? ''),
             'memory_limit' => (string)(ini_get('memory_limit') ?: 'N/A'),
             'memory_usage' => memory_get_usage(true),
             'system_mem_total' => $systemMem['total'],
@@ -156,10 +159,17 @@ final class DashboardController extends Controller
 
     private function databaseInfo(): array
     {
+        $cfg = (array)Config::get('database', []);
         $info = [
             'version' => 'N/A',
             'name' => 'N/A',
             'connections' => 0,
+            'host' => (string)($cfg['host'] ?? 'N/A'),
+            'port' => (int)($cfg['port'] ?? 0),
+            'threads_running' => 0,
+            'max_connections' => 0,
+            'uptime_seconds' => 0,
+            'engine' => 'MySQL',
         ];
         try {
             $row = Database::connection()->query('SELECT VERSION() AS v, DATABASE() AS d')->fetch();
@@ -167,9 +177,32 @@ final class DashboardController extends Controller
                 $info['version'] = (string)($row['v'] ?? 'N/A');
                 $info['name'] = (string)($row['d'] ?? 'N/A');
             }
-            $status = Database::connection()->query("SHOW STATUS LIKE 'Threads_connected'")->fetch();
-            if ($status && isset($status['Value'])) {
-                $info['connections'] = (int)$status['Value'];
+            $statusRows = Database::connection()->query(
+                "SHOW GLOBAL STATUS WHERE Variable_name IN ('Threads_connected','Threads_running','Uptime')"
+            )->fetchAll();
+            foreach ($statusRows as $status) {
+                $key = (string)($status['Variable_name'] ?? '');
+                $value = (int)($status['Value'] ?? 0);
+                if ($key === 'Threads_connected') {
+                    $info['connections'] = $value;
+                } elseif ($key === 'Threads_running') {
+                    $info['threads_running'] = $value;
+                } elseif ($key === 'Uptime') {
+                    $info['uptime_seconds'] = $value;
+                }
+            }
+
+            $varRows = Database::connection()->query(
+                "SHOW GLOBAL VARIABLES WHERE Variable_name IN ('max_connections','version_comment')"
+            )->fetchAll();
+            foreach ($varRows as $var) {
+                $key = (string)($var['Variable_name'] ?? '');
+                $value = (string)($var['Value'] ?? '');
+                if ($key === 'max_connections') {
+                    $info['max_connections'] = (int)$value;
+                } elseif ($key === 'version_comment' && $value !== '') {
+                    $info['engine'] = $value;
+                }
             }
         } catch (\Throwable $e) {
             // ignore

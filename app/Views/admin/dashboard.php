@@ -28,6 +28,21 @@ $formatBytes = static function (int $bytes): string {
     $value = $bytes / (1024 ** $pow);
     return number_format($value, $value >= 100 ? 0 : 1, ',', '.') . ' ' . $units[$pow];
 };
+$formatDuration = static function (int $seconds): string {
+	if ($seconds <= 0) {
+		return '-';
+	}
+	$days = (int)floor($seconds / 86400);
+	$hours = (int)floor(($seconds % 86400) / 3600);
+	$minutes = (int)floor(($seconds % 3600) / 60);
+	if ($days > 0) {
+		return $days . 'd ' . $hours . 'h';
+	}
+	if ($hours > 0) {
+		return $hours . 'h ' . $minutes . 'm';
+	}
+	return $minutes . 'm';
+};
 $parseNumber = static function (string $value): float {
     $value = trim($value);
     if ($value === '') {
@@ -568,7 +583,16 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 					<span class="card-title">Sistema</span>
 				</div>
 				<div class="card-body">
+					<div class="small text-uppercase text-muted fw-semibold mb-2">Servidor Web</div>
 					<div class="system-info">
+						<div class="info-row">
+							<span class="info-label">Hostname</span>
+							<span class="info-value"><?= View::e((string)($server['hostname'] ?? '-')) ?></span>
+						</div>
+						<div class="info-row">
+							<span class="info-label">IP</span>
+							<span class="info-value"><?= View::e((string)($server['server_addr'] ?? '-')) ?></span>
+						</div>
 						<div class="info-row">
 							<span class="info-label">Servidor</span>
 							<span class="info-value"><?= View::e((string)($server['server_software'] ?? '-')) ?></span>
@@ -587,10 +611,23 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 						</div>
 					</div>
 					<hr class="my-2">
+					<div class="small text-uppercase text-muted fw-semibold mb-2">Servidor MySQL</div>
 					<div class="system-info">
+						<div class="info-row">
+							<span class="info-label">Host</span>
+							<span class="info-value"><?= View::e((string)($dbInfo['host'] ?? '-')) ?></span>
+						</div>
+						<div class="info-row">
+							<span class="info-label">Porta</span>
+							<span class="info-value"><?= $formatNumber((int)($dbInfo['port'] ?? 0)) ?></span>
+						</div>
 						<div class="info-row">
 							<span class="info-label">Banco</span>
 							<span class="info-value"><?= View::e((string)($dbInfo['name'] ?? '-')) ?></span>
+						</div>
+						<div class="info-row">
+							<span class="info-label">Engine</span>
+							<span class="info-value"><?= View::e((string)($dbInfo['engine'] ?? '-')) ?></span>
 						</div>
 						<div class="info-row">
 							<span class="info-label">Versão</span>
@@ -600,8 +637,21 @@ $recentUsers = $isAdmin ? User::recentLogins(10) : [];
 							<span class="info-label">Conexões</span>
 							<span class="info-value"><?= $formatNumber((int)($dbInfo['connections'] ?? 0)) ?></span>
 						</div>
+						<div class="info-row">
+							<span class="info-label">Threads ativas</span>
+							<span class="info-value"><?= $formatNumber((int)($dbInfo['threads_running'] ?? 0)) ?></span>
+						</div>
+						<div class="info-row">
+							<span class="info-label">Máx conexões</span>
+							<span class="info-value"><?= $formatNumber((int)($dbInfo['max_connections'] ?? 0)) ?></span>
+						</div>
+						<div class="info-row">
+							<span class="info-label">Uptime</span>
+							<span class="info-value"><?= View::e($formatDuration((int)($dbInfo['uptime_seconds'] ?? 0))) ?></span>
+						</div>
 					</div>
 					<hr class="my-2">
+					<div class="small text-uppercase text-muted fw-semibold mb-2">Recursos do Servidor Web</div>
 					<div class="resource-meter">
 						<div class="meter-header">
 							<span class="meter-label"><i class="bi bi-memory me-1"></i>Memória PHP</span>
